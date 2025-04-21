@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+kessel_file = os.path.realpath(__file__)
+kessel_root = os.path.dirname(os.path.dirname(kessel_file))
+
+kessel_lib_path = os.path.join(kessel_root, "lib")
+sys.path.insert(0, kessel_lib_path)
+
+from kessel.main import main
+
+if __name__ == "__main__":
+    sys.exit(main())
