@@ -1,5 +1,6 @@
 PARENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]:-$0}" )" &>/dev/null && pwd )"
 export KESSEL_ROOT="$(realpath $PARENT_DIR/../..)"
+export KESSEL_CONFIG_DIR="${KESSEL_ROOT}/etc/kessel"
 
 _kessel_path_prepend() {
   if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
