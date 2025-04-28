@@ -6,6 +6,8 @@ kessel_file = os.path.realpath(__file__)
 kessel_root = os.path.dirname(os.path.dirname(kessel_file))
 
 kessel_lib_path = os.path.join(kessel_root, "lib")
+vendored_libs_path = os.path.join(kessel_root, "lib", "kessel", "external", "_vendoring")
+sys.path.insert(0, vendored_libs_path)
 sys.path.insert(0, kessel_lib_path)
 
 from kessel.main import main

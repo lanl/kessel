@@ -1,0 +1,12 @@
+[project]
+name="kessel"
+description="Spack deployments for continuous integration and developer workflows."
+requires-python=">=3.6"
+dependencies=[
+  "setuptools",
+]
+
+[tool.vendoring]
+destination = "lib/kessel/external/_vendoring"
+requirements = "lib/kessel/external/vendor.txt"
+namespace = ""
