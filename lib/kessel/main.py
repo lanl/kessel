@@ -1,3 +1,188 @@
+import os
+import json
+import argparse
+import subprocess
+import shutil
+
+from ruamel.yaml import YAML
+from pathlib import Path
+
+import glob
+import sys
+from pathlib import Path
+
+def merge(envA, envB):
+    a = envA['spack']
+    for k, b in envB['spack'].items():
+        a1 = a.get(k)
+        if isinstance(a1, list):
+            a1 += b
+        elif isinstance(a1, dict):
+            a1 |= b
+        else:
+            a[k] = b
+    return envA
+
+def load_env(path, template_dirs=[]):
+    with open(path) as f:
+        yaml = YAML(typ="safe")
+        new_env = yaml.load(f)
+
+    base_names = new_env['spack'].get('extends', ())
+
+    if isinstance(base_names, str):
+        base_names = [base_names]
+
+    new_env['spack'].pop('extends', None)
+
+    env = {'spack': {}}
+    for base_name in base_names:
+        found = False
+        for template_dir in template_dirs:
+            template = template_dir / f"{base_name}.yaml"
+            if template.exists():
+                env = merge(env, load_env(template, template_dirs))
+                found = True
+
+        if not found:
+            sys.exit(f"ERROR: unknown template '{base_name}'")
+    return merge(env, new_env)
+
+
+class SpackConfig(object):
+    def __init__(self, directory, git_url, git_commit):
+        self.directory = directory
+        self.git_url = git_url
+        self.git_commit = git_commit
+
+    def init(self):
+        if not Path(self.directory).exists():
+            subprocess.call(["git", "clone", "-c", "feature.manyFiles=true", "-n", "--depth=1",  self.git_url, self.directory])
+
+        spack_head = subprocess.check_output(["git", "-C", self.directory, "rev-parse", "HEAD"]).decode().strip()
+        if spack_head != self.git_commit:
+            subprocess.call(["git", "-C", self.directory, "fetch", "--depth=1", "origin", self.git_commit])
+            subprocess.call(["git", "-C", self.directory, "checkout", "FETCH_HEAD"])
+            subprocess.call(["git", "-C", self.directory, "branch", "-q", "-D", "@{-1}"])
+
+    def to_dict(self):
+        return {'git': self.git_url, 'commit': self.git_commit }
+
+
+
+class KesselConfig(object):
+    def __init__(self, config_file, deployment_dir=Path.cwd()):
+        with open(config_file, "r") as f:
+            yaml = YAML(typ="safe")
+            config = yaml.load(f)['kessel']
+
+        config_dir = Path(config_file).resolve().parent
+
+        if 'config_dir' in config:
+            self.config_dir = Path(config['config_dir'])
+            self.deployment_dir = config_dir
+        else:
+            self.config_dir = config_dir
+            self.deployment_dir = Path(deployment_dir)
+
+        self.config_file = self.config_dir / ".kessel.yaml"
+        self.deployment_config_file = self.deployment_dir / ".kessel.yaml"
+
+        spack_path = self.deployment_dir / "spack"
+        self.spack = SpackConfig(spack_path, config["spack"]["git"], config["spack"]["commit"])
+
+    def to_dict(self):
+        return {
+          'kessel' : {
+            'version' : self.version,
+            'spack'  : self.spack.to_dict(),
+            'config_dir' : str(self.config_dir)
+          }
+        }
+
+    @property
+    def version(self):
+        return "0.0.1"
+
+    @property
+    def env_dir(self):
+        return self.config_dir / "environments"
+
+    @property
+    def kessel_root(self):
+        return Path(os.environ["KESSEL_ROOT"])
+
+    @property
+    def kessel_config_dir(self):
+        return self.kessel_root / "etc" / "kessel"
+
+    def kessel_template_dir(self, system=None):
+        if system:
+            return self.kessel_config_dir / system / "templates"
+        return self.kessel_config_dir / "templates"
+
+    def deployment_template_dir(self, system=None):
+        if system:
+            return self.config_dir / "config" / system / "templates"
+        return self.config_dir / "config" / "templates"
+
+    def init(self):
+        with open(self.deployment_config_file, 'w') as f:
+            yaml = YAML(typ="safe")
+            yaml.default_flow_style = False
+            yaml.width = 256
+            yaml.dump(self.to_dict(), f)
+
+        self.spack.init()
+
+        env_glob = (self.env_dir / "**" / "*.yaml").resolve()
+        env_templates = glob.glob(str(env_glob), recursive=True)
+
+        for tpl in env_templates:
+            path = Path(tpl)
+            relpath = Path(path.relative_to(self.env_dir.resolve()))
+            system = relpath.parts[0]
+            target = self.deployment_dir / "environments" /  relpath.parent / relpath.stem / "spack.yaml"
+            source = path.parent / path.stem
+
+            template_dirs = [
+                self.deployment_template_dir(system),
+                self.deployment_template_dir(),
+                self.kessel_template_dir(system),
+                self.kessel_template_dir()
+            ]
+
+            os.makedirs(target.parent, exist_ok=True)
+            print("Creating",  target)
+            env = load_env(path, template_dirs)
+            with open(target, 'w') as f:
+                yaml = YAML(typ="safe")
+                yaml.default_flow_style = False
+                yaml.width = 256
+                yaml.dump(env, f)
+
+
+def init(args):
+    config = KesselConfig(Path(args.config_dir) / ".kessel.yaml")
+    config.init()
+
+def activate(args):
+    deployment_dir = Path.cwd()
+
+    if deployment_dir.exists():
+        print(f"export SPACK_USER_CACHE_PATH={deployment_dir}/.spack")
+        print("export SPACK_DISABLE_LOCAL_CONFIG=true")
+        print("export SPACK_SKIP_MODULES=true")
+        print(f"export KESSEL_DEPLOYMENT={deployment_dir}")
+
 def main():
-    print("Never tell me the odds!")
+    parser = argparse.ArgumentParser(prog='kessel')
+    subparsers = parser.add_subparsers()
+    init_cmd = subparsers.add_parser('init')
+    init_cmd.add_argument('config_dir')
+    init_cmd.set_defaults(func=init)
+    activate_cmd = subparsers.add_parser('activate')
+    activate_cmd.set_defaults(func=activate)
+    args = parser.parse_args()
+    args.func(args)
     return 0
