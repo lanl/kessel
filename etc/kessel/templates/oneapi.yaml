@@ -1,0 +1,10 @@
+spack:
+  extends: custom
+  view:
+    default:
+      root: .spack-env/view
+      exclude: [intel-oneapi-runtime, gcc-runtime]
+  packages:
+    all:
+      prefer:
+        - '%oneapi'

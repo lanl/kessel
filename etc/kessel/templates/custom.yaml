@@ -1,0 +1,23 @@
+spack:
+  include:
+   - $KESSEL_CONFIG_DIR/bootstrap.yaml
+   - $KESSEL_CONFIG_DIR/concretizer.yaml
+   - $KESSEL_CONFIG_DIR/mirrors.yaml
+   - $KESSEL_CONFIG_DIR/$KESSEL_SYSTEM/compilers.yaml
+   - $KESSEL_CONFIG_DIR/$KESSEL_SYSTEM/packages.yaml
+   - path: $KESSEL_DEPLOYMENT/config/packages.yaml
+     optional: true
+   - path: $KESSEL_DEPLOYMENT/config/repos.yaml
+     optional: true
+   - path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/compilers.yaml
+     optional: true
+   - path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/packages.yaml
+     optional: true
+   - path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/upstreams.yaml
+     optional: true
+   - path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/mirrors.yaml
+     optional: true
+  specs: []
+  view: true
+  concretizer:
+    unify: true

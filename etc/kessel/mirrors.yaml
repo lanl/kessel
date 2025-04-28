@@ -1,0 +1,2 @@
+mirrors:
+  local: $spack/../spack_mirror

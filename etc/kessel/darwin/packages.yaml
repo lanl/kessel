@@ -1,0 +1,70 @@
+packages:
+  slurm:
+    externals:
+    - spec: slurm@24-05-5-1
+      prefix: /usr
+    buildable: false
+  llvm:
+    externals:
+      - spec: llvm@13.0.0
+        prefix: /projects/opt/centos8/x86_64/clang/13.0.0
+      - spec: llvm@17.0.6 +clang
+        modules:
+        - clang/17.0.6
+  openmpi:
+    require:
+      - "@5.0.5 fabrics=ucx schedulers=slurm %gcc"
+    conflict:
+     - "^mpich"
+  mpich:
+    require:
+     - "@4.2.3 +hydra +slurm +fortran device=ch4 netmod=ucx %gcc"
+    conflict:
+     - "^openmpi"
+  ucx:
+    require:
+     - "@1.17.0 +cma+dc+rc+rdmacm+thread_multiple+ud+verbs+debug %gcc"
+  libfabric:
+    require:
+     - spec: "%gcc"
+    variants: fabrics=verbs,shm,sockets,tcp,udp
+  cuda:
+    version: [12.8.0]
+    externals:
+    - spec: cuda@12.8.0
+      modules:
+      - cuda/12.8.0
+  curl:
+    externals:
+    - spec: curl@7.61.1
+      prefix: /usr
+    buildable: false
+  opengl:
+    externals:
+    - spec: opengl@4.5.0
+      prefix: /usr
+    buildable: false
+  openssl:
+    externals:
+    - spec: openssl@1.1.1k
+      prefix: /usr
+    buildable: false
+  openssh:
+    externals:
+      - spec: openssh@8.0p1
+        prefix: /usr
+    buildable: false
+  diffutils:
+    externals:
+    - spec:    diffutils@3.6
+      prefix:  /usr
+    buildable: false
+  numactl:
+    externals:
+    - spec: numactl@system
+      prefix: /usr
+    buildable: false
+  git:
+    externals:
+    - spec: git@2.39.3
+      prefix: /usr

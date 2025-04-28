@@ -1,0 +1,10 @@
+spack:
+  extends: custom
+  view:
+    default:
+      root: .spack-env/view
+      exclude: ['gcc-runtime']
+  packages:
+    all:
+      prefer:
+        - '%gcc'
