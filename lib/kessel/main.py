@@ -166,12 +166,14 @@ class ShellEnvironment(object):
     def __init__(self):
         self.fd = open(3, 'w', closefd=False)
 
+    def eval(self, cmd):
+        print(cmd, file=self.fd, flush=True)
+
     def set_env_var(self, name, value):
-        print(f"export {name}={value}", file=self.fd, flush=True)
+        self.eval(f"export {name}={value}")
 
     def source(self, path):
-        print(f"source {path}", file=self.fd, flush=True)
-
+        self.eval(f"source {path}")
 
 def init(args, senv):
     config = KesselConfig(Path(args.config_dir) / ".kessel.yaml")
@@ -187,6 +189,46 @@ def activate(args, senv):
         senv.set_env_var("KESSEL_DEPLOYMENT", deployment_dir)
         senv.source("${KESSEL_DEPLOYMENT}/spack/share/spack/setup-env.sh")
 
+def system_list(args, senv):
+    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+
+    if deployment_dir:
+        environments_dir = Path(deployment_dir) / "environments"
+
+        for d in [c.name for c in environments_dir.iterdir() if c.is_dir()]:
+            print(d)
+
+def system_activate(args, senv):
+    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+
+    if deployment_dir:
+        sys_dir = Path(deployment_dir) / "environments" / args.system
+        if sys_dir.exists():
+            print(f"Activating {args.system}")
+            senv.set_env_var("KESSEL_SYSTEM", args.system)
+
+def env_list(args, senv):
+    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+    system = os.environ.get('KESSEL_SYSTEM', default=None)
+
+    if deployment_dir and system:
+        env_dir = Path(deployment_dir) / "environments" / system
+        env_glob = (env_dir /  "**" / "*.yaml").resolve()
+        envs = sorted(glob.glob(str(env_glob), recursive=True))
+
+        for e in envs:
+            print(Path(e).relative_to(env_dir).parent)
+
+def env_activate(args, senv):
+    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+    system = os.environ.get('KESSEL_SYSTEM', default=None)
+
+    if deployment_dir and system:
+        env_dir = Path(deployment_dir) / "environments" / system / args.env
+        if env_dir.exists():
+            print(f"Activating {system} environment {args.env}")
+            senv.eval(f"spack env activate -d {env_dir}")
+
 def main():
     senv = ShellEnvironment()
     parser = argparse.ArgumentParser(prog='kessel')
@@ -197,6 +239,23 @@ def main():
     activate_cmd = subparsers.add_parser('activate')
     activate_cmd.add_argument('path', nargs='?', default=Path.cwd())
     activate_cmd.set_defaults(func=activate)
+
+    system_cmd = subparsers.add_parser('system')
+    sys_subparsers = system_cmd.add_subparsers()
+    sys_list_cmd = sys_subparsers.add_parser('list')
+    sys_list_cmd.set_defaults(func=system_list)
+    sys_activate_cmd = sys_subparsers.add_parser('activate')
+    sys_activate_cmd.add_argument('system')
+    sys_activate_cmd.set_defaults(func=system_activate)
+
+    env_cmd = subparsers.add_parser('env')
+    env_subparsers = env_cmd.add_subparsers()
+    env_list_cmd = env_subparsers.add_parser('list')
+    env_list_cmd.set_defaults(func=env_list)
+    env_activate_cmd = env_subparsers.add_parser('activate')
+    env_activate_cmd.add_argument('env')
+    env_activate_cmd.set_defaults(func=env_activate)
+
     args = parser.parse_args()
     args.func(args, senv)
     return 0
