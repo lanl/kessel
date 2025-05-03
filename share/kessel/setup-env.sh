@@ -8,17 +8,8 @@ _kessel_path_prepend() {
   fi
 }
 
-_kessel_shell_wrapper() {
-  _ks_subcommand=""
-  case $_ks_subcommand in
-    *)
-      command kessel $@
-      ;;
-  esac
-}
-
 kessel() {
-  _kessel_shell_wrapper $@
-}
+  eval "$(command kessel $@ 3>&1 >&4 4>&- )"
+} 4>&1
 
 _kessel_path_prepend "${KESSEL_ROOT:+"${KESSEL_ROOT}/bin"}"

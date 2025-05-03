@@ -162,27 +162,41 @@ class KesselConfig(object):
                 yaml.dump(env, f)
 
 
-def init(args):
+class ShellEnvironment(object):
+    def __init__(self):
+        self.fd = open(3, 'w', closefd=False)
+
+    def set_env_var(self, name, value):
+        print(f"export {name}={value}", file=self.fd, flush=True)
+
+    def source(self, path):
+        print(f"source {path}", file=self.fd, flush=True)
+
+
+def init(args, senv):
     config = KesselConfig(Path(args.config_dir) / ".kessel.yaml")
     config.init()
 
-def activate(args):
-    deployment_dir = Path.cwd()
+def activate(args, senv):
+    deployment_dir = args.path
 
     if deployment_dir.exists():
-        print(f"export SPACK_USER_CACHE_PATH={deployment_dir}/.spack")
-        print("export SPACK_DISABLE_LOCAL_CONFIG=true")
-        print("export SPACK_SKIP_MODULES=true")
-        print(f"export KESSEL_DEPLOYMENT={deployment_dir}")
+        senv.set_env_var("SPACK_USER_CACHE_PATH", f"{deployment_dir}/.spack")
+        senv.set_env_var("SPACK_DISABLE_LOCAL_CONFIG", "true")
+        senv.set_env_var("SPACK_SKIP_MODULES", "true")
+        senv.set_env_var("KESSEL_DEPLOYMENT", deployment_dir)
+        senv.source("${KESSEL_DEPLOYMENT}/spack/share/spack/setup-env.sh")
 
 def main():
+    senv = ShellEnvironment()
     parser = argparse.ArgumentParser(prog='kessel')
     subparsers = parser.add_subparsers()
     init_cmd = subparsers.add_parser('init')
     init_cmd.add_argument('config_dir')
     init_cmd.set_defaults(func=init)
     activate_cmd = subparsers.add_parser('activate')
+    activate_cmd.add_argument('path', nargs='?', default=Path.cwd())
     activate_cmd.set_defaults(func=activate)
     args = parser.parse_args()
-    args.func(args)
+    args.func(args, senv)
     return 0
