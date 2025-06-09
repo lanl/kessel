@@ -1,4 +1,17 @@
-#!/usr/bin/env python3
+#!/bin/sh
+""":"
+PREFERRED_PYTHONS="python3.11 python3.8 python3 python"
+for cmd in ${PREFERRED_PYTHONS}; do
+    if command -v > /dev/null "$cmd"; then
+        export KESSEL_PYTHON="$(command -v "$cmd")"
+        exec "${KESSEL_PYTHON}" "$0" "$@"
+    fi
+done
+
+echo "Could not find python interpreter" >&2
+exit 1
+":"""
+
 import os
 import sys
 
