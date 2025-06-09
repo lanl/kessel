@@ -229,6 +229,64 @@ def env_activate(args, senv):
             print(f"Activating {system} environment {args.env}")
             senv.eval(f"spack env activate -d {env_dir}")
 
+def create_bootstrap_mirror(deployment_dir, senv):
+    # create bootstrap mirror
+    senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
+    senv.eval(f"spack bootstrap mirror --binary-packages {deployment_dir}/spack_bootstrap")
+
+def concretize_env_for_mirror(name, env_path, senv):
+    print(f"Concretizing {name}...")
+
+    senv.eval(f"rm -rf {env_path}/.spack-env")
+    senv.eval(f"mkdir -p {env_path}/.spack-env")
+    senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
+    senv.eval(f"spack env activate -V -d {env_path}")
+    senv.eval(f"spack concretize -f --fresh 2>&1 > {env_path}/.spack-env/concretization.txt || touch {env_path}/.spack-env/failure &")
+    senv.eval(f"spack env deactivate")
+
+def create_env_mirror(mirror_dir, name, env_path, senv):
+    failure_file = env_path / ".spack-env" / "failure"
+    if failure_file.exists():
+        print(f"ERROR: Concretization of {name} failed!")
+    else:
+        print(f"Creating mirror for {name}...")
+        senv.eval(f"spack env activate -V -d {env_path}")
+        senv.eval(f"cat {env_path}/.spack-env/concretization.txt")
+        senv.eval(f"spack mirror create -d {mirror_dir} --all --skip-unstable-version")
+        senv.eval(f"rm -f {env_path}/spack.lock")
+
+def create_system_source_mirror(deployment_dir, system, senv):
+    mirror_dir = Path(deployment_dir) / "spack_mirror"
+    env_dir = Path(deployment_dir) / "environments" / system
+    env_glob = (env_dir /  "**" / "*.yaml").resolve()
+    envs = sorted(glob.glob(str(env_glob), recursive=True))
+
+    for e in envs:
+        env_path = Path(e).parent
+        concretize_env_for_mirror(env_path.relative_to(env_dir), env_path, senv)
+
+    senv.eval("wait")
+
+    for e in envs:
+        env_path = Path(e).parent
+        create_env_mirror(mirror_dir, env_path.relative_to(env_dir), env_path, senv)
+
+    senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
+
+
+def bootstrap_create(args, senv):
+    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+
+    if deployment_dir:
+        create_bootstrap_mirror(deployment_dir, senv)
+
+def mirror_create(args, senv):
+    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+    system = os.environ.get('KESSEL_SYSTEM', default=None)
+
+    if deployment_dir and system:
+        create_system_source_mirror(deployment_dir, system, senv)
+
 def main():
     senv = ShellEnvironment()
     parser = argparse.ArgumentParser(prog='kessel')
@@ -255,6 +313,16 @@ def main():
     env_activate_cmd = env_subparsers.add_parser('activate')
     env_activate_cmd.add_argument('env')
     env_activate_cmd.set_defaults(func=env_activate)
+
+    bootstrap_cmd = subparsers.add_parser('bootstrap')
+    bootstrap_subparsers = bootstrap_cmd.add_subparsers()
+    bootstrap_create_cmd = bootstrap_subparsers.add_parser('create')
+    bootstrap_create_cmd.set_defaults(func=bootstrap_create)
+
+    mirror_cmd = subparsers.add_parser('mirror')
+    mirror_subparsers = mirror_cmd.add_subparsers()
+    mirror_create_cmd = mirror_subparsers.add_parser('create')
+    mirror_create_cmd.set_defaults(func=mirror_create)
 
     args = parser.parse_args()
     args.func(args, senv)
