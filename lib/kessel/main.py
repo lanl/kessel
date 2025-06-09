@@ -232,7 +232,7 @@ def env_activate(args, senv):
 def create_bootstrap_mirror(deployment_dir, senv):
     # create bootstrap mirror
     senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
-    senv.eval(f"spack bootstrap mirror --binary-packages {deployment_dir}/spack_bootstrap")
+    senv.eval(f"spack bootstrap mirror --binary-packages {deployment_dir}/spack_bootstrap || true")
 
 def concretize_env_for_mirror(name, env_path, senv):
     print(f"Concretizing {name}...")
