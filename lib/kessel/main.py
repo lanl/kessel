@@ -180,7 +180,7 @@ def init(args, senv):
     config.init()
 
 def activate(args, senv):
-    deployment_dir = args.path
+    deployment_dir = Path(args.path)
 
     if deployment_dir.exists():
         senv.set_env_var("SPACK_USER_CACHE_PATH", f"{deployment_dir}/.spack")
