@@ -286,11 +286,9 @@ def create_env_mirror(mirror_dir, name, env_path, senv):
         senv.eval(f"rm -f {env_path}/spack.lock")
         senv.eval(f"cp {env_path}/spack.yaml.original {env_path}/spack.yaml")
 
-def create_system_source_mirror(ctx, senv):
+def create_system_source_mirror(ctx, envs, senv):
     mirror_dir = ctx.deployment_dir / "spack-mirror"
     env_dir = ctx.deployment_dir / "environments" / ctx.system
-    env_glob = (env_dir /  "**" / "*.yaml").resolve()
-    envs = sorted(glob.glob(str(env_glob), recursive=True))
 
     for e in envs:
         env_path = Path(e).parent
@@ -315,7 +313,14 @@ def mirror_create(args, senv):
     ctx = Context()
 
     if ctx.deployment_dir and ctx.system:
-        create_system_source_mirror(ctx, senv)
+        env_dir = ctx.deployment_dir / "environments" / ctx.system
+        if args.all:
+            env_glob = (env_dir /  "**" / "*.yaml").resolve()
+            envs = sorted(glob.glob(str(env_glob), recursive=True))
+        else:
+            envs = [env_dir / args.env / "spack.yaml"]
+
+        create_system_source_mirror(ctx, envs, senv)
 
 def main():
     senv = ShellEnvironment()
@@ -352,6 +357,9 @@ def main():
     mirror_cmd = subparsers.add_parser('mirror')
     mirror_subparsers = mirror_cmd.add_subparsers()
     mirror_create_cmd = mirror_subparsers.add_parser('create')
+    mcgroup = mirror_create_cmd.add_mutually_exclusive_group()
+    mcgroup.add_argument("-a", "--all", action="store_true")
+    mcgroup.add_argument("env", nargs='?', default=None)
     mirror_create_cmd.set_defaults(func=mirror_create)
 
     args = parser.parse_args()
