@@ -68,7 +68,18 @@ class SpackConfig(object):
     def to_dict(self):
         return {'git': self.git_url, 'commit': self.git_commit }
 
+class Context(object):
+    def __init__(self):
+        pass
 
+    @property
+    def deployment_dir(self):
+        deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+        return Path(deployment_dir) if deployment_dir else None
+
+    @property
+    def system(self):
+        return os.environ.get('KESSEL_SYSTEM', default=None)
 
 class KesselConfig(object):
     def __init__(self, config_file, deployment_dir=Path.cwd()):
@@ -190,29 +201,28 @@ def activate(args, senv):
         senv.source("${KESSEL_DEPLOYMENT}/spack/share/spack/setup-env.sh")
 
 def system_list(args, senv):
-    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+    ctx = Context()
 
-    if deployment_dir:
-        environments_dir = Path(deployment_dir) / "environments"
+    if ctx.deployment_dir:
+        environments_dir = ctx.deployment_dir / "environments"
 
         for d in [c.name for c in environments_dir.iterdir() if c.is_dir()]:
             print(d)
 
 def system_activate(args, senv):
-    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+    ctx = Context()
 
-    if deployment_dir:
-        sys_dir = Path(deployment_dir) / "environments" / args.system
+    if ctx.deployment_dir:
+        sys_dir = ctx.deployment_dir / "environments" / args.system
         if sys_dir.exists():
             print(f"Activating {args.system}")
             senv.set_env_var("KESSEL_SYSTEM", args.system)
 
 def env_list(args, senv):
-    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
-    system = os.environ.get('KESSEL_SYSTEM', default=None)
+    ctx = Context()
 
-    if deployment_dir and system:
-        env_dir = Path(deployment_dir) / "environments" / system
+    if ctx.deployment_dir and ctx.system:
+        env_dir = ctx.deployment_dir / "environments" / system
         env_glob = (env_dir /  "**" / "*.yaml").resolve()
         envs = sorted(glob.glob(str(env_glob), recursive=True))
 
@@ -220,11 +230,10 @@ def env_list(args, senv):
             print(Path(e).relative_to(env_dir).parent)
 
 def env_activate(args, senv):
-    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
-    system = os.environ.get('KESSEL_SYSTEM', default=None)
+    ctx = Context()
 
-    if deployment_dir and system:
-        env_dir = Path(deployment_dir) / "environments" / system / args.env
+    if ctx.deployment_dir and ctx.system:
+        env_dir = ctx.deployment_dir / "environments" / system / args.env
         if env_dir.exists():
             print(f"Activating {system} environment {args.env}")
             senv.eval(f"spack env activate -d {env_dir}")
@@ -255,9 +264,9 @@ def create_env_mirror(mirror_dir, name, env_path, senv):
         senv.eval(f"spack mirror create -d {mirror_dir} --all --skip-unstable-version")
         senv.eval(f"rm -f {env_path}/spack.lock")
 
-def create_system_source_mirror(deployment_dir, system, senv):
-    mirror_dir = Path(deployment_dir) / "spack_mirror"
-    env_dir = Path(deployment_dir) / "environments" / system
+def create_system_source_mirror(ctx, senv):
+    mirror_dir = ctx.deployment_dir / "spack_mirror"
+    env_dir = ctx.deployment_dir / "environments" / system
     env_glob = (env_dir /  "**" / "*.yaml").resolve()
     envs = sorted(glob.glob(str(env_glob), recursive=True))
 
@@ -275,17 +284,16 @@ def create_system_source_mirror(deployment_dir, system, senv):
 
 
 def bootstrap_create(args, senv):
-    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+    ctx = Context()
 
-    if deployment_dir:
-        create_bootstrap_mirror(deployment_dir, senv)
+    if ctx.deployment_dir:
+        create_bootstrap_mirror(ctx, senv)
 
 def mirror_create(args, senv):
-    deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
-    system = os.environ.get('KESSEL_SYSTEM', default=None)
+    ctx = Context()
 
-    if deployment_dir and system:
-        create_system_source_mirror(deployment_dir, system, senv)
+    if ctx.deployment_dir and ctx.system:
+        create_system_source_mirror(ctx, senv)
 
 def main():
     senv = ShellEnvironment()
