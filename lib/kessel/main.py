@@ -222,7 +222,7 @@ def env_list(args, senv):
     ctx = Context()
 
     if ctx.deployment_dir and ctx.system:
-        env_dir = ctx.deployment_dir / "environments" / system
+        env_dir = ctx.deployment_dir / "environments" / ctx.system
         env_glob = (env_dir /  "**" / "*.yaml").resolve()
         envs = sorted(glob.glob(str(env_glob), recursive=True))
 
@@ -233,9 +233,9 @@ def env_activate(args, senv):
     ctx = Context()
 
     if ctx.deployment_dir and ctx.system:
-        env_dir = ctx.deployment_dir / "environments" / system / args.env
+        env_dir = ctx.deployment_dir / "environments" / ctx.system / args.env
         if env_dir.exists():
-            print(f"Activating {system} environment {args.env}")
+            print(f"Activating {ctx.system} environment {args.env}")
             senv.eval(f"spack env activate -d {env_dir}")
 
 def create_bootstrap_mirror(deployment_dir, senv):
@@ -266,7 +266,7 @@ def create_env_mirror(mirror_dir, name, env_path, senv):
 
 def create_system_source_mirror(ctx, senv):
     mirror_dir = ctx.deployment_dir / "spack_mirror"
-    env_dir = ctx.deployment_dir / "environments" / system
+    env_dir = ctx.deployment_dir / "environments" / ctx.system
     env_glob = (env_dir /  "**" / "*.yaml").resolve()
     envs = sorted(glob.glob(str(env_glob), recursive=True))
 
