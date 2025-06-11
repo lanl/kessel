@@ -244,12 +244,13 @@ def create_bootstrap_mirror(ctx, senv):
     senv.eval(f"spack bootstrap mirror --binary-packages {ctx.deployment_dir}/spack_bootstrap || true")
 
 def concretize_env_for_mirror(name, env_path, senv):
-    print(f"Concretizing {name}...")
-
+    senv.eval(f"echo \"Concretizing {name}...\"")
     senv.eval(f"rm -rf {env_path}/.spack-env")
     senv.eval(f"mkdir -p {env_path}/.spack-env")
     senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
-    senv.eval(f"spack env activate -V -d {env_path}")
+    senv.eval(f"cp {env_path}/spack.yaml {env_path}/spack.yaml.original")
+    senv.eval(f"spack env activate -d {env_path}")
+    senv.eval(f"spack config add view:false")
     senv.eval(f"spack concretize -f --fresh 2>&1 > {env_path}/.spack-env/concretization.txt || touch {env_path}/.spack-env/failure &")
     senv.eval(f"spack env deactivate")
 
@@ -258,11 +259,12 @@ def create_env_mirror(mirror_dir, name, env_path, senv):
     if failure_file.exists():
         print(f"ERROR: Concretization of {name} failed!")
     else:
-        print(f"Creating mirror for {name}...")
-        senv.eval(f"spack env activate -V -d {env_path}")
+        senv.eval(f"echo \"Creating mirror for {name}...\"")
+        senv.eval(f"spack env activate -d {env_path}")
         senv.eval(f"cat {env_path}/.spack-env/concretization.txt")
         senv.eval(f"spack mirror create -d {mirror_dir} --all --skip-unstable-version")
         senv.eval(f"rm -f {env_path}/spack.lock")
+        senv.eval(f"cp {env_path}/spack.yaml.original {env_path}/spack.yaml")
 
 def create_system_source_mirror(ctx, senv):
     mirror_dir = ctx.deployment_dir / "spack_mirror"
