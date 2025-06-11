@@ -260,14 +260,12 @@ def env_activate(args, senv):
 
 def create_bootstrap_mirror(ctx, senv):
     # create bootstrap mirror
-    senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
     senv.eval(f"spack bootstrap mirror --binary-packages {ctx.deployment_dir}/spack-bootstrap || true")
 
 def concretize_env_for_mirror(name, env_path, senv):
     senv.eval(f"echo \"Concretizing {name}...\"")
     senv.eval(f"rm -rf {env_path}/.spack-env")
     senv.eval(f"mkdir -p {env_path}/.spack-env")
-    senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
     senv.eval(f"cp {env_path}/spack.yaml {env_path}/spack.yaml.original")
     senv.eval(f"spack env activate -d {env_path}")
     senv.eval(f"spack config add view:false")
@@ -300,13 +298,10 @@ def create_system_source_mirror(ctx, envs, senv):
         env_path = Path(e).parent
         create_env_mirror(mirror_dir, env_path.relative_to(env_dir), env_path, senv)
 
-    senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
-
-
 def bootstrap_create(args, senv):
     ctx = Context()
 
-    if ctx.deployment_dir:
+    if ctx.deployment_dir and ctx.system:
         create_bootstrap_mirror(ctx, senv)
 
 def mirror_create(args, senv):
