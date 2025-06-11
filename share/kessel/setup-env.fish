@@ -9,6 +9,4 @@ end 4>&1
 fish_add_path -p --path $KESSEL_ROOT/bin
 
 # Set up autocomplete
-set -l kessel_source_file (status -f)  # name of current file
-set -l kessel_share_dir (realpath (dirname $kessel_source_file))
-source $kessel_share_dir/kessel-completion.fish
+source $KESSEL_ROOT/share/kessel/kessel-completion.fish
