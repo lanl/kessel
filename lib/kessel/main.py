@@ -1,8 +1,10 @@
 import os
+import grp
 import json
 import argparse
 import subprocess
 import shutil
+import tempfile
 
 from ruamel.yaml import YAML
 from pathlib import Path
@@ -49,7 +51,7 @@ def load_env(path, template_dirs=[]):
     return merge(env, new_env)
 
 
-class SpackConfig(object):
+class GitConfig(object):
     def __init__(self, directory, git_url, git_commit):
         self.directory = directory
         self.git_url = git_url
@@ -57,7 +59,7 @@ class SpackConfig(object):
 
     def init(self):
         if not Path(self.directory).exists():
-            subprocess.call(["git", "clone", "-c", "feature.manyFiles=true", "-n", "--depth=1",  self.git_url, self.directory])
+            subprocess.call(["git", "clone", "-c", "feature.manyFiles=true", "--depth=1",  self.git_url, self.directory])
 
         spack_head = subprocess.check_output(["git", "-C", self.directory, "rev-parse", "HEAD"]).decode().strip()
         if spack_head != self.git_commit:
@@ -81,6 +83,15 @@ class Context(object):
     def system(self):
         return os.environ.get('KESSEL_SYSTEM', default=None)
 
+    @property
+    def permissions(self):
+        return os.environ.get('KESSEL_PERMISSIONS', default="u=rwX,g=rX,o=")
+
+    @property
+    def group(self):
+        grp_name = os.environ.get('KESSEL_GROUP', default=f"{os.environ['USER']}")
+        return grp.getgrnam(grp_name).gr_gid
+
 class KesselConfig(object):
     def __init__(self, config_file, deployment_dir=Path.cwd()):
         with open(config_file, "r") as f:
@@ -89,25 +100,24 @@ class KesselConfig(object):
 
         config_dir = Path(config_file).resolve().parent
 
-        if 'config_dir' in config:
-            self.config_dir = Path(config['config_dir'])
-            self.deployment_dir = config_dir
-        else:
-            self.config_dir = config_dir
-            self.deployment_dir = Path(deployment_dir)
+        self.config_dir = config_dir
+        self.deployment_dir = Path(deployment_dir)
+        self.deployment_config_dir = self.deployment_dir / "config"
 
         self.config_file = self.config_dir / ".kessel.yaml"
         self.deployment_config_file = self.deployment_dir / ".kessel.yaml"
 
         spack_path = self.deployment_dir / "spack"
-        self.spack = SpackConfig(spack_path, config["spack"]["git"], config["spack"]["commit"])
+        spack_packages_path = self.deployment_dir / "spack-packages"
+        self.spack = GitConfig(spack_path, config["spack"]["git"], config["spack"]["commit"])
+        self.spack_packages = GitConfig(spack_packages_path, config["spack-packages"]["git"], config["spack-packages"]["commit"])
 
     def to_dict(self):
         return {
           'kessel' : {
             'version' : self.version,
             'spack'  : self.spack.to_dict(),
-            'config_dir' : str(self.config_dir)
+            'spack-packages'  : self.spack_packages.to_dict(),
           }
         }
 
@@ -144,7 +154,12 @@ class KesselConfig(object):
             yaml.width = 256
             yaml.dump(self.to_dict(), f)
 
+        if self.deployment_config_dir.exists():
+            shutil.rmtree(self.deployment_config_dir)
+        shutil.copytree(self.config_dir / "config", self.deployment_config_dir)
+
         self.spack.init()
+        self.spack_packages.init()
 
         env_glob = (self.env_dir / "**" / "*.yaml").resolve()
         env_templates = glob.glob(str(env_glob), recursive=True)
@@ -183,6 +198,9 @@ class ShellEnvironment(object):
     def set_env_var(self, name, value):
         self.eval(f"export {name}={value}")
 
+    def unset_env_var(self, name):
+        self.eval(f"unset {name}")
+
     def source(self, path):
         self.eval(f"source {path}")
 
@@ -195,7 +213,8 @@ def activate(args, senv):
 
     if deployment_dir.exists():
         senv.set_env_var("SPACK_USER_CACHE_PATH", f"{deployment_dir}/.spack")
-        senv.set_env_var("SPACK_DISABLE_LOCAL_CONFIG", "true")
+        senv.unset_env_var("SPACK_DISABLE_LOCAL_CONFIG")
+        senv.set_env_var("SPACK_USER_CONFIG_PATH", "${KESSEL_CONFIG_DIR}")
         senv.set_env_var("SPACK_SKIP_MODULES", "true")
         senv.set_env_var("KESSEL_DEPLOYMENT", deployment_dir)
         senv.source("${KESSEL_DEPLOYMENT}/spack/share/spack/setup-env.sh")
@@ -217,6 +236,7 @@ def system_activate(args, senv):
         if sys_dir.exists():
             print(f"Activating {args.system}")
             senv.set_env_var("KESSEL_SYSTEM", args.system)
+            senv.set_env_var("SPACK_SYSTEM_CONFIG_PATH", "${KESSEL_CONFIG_DIR}/${KESSEL_SYSTEM}")
 
 def env_list(args, senv):
     ctx = Context()
@@ -241,7 +261,7 @@ def env_activate(args, senv):
 def create_bootstrap_mirror(ctx, senv):
     # create bootstrap mirror
     senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
-    senv.eval(f"spack bootstrap mirror --binary-packages {ctx.deployment_dir}/spack_bootstrap || true")
+    senv.eval(f"spack bootstrap mirror --binary-packages {ctx.deployment_dir}/spack-bootstrap || true")
 
 def concretize_env_for_mirror(name, env_path, senv):
     senv.eval(f"echo \"Concretizing {name}...\"")
@@ -267,7 +287,7 @@ def create_env_mirror(mirror_dir, name, env_path, senv):
         senv.eval(f"cp {env_path}/spack.yaml.original {env_path}/spack.yaml")
 
 def create_system_source_mirror(ctx, senv):
-    mirror_dir = ctx.deployment_dir / "spack_mirror"
+    mirror_dir = ctx.deployment_dir / "spack-mirror"
     env_dir = ctx.deployment_dir / "environments" / ctx.system
     env_glob = (env_dir /  "**" / "*.yaml").resolve()
     envs = sorted(glob.glob(str(env_glob), recursive=True))

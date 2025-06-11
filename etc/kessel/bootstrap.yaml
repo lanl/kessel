@@ -1,9 +1,9 @@
 bootstrap:
   sources:
   - name: local-binaries
-    metadata: ${KESSEL_DEPLOYMENT}/spack_bootstrap/metadata/binaries
+    metadata: ${KESSEL_DEPLOYMENT}/spack-bootstrap/metadata/binaries
   - name: local-source
-    metadata: ${KESSEL_DEPLOYMENT}/spack_bootstrap/metadata/sources
+    metadata: ${KESSEL_DEPLOYMENT}/spack-bootstrap/metadata/sources
   trusted:
     local-source: true
     local-binaries: true
