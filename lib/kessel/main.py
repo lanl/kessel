@@ -191,7 +191,7 @@ def init(args, senv):
     config.init()
 
 def activate(args, senv):
-    deployment_dir = Path(args.path)
+    deployment_dir = Path(args.path).resolve()
 
     if deployment_dir.exists():
         senv.set_env_var("SPACK_USER_CACHE_PATH", f"{deployment_dir}/.spack")
@@ -238,10 +238,10 @@ def env_activate(args, senv):
             print(f"Activating {ctx.system} environment {args.env}")
             senv.eval(f"spack env activate -d {env_dir}")
 
-def create_bootstrap_mirror(deployment_dir, senv):
+def create_bootstrap_mirror(ctx, senv):
     # create bootstrap mirror
     senv.eval("rm -f ${SPACK_ROOT}/etc/spack/linux/compilers.yaml")
-    senv.eval(f"spack bootstrap mirror --binary-packages {deployment_dir}/spack_bootstrap || true")
+    senv.eval(f"spack bootstrap mirror --binary-packages {ctx.deployment_dir}/spack_bootstrap || true")
 
 def concretize_env_for_mirror(name, env_path, senv):
     print(f"Concretizing {name}...")
