@@ -1,17 +1,4 @@
 spack:
-  include:
-   - path: $KESSEL_DEPLOYMENT/config/packages.yaml
-     optional: true
-   - path: $KESSEL_DEPLOYMENT/config/repos.yaml
-     optional: true
-   - path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/compilers.yaml
-     optional: true
-   - path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/packages.yaml
-     optional: true
-   - path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/upstreams.yaml
-     optional: true
-   - path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/mirrors.yaml
-     optional: true
   specs: []
   view: true
   concretizer:

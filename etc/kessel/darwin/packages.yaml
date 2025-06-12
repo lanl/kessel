@@ -1,4 +1,44 @@
 packages:
+  gcc:
+    externals:
+    - spec: gcc@13.2.0 languages:='c,c++,fortran'
+      prefix: /projects/opt/rhel8/x86_64/gcc/13.2.0
+      modules:
+      - gcc/13.2.0
+      extra_attributes:
+        compilers:
+          c: /projects/opt/rhel8/x86_64/gcc/13.2.0/bin/gcc
+          cxx: /projects/opt/rhel8/x86_64/gcc/13.2.0/bin/g++
+          fortran: /projects/opt/rhel8/x86_64/gcc/13.2.0/bin/gfortran
+        flags: {}
+        environment: {}
+        extra_rpaths: []
+    - spec: gcc@13.2.0 languages:=fortran
+      prefix: /projects/opt/rhel8/x86_64/gcc/13.2.0
+      modules:
+      - gcc/13.2.0
+      - clang/17.0.6
+      extra_attributes:
+        compilers:
+          fortran: /projects/opt/rhel8/x86_64/gcc/13.2.0/bin/gfortran
+        flags: {}
+        environment: {}
+        extra_rpaths: []
+  intel-oneapi-compilers:
+    externals:
+    - spec: intel-oneapi-compilers@2024.0.2
+      prefix: /projects/opt/centos8/x86_64/oneAPI/2024.0.0.49564
+      modules:
+      - gcc/12.2.0
+      - intel/2024.0.0
+      extra_attributes:
+        compilers:
+          c: /projects/opt/centos8/x86_64/oneAPI/2024.0.0.49564/compiler/2024.0.0/linux/bin/icx
+          cxx: /projects/opt/centos8/x86_64/oneAPI/2024.0.0.49564/compiler/2024.0.0/linux/bin/icpx
+          fortran: /projects/opt/centos8/x86_64/oneAPI/2024.0.0.49564/compiler/2024.0.0/linux/bin/ifx
+        flags: {}
+        environment: {}
+        extra_rpaths: []
   slurm:
     externals:
     - spec: slurm@24-05-5-1
