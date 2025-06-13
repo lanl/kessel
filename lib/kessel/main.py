@@ -13,6 +13,8 @@ import glob
 import sys
 from pathlib import Path
 
+KESSEL_VERSION="0.0.1"
+
 def merge(envA, envB):
     a = envA['spack']
     for k, b in envB['spack'].items():
@@ -52,20 +54,20 @@ def load_env(path, template_dirs=[]):
 
 
 class GitConfig(object):
-    def __init__(self, directory, git_url, git_commit):
-        self.directory = directory
+    def __init__(self, git_url, git_commit):
         self.git_url = git_url
         self.git_commit = git_commit
 
-    def init(self):
-        if not Path(self.directory).exists():
-            subprocess.call(["git", "clone", "-c", "feature.manyFiles=true", "--depth=1",  self.git_url, self.directory])
+    def checkout(self, directory):
+        if not Path(directory).exists():
+            subprocess.call(["git", "clone", "-c", "feature.manyFiles=true", "--depth=1",  self.git_url, directory])
 
-        spack_head = subprocess.check_output(["git", "-C", self.directory, "rev-parse", "HEAD"]).decode().strip()
+        spack_head = subprocess.check_output(["git", "-C", directory, "rev-parse", "HEAD"]).decode().strip()
         if spack_head != self.git_commit:
-            subprocess.call(["git", "-C", self.directory, "fetch", "--depth=1", "origin", self.git_commit])
-            subprocess.call(["git", "-C", self.directory, "checkout", "FETCH_HEAD"])
-            subprocess.call(["git", "-C", self.directory, "branch", "-q", "-D", "@{-1}"])
+            subprocess.call(["git", "-C", directory, "fetch", "--depth=1", "origin", self.git_commit])
+            subprocess.call(["git", "-C", directory, "checkout", "FETCH_HEAD"])
+            subprocess.call(["git", "-C", directory, "branch", "-q", "-D", "@{-1}"])
+
 
     def to_dict(self):
         return {'git': self.git_url, 'commit': self.git_commit }
@@ -80,67 +82,13 @@ class MirrorConfig(object):
             for e in self.exclude:
                 print(e, file=f)
 
+    def to_dict(self):
+        return {'exclude': self.exclude }
+
 
 class Context(object):
     def __init__(self):
         pass
-
-    @property
-    def deployment_dir(self):
-        deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
-        return Path(deployment_dir) if deployment_dir else None
-
-    @property
-    def system(self):
-        return os.environ.get('KESSEL_SYSTEM', default=None)
-
-    @property
-    def permissions(self):
-        return os.environ.get('KESSEL_PERMISSIONS', default="u=rwX,g=rX,o=")
-
-    @property
-    def group(self):
-        grp_name = os.environ.get('KESSEL_GROUP', default=f"{os.environ['USER']}")
-        return grp.getgrnam(grp_name).gr_gid
-
-class KesselConfig(object):
-    def __init__(self, config_file, deployment_dir=Path.cwd()):
-        with open(config_file, "r") as f:
-            yaml = YAML(typ="safe")
-            config = yaml.load(f)['kessel']
-
-        config_dir = Path(config_file).resolve().parent
-
-        self.config_dir = config_dir
-        self.deployment_dir = Path(deployment_dir)
-        self.deployment_config_dir = self.deployment_dir / "config"
-
-        self.config_file = self.config_dir / ".kessel.yaml"
-        self.deployment_config_file = self.deployment_dir / ".kessel.yaml"
-
-        spack_path = self.deployment_dir / "spack"
-        spack_packages_path = self.deployment_dir / "spack-packages"
-        self.spack = GitConfig(spack_path, config["spack"]["git"], config["spack"]["commit"])
-        self.spack_packages = GitConfig(spack_packages_path, config["spack-packages"]["git"], config["spack-packages"]["commit"])
-
-        self.mirror = MirrorConfig(config.get("mirror", {}))
-
-    def to_dict(self):
-        return {
-          'kessel' : {
-            'version' : self.version,
-            'spack'  : self.spack.to_dict(),
-            'spack-packages'  : self.spack_packages.to_dict(),
-          }
-        }
-
-    @property
-    def version(self):
-        return "0.0.1"
-
-    @property
-    def env_dir(self):
-        return self.config_dir / "environments"
 
     @property
     def kessel_root(self):
@@ -155,42 +103,126 @@ class KesselConfig(object):
             return self.kessel_config_dir / system / "templates"
         return self.kessel_config_dir / "templates"
 
-    def deployment_template_dir(self, system=None):
-        if system:
-            return self.config_dir / "config" / system / "templates"
-        return self.config_dir / "config" / "templates"
+    @property
+    def deployment_dir(self):
+        deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
+        return Path(deployment_dir) if deployment_dir else None
 
-    def init(self):
-        with open(self.deployment_config_file, 'w') as f:
+    @property
+    def system(self):
+        return os.environ.get('KESSEL_SYSTEM', default=None)
+
+    @property
+    def config(self):
+        return KesselConfig(self.deployment_dir / ".kessel.yaml", self.deployment_dir)
+
+    @property
+    def permissions(self):
+        return os.environ.get('KESSEL_PERMISSIONS', default="u=rwX,g=rX,o=")
+
+    @property
+    def group(self):
+        grp_name = os.environ.get('KESSEL_GROUP', default=f"{os.environ['USER']}")
+        return grp.getgrnam(grp_name).gr_gid
+
+
+
+class KesselSourceConfig(object):
+    def __init__(self, config_root):
+        self.config_root = Path(config_root).resolve()
+        self.config_file = self.config_root / ".kessel.yaml"
+
+        with open(self.config_file, "r") as f:
+            yaml = YAML(typ="safe")
+            config = yaml.load(f)['kessel']
+
+        self.mirror = MirrorConfig(config.get("mirror", {}))
+
+        self.spack = GitConfig(config["spack"]["git"], config["spack"]["commit"])
+        self.spack_packages = GitConfig(config["spack-packages"]["git"], config["spack-packages"]["commit"])
+
+    @property
+    def config_dir(self):
+        return self.config_root / "config"
+
+    def template_dir(self, system=None):
+        if system:
+            return self.config_dir / system / "templates"
+        return self.config_dir / "templates"
+
+    @property
+    def env_dir(self):
+        return self.config_root / "environments"
+
+
+class KesselDeployment(object):
+    def __init__(self, deployment_dir=Path.cwd()):
+        self.deployment_dir = Path(deployment_dir)
+
+    @property
+    def config_file(self):
+        return self.deployment_dir / ".kessel.yaml"
+
+    @property
+    def config_dir(self):
+        return self.deployment_dir / "config"
+
+    @property
+    def env_dir(self):
+        return self.deployment_dir / "environments"
+
+    @property
+    def mirror_exclude_file(self):
+        return self.config_dir / "mirror.exclude"
+
+    @property
+    def spack_path(self):
+        return self.deployment_dir / "spack"
+
+    @property
+    def spack_packages_path(self):
+        return self.deployment_dir / "spack-packages"
+
+    def init(self, ctx, source_config):
+        deployment_config = {
+          'kessel' : {
+            'version' : KESSEL_VERSION,
+            'mirror' : source_config.mirror.to_dict(),
+          }
+        }
+
+        with open(self.config_file, 'w') as f:
             yaml = YAML(typ="safe")
             yaml.default_flow_style = False
             yaml.width = 256
-            yaml.dump(self.to_dict(), f)
+            yaml.dump(deployment_config, f)
 
-        if self.deployment_config_dir.exists():
-            shutil.rmtree(self.deployment_config_dir)
-        shutil.copytree(self.config_dir / "config", self.deployment_config_dir)
+        # copy config folder from source_config
+        if self.config_dir.exists():
+            shutil.rmtree(self.config_dir)
+        shutil.copytree(source_config.config_dir, self.config_dir)
 
-        self.spack.init()
-        self.spack_packages.init()
+        # create spack and spack-packages checkouts
+        source_config.spack.checkout(self.spack_path)
+        source_config.spack_packages.checkout(self.spack_packages_path)
 
-        self.mirror.write_exclude_file(self.deployment_config_dir / "mirror.exclude")
+        source_config.mirror.write_exclude_file(self.mirror_exclude_file)
 
-        env_glob = (self.env_dir / "**" / "*.yaml").resolve()
+        env_glob = (source_config.env_dir / "**" / "*.yaml").resolve()
         env_templates = glob.glob(str(env_glob), recursive=True)
 
         for tpl in env_templates:
             path = Path(tpl)
-            relpath = Path(path.relative_to(self.env_dir.resolve()))
+            relpath = Path(path.relative_to(source_config.env_dir.resolve()))
             system = relpath.parts[0]
-            target = self.deployment_dir / "environments" /  relpath.parent / relpath.stem / "spack.yaml"
+            target = self.env_dir /  relpath.parent / relpath.stem / "spack.yaml"
             source = path.parent / path.stem
 
             template_dirs = [
-                self.deployment_template_dir(system),
-                self.deployment_template_dir(),
-                self.kessel_template_dir(system),
-                self.kessel_template_dir()
+                source_config.template_dir(system),
+                source_config.template_dir(),
+                ctx.kessel_template_dir(system),
+                ctx.kessel_template_dir()
             ]
 
             os.makedirs(target.parent, exist_ok=True)
@@ -220,8 +252,10 @@ class ShellEnvironment(object):
         self.eval(f"source {path}")
 
 def init(args, senv):
-    config = KesselConfig(Path(args.config_dir) / ".kessel.yaml")
-    config.init()
+    ctx = Context()
+    source_config = KesselSourceConfig(args.config_dir)
+    deployment = KesselDeployment()
+    deployment.init(ctx, source_config)
 
 def activate(args, senv):
     deployment_dir = Path(args.path).resolve()
