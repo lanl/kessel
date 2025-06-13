@@ -1,0 +1,26 @@
+packages:
+  apple-clang:
+    externals:
+    - spec: apple-clang@17.0.0
+      prefix: /usr
+      extra_attributes:
+        compilers:
+          c: /usr/bin/clang
+          cxx: /usr/bin/clang++
+  openmpi:
+    require:
+      - "@5.0.5 fabrics=ucx %gcc"
+    conflict:
+     - "^mpich"
+  mpich:
+    require:
+     - "@4.2.3 +hydra +slurm +fortran device=ch4 netmod=ucx %gcc"
+    conflict:
+     - "^openmpi"
+  ucx:
+    require:
+     - "@1.17.0 +cma+dc+rc+rdmacm+thread_multiple+ud+verbs+debug %gcc"
+  libfabric:
+    require:
+     - spec: "%gcc"
+    variants: fabrics=verbs,shm,sockets,tcp,udp
