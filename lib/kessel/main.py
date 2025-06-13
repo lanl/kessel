@@ -70,6 +70,17 @@ class GitConfig(object):
     def to_dict(self):
         return {'git': self.git_url, 'commit': self.git_commit }
 
+
+class MirrorConfig(object):
+    def __init__(self, options={}):
+        self.exclude = options.get("exclude", [])
+
+    def write_exclude_file(self, path):
+        with open(path, "w") as f:
+            for e in self.exclude:
+                print(e, file=f)
+
+
 class Context(object):
     def __init__(self):
         pass
@@ -111,6 +122,8 @@ class KesselConfig(object):
         spack_packages_path = self.deployment_dir / "spack-packages"
         self.spack = GitConfig(spack_path, config["spack"]["git"], config["spack"]["commit"])
         self.spack_packages = GitConfig(spack_packages_path, config["spack-packages"]["git"], config["spack-packages"]["commit"])
+
+        self.mirror = MirrorConfig(config.get("mirror", {}))
 
     def to_dict(self):
         return {
@@ -160,6 +173,8 @@ class KesselConfig(object):
 
         self.spack.init()
         self.spack_packages.init()
+
+        self.mirror.write_exclude_file(self.deployment_config_dir / "mirror.exclude")
 
         env_glob = (self.env_dir / "**" / "*.yaml").resolve()
         env_templates = glob.glob(str(env_glob), recursive=True)
@@ -274,21 +289,22 @@ def concretize_env_for_mirror(name, env_path, senv):
     senv.eval(f"spack concretize -f --fresh 2>&1 > {env_path}/.spack-env/concretization.txt || touch {env_path}/.spack-env/failure &")
     senv.eval(f"spack env deactivate")
 
-def create_env_mirror(mirror_dir, name, env_path, senv):
+def create_env_mirror(mirror_dir, mirror_exclude_file, name, env_path, senv):
     failure_file = env_path / ".spack-env" / "failure"
     if failure_file.exists():
         print(f"ERROR: Concretization of {name} failed!")
     else:
         senv.eval(f"echo \"Creating mirror for {name}...\"")
         senv.eval(f"spack env activate -d {env_path}")
-        senv.eval(f"cat {env_path}/.spack-env/concretization.txt")
-        senv.eval(f"spack mirror create -d {mirror_dir} --all --skip-unstable-version")
+        senv.eval(f"spack spec")
+        senv.eval(f"spack mirror create -d {mirror_dir} --all --skip-unstable-version --exclude-file {mirror_exclude_file}")
         senv.eval(f"rm -f {env_path}/spack.lock")
         senv.eval(f"cp {env_path}/spack.yaml.original {env_path}/spack.yaml")
 
 def create_system_source_mirror(ctx, envs, senv):
     mirror_dir = ctx.deployment_dir / "spack-mirror"
     env_dir = ctx.deployment_dir / "environments" / ctx.system
+    mirror_exclude_file = ctx.deployment_dir / "config" / "mirror.exclude"
 
     for e in envs:
         env_path = Path(e).parent
@@ -298,7 +314,7 @@ def create_system_source_mirror(ctx, envs, senv):
 
     for e in envs:
         env_path = Path(e).parent
-        create_env_mirror(mirror_dir, env_path.relative_to(env_dir), env_path, senv)
+        create_env_mirror(mirror_dir, mirror_exclude_file, env_path.relative_to(env_dir), env_path, senv)
 
 def bootstrap_create(args, senv):
     ctx = Context()
