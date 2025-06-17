@@ -2,6 +2,7 @@ import os
 import grp
 import json
 import argparse
+import stat
 import subprocess
 import shutil
 import tempfile
@@ -85,6 +86,21 @@ class MirrorConfig(object):
     def to_dict(self):
         return {'exclude': self.exclude }
 
+def symbolic_to_octal(perm_str, directory=False):
+    perm_bits = {'r': 4, 'w': 2, 'x': 1}
+    perms = {'u': 0, 'g': 0, 'o': 0}
+
+    for clause in perm_str.split(','):
+        who, rights = clause.split('=')
+        bit = 0
+        for char in rights:
+            if char in perm_bits:
+                bit |= perm_bits[char]
+            elif char == 'X' and directory:
+                bit |= perm_bits['x']
+        perms[who] = bit
+
+    return int(f"{perms['u']}{perms['g']}{perms['o']}", 8)
 
 class Context(object):
     def __init__(self):
@@ -117,15 +133,52 @@ class Context(object):
         return KesselConfig(self.deployment_dir / ".kessel.yaml", self.deployment_dir)
 
     @property
-    def permissions(self):
-        return os.environ.get('KESSEL_PERMISSIONS', default="u=rwX,g=rX,o=")
+    def file_permissions(self):
+        return symbolic_to_octal(os.environ.get('KESSEL_PERMISSIONS', default="u=rwX,g=rX,o="), directory=False)
+
+    @property
+    def directory_permissions(self):
+        return symbolic_to_octal(os.environ.get('KESSEL_PERMISSIONS', default="u=rwX,g=rX,o="), directory=True)
 
     @property
     def group(self):
         grp_name = os.environ.get('KESSEL_GROUP', default=f"{os.environ['USER']}")
         return grp.getgrnam(grp_name).gr_gid
 
+    def replicate(self, dest):
+        print("Creating deployment copy...")
+        print(f"  src: {self.deployment_dir}")
+        print(f"  dst: {dest}")
+        cmd = [
+          "rsync", "-a", "--no-p", "--no-g", "--chmod=ugo=rwX",
+          "--exclude='.env'", "--exclude='spack-mirror'", "--exclude='spack-bootstrap'",
+          "--exclude='/spack'", "--exclude='*spack.lock'", "--exclude='*.spack-env*'",
+          f"{self.deployment_dir}/", dest]
+        print(" ".join(cmd))
+        subprocess.run(" ".join(cmd), shell=True)
+        cmd2 = [
+          "rsync", "-a", "--no-p", "--no-g", "--chmod=ugo=rwX",
+          "--include={\"*__pycache__*\",\"*.pyc\"}",
+          "--include=\"etc/spack/**\"",
+          "--include=\"lib/spack/**\"",
+          f"--exclude-from={self.deployment_dir}/spack/.gitignore",
+          f"{self.deployment_dir}/spack/", f"{dest}/spack"]
+        print(" ".join(cmd2))
+        subprocess.run(" ".join(cmd2), shell=True)
 
+    def create_squashfs(self, dest):
+        with tempfile.TemporaryDirectory() as d:
+            if Path(dest).exists():
+                os.remove(dest)
+            self.replicate(d)
+            print(f"Creating squashfs file {dest}...")
+            subprocess.run(["mksquashfs", d, dest, "-comp", "gzip"])
+
+        try:
+          os.chown(dest, -1, self.group)
+          os.chmod(dest, self.file_permissions)
+        except:
+          pass
 
 class KesselSourceConfig(object):
     def __init__(self, config_root):
@@ -369,6 +422,47 @@ def mirror_create(args, senv):
 
         create_system_source_mirror(ctx, envs, senv)
 
+def remove_packages(pkgs, senv):
+    for pkg in pkgs:
+        senv.eval(f"spack uninstall -y --all --dependents {pkg} || true")
+
+def clean(args, senv):
+    ctx = Context()
+    if ctx.deployment_dir:
+        deployment = KesselDeployment(ctx.deployment_dir)
+        remove_packages(pkgs, senv)
+        senv.eval("spack clean -a")
+
+def finalize(args, senv):
+    ctx = Context()
+
+
+    if ctx.deployment_dir:
+        group = ctx.group
+        dperms = ctx.directory_permissions # also applies to executables
+        fperms = ctx.file_permissions
+
+        print("Setting permissions and group...")
+        for dirpath, dirnames, filenames in os.walk(ctx.deployment_dir):
+            for d in [os.path.join(dirpath, x) for x in dirnames]:
+                os.chown(d, -1, group, follow_symlinks=False)
+                os.chmod(d, dperms, follow_symlinks=False)
+
+            for f in [os.path.join(dirpath, x) for x in filenames]:
+                os.chown(f, -1, group, follow_symlinks=False)
+                if os.access(f, os.X_OK):
+                    os.chmod(f, dperms, follow_symlinks=False)
+                else:
+                    os.chmod(f, fperms, follow_symlinks=False)
+
+        spack_db_dir = ctx.deployment_dir / "spack" / "opt" / "spack" / ".spack-db"
+        mode = os.stat(spack_db_dir).st_mode
+        mode |= stat.S_ISGID
+        os.chmod(spack_db_dir, mode)
+
+        ctx.create_squashfs(ctx.deployment_dir / ".replicate.sqfs")
+
+
 def main():
     senv = ShellEnvironment()
     parser = argparse.ArgumentParser(prog='kessel')
@@ -408,6 +502,12 @@ def main():
     mcgroup.add_argument("-a", "--all", action="store_true")
     mcgroup.add_argument("env", nargs='?', default=None)
     mirror_create_cmd.set_defaults(func=mirror_create)
+
+    clean_cmd = subparsers.add_parser('clean')
+    clean_cmd.set_defaults(func=clean)
+
+    finalize_cmd = subparsers.add_parser('finalize')
+    finalize_cmd.set_defaults(func=finalize)
 
     args = parser.parse_args()
     args.func(args, senv)
