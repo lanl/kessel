@@ -73,6 +73,13 @@ class GitConfig(object):
     def to_dict(self):
         return {'git': self.git_url, 'commit': self.git_commit }
 
+class BuildConfig(object):
+    def __init__(self, options={}):
+        self.exclude = options.get("exclude", [])
+
+    def to_dict(self):
+        return {'exclude': self.exclude }
+
 
 class MirrorConfig(object):
     def __init__(self, options={}):
@@ -130,7 +137,7 @@ class Context(object):
 
     @property
     def config(self):
-        return KesselConfig(self.deployment_dir / ".kessel.yaml", self.deployment_dir)
+        return KesselConfig(self.deployment_dir / ".kessel.yaml")
 
     @property
     def file_permissions(self):
@@ -180,6 +187,17 @@ class Context(object):
         except:
           pass
 
+class KesselConfig(object):
+    def __init__(self, config_file):
+        self.config_file = config_file
+
+        with open(self.config_file, "r") as f:
+            yaml = YAML(typ="safe")
+            config = yaml.load(f)['kessel']
+
+        self.mirror = MirrorConfig(config.get("mirror", {}))
+        self.build = BuildConfig(config.get("build", {}))
+
 class KesselSourceConfig(object):
     def __init__(self, config_root):
         self.config_root = Path(config_root).resolve()
@@ -190,6 +208,7 @@ class KesselSourceConfig(object):
             config = yaml.load(f)['kessel']
 
         self.mirror = MirrorConfig(config.get("mirror", {}))
+        self.build = BuildConfig(config.get("build", {}))
 
         self.spack = GitConfig(config["spack"]["git"], config["spack"]["commit"])
         self.spack_packages = GitConfig(config["spack-packages"]["git"], config["spack-packages"]["commit"])
@@ -240,6 +259,7 @@ class KesselDeployment(object):
         deployment_config = {
           'kessel' : {
             'version' : KESSEL_VERSION,
+            'build' : source_config.build.to_dict(),
             'mirror' : source_config.mirror.to_dict(),
           }
         }
@@ -429,8 +449,8 @@ def remove_packages(pkgs, senv):
 def clean(args, senv):
     ctx = Context()
     if ctx.deployment_dir:
-        deployment = KesselDeployment(ctx.deployment_dir)
-        remove_packages(pkgs, senv)
+        config = ctx.config
+        remove_packages(config.build.exclude, senv)
         senv.eval("spack clean -a")
 
 def finalize(args, senv):
