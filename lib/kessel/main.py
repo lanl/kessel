@@ -382,8 +382,9 @@ def env_activate(args, senv):
 
 def create_bootstrap_mirror(ctx, senv):
     # create bootstrap mirror
-    senv.eval(f"spack bootstrap status")
+    senv.eval(f"spack bootstrap status || true")
     senv.eval(f"spack bootstrap now")
+    senv.eval(f"spack bootstrap status")
     senv.eval(f"spack bootstrap mirror --binary-packages {ctx.deployment_dir}/spack-bootstrap || true")
 
 def concretize_env_for_mirror(name, env_path, senv):
