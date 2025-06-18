@@ -617,6 +617,8 @@ def main():
     finalize_cmd.set_defaults(func=finalize)
 
     run_cmd = subparsers.add_parser('run')
+    run_cmd.add_argument('system')
+    run_cmd.add_argument('env')
     run_cmd.set_defaults(func=run)
 
     args = parser.parse_args()
