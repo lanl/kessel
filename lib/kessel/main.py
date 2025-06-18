@@ -466,20 +466,21 @@ def finalize(args, senv):
         print("Setting permissions and group...")
         for dirpath, dirnames, filenames in os.walk(ctx.deployment_dir):
             for d in [os.path.join(dirpath, x) for x in dirnames]:
-                os.chown(d, -1, group, follow_symlinks=False)
-                os.chmod(d, dperms, follow_symlinks=False)
+                os.chown(d, -1, group)
+                os.chmod(d, dperms)
 
             for f in [os.path.join(dirpath, x) for x in filenames]:
                 os.chown(f, -1, group, follow_symlinks=False)
                 if os.access(f, os.X_OK):
-                    os.chmod(f, dperms, follow_symlinks=False)
+                    os.chmod(f, dperms)
                 else:
-                    os.chmod(f, fperms, follow_symlinks=False)
+                    os.chmod(f, fperms)
 
         spack_db_dir = ctx.deployment_dir / "spack" / "opt" / "spack" / ".spack-db"
-        mode = os.stat(spack_db_dir).st_mode
-        mode |= stat.S_ISGID
-        os.chmod(spack_db_dir, mode)
+        if spack_db_dir.exists():
+            mode = os.stat(spack_db_dir).st_mode
+            mode |= stat.S_ISGID
+            os.chmod(spack_db_dir, mode)
 
         ctx.create_squashfs(ctx.deployment_dir / ".replicate.sqfs")
 
