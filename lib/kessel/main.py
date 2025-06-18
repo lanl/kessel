@@ -16,6 +16,16 @@ from pathlib import Path
 
 KESSEL_VERSION="0.0.1"
 
+PROGRESS_STEP_COMPLETE = "⬤"
+PROGRESS_STEP_PENDING = "○"
+PROGRESS_BAR_PENDING = "▭"
+PROGRESS_BAR_COMPLETE = "▬"
+
+COLOR_BLUE='\033[1;34m'
+COLOR_MAGENTA='\033[1;35m'
+COLOR_CYAN='\033[1;36m'
+COLOR_PLAIN='\033[0m'
+
 def merge(envA, envB):
     a = envA['spack']
     for k, b in envB['spack'].items():
@@ -324,6 +334,24 @@ class ShellEnvironment(object):
     def source(self, path):
         self.eval(f"source {path}")
 
+    def echo(self, str=""):
+        for line in str.splitlines():
+            self.eval(f"echo '{line}'")
+
+    def section_start(self, section, msg, collapsed=False):
+        if "CI" in os.environ:
+            if collapsed:
+                section += "[collapsed=true]"
+            self.eval(f"echo -e \"\033[0Ksection_start:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
+        else:
+            self.eval(f"echo -e \"{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
+
+    def section_end(self, section):
+        if "CI" in os.environ:
+            self.eval(f"echo -e \"\033[0Ksection_start:$(date +%s):{section}\r\033[0K\"")
+        else:
+            self.echo()
+
 def init(args, senv):
     ctx = Context()
     source_config = KesselSourceConfig(args.config_dir)
@@ -457,7 +485,6 @@ def clean(args, senv):
 def finalize(args, senv):
     ctx = Context()
 
-
     if ctx.deployment_dir:
         group = ctx.group
         dperms = ctx.directory_permissions # also applies to executables
@@ -484,8 +511,66 @@ def finalize(args, senv):
 
         ctx.create_squashfs(ctx.deployment_dir / ".replicate.sqfs")
 
+def status(step=None):
+    steps = [
+        "prepare_spack",
+        "prepare_env",
+        "spack_cmake_configure",
+        "cmake_build",
+        "cmake_test",
+        "cmake_install",
+        "cmake_submit",
+    ]
+    step_size = [0, 10, 11, 9, 7, 6, 7]
+
+    s = "\n"
+    s += " "*6
+    completed = steps.index(step) if step in steps else -1
+    for i, _ in enumerate(steps):
+        if i <= completed:
+            s += PROGRESS_BAR_COMPLETE * step_size[i]
+            s += PROGRESS_STEP_COMPLETE
+        else:
+            s += PROGRESS_BAR_PENDING * step_size[i]
+            s += PROGRESS_STEP_PENDING
+    s += "\n\n"
+
+    s += "   Prepare    Prepare    Configure   Build   Test  Install  Submit\n"
+    s += "    Spack   Environment\n\n"
+    return s
+
+def run(args, senv):
+    senv.section_start("prepare_spack", "Prepare Spack", collapsed=True)
+    senv.echo(status('prepare_spack'))
+    senv.section_end("prepare_spack")
+
+    senv.section_start("prepare_env", "Create environment", collapsed=True)
+    senv.echo(status('prepare_env'))
+    senv.section_end("prepare_env")
+
+
+    senv.section_start("spack_cmake_configure", "Initial Spack CMake Configure", collapsed=True)
+    senv.echo(status('configure'))
+    senv.section_end("configure")
+
+    senv.section_start("cmake_build", "CMake build")
+    senv.echo(status('cmake_build'))
+    senv.section_end("cmake_build")
+
+    senv.section_start("cmake_test", "Tests")
+    senv.echo(status('cmake_test'))
+    senv.section_end("cmake_test")
+
+    senv.section_start("cmake_install", "Install")
+    senv.echo(status('cmake_install'))
+    senv.section_end("cmake_install")
+
+    senv.section_start("cmake_submit", "Submit results to CDash")
+    senv.echo(status('cmake_submit'))
+    senv.section_end("cmake_submit")
 
 def main():
+    status()
     senv = ShellEnvironment()
     parser = argparse.ArgumentParser(prog='kessel')
     subparsers = parser.add_subparsers()
@@ -530,6 +615,9 @@ def main():
 
     finalize_cmd = subparsers.add_parser('finalize')
     finalize_cmd.set_defaults(func=finalize)
+
+    run_cmd = subparsers.add_parser('run')
+    run_cmd.set_defaults(func=run)
 
     args = parser.parse_args()
     args.func(args, senv)
