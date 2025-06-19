@@ -13,17 +13,6 @@ packages:
         flags: {}
         environment: {}
         extra_rpaths: []
-    - spec: gcc@13.2.0 languages:=fortran
-      prefix: /projects/opt/rhel8/x86_64/gcc/13.2.0
-      modules:
-      - gcc/13.2.0
-      - clang/17.0.6
-      extra_attributes:
-        compilers:
-          fortran: /projects/opt/rhel8/x86_64/gcc/13.2.0/bin/gfortran
-        flags: {}
-        environment: {}
-        extra_rpaths: []
   intel-oneapi-compilers:
     externals:
     - spec: intel-oneapi-compilers@2024.0.2
