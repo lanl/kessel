@@ -37,9 +37,18 @@ packages:
     externals:
       - spec: llvm@13.0.0
         prefix: /projects/opt/centos8/x86_64/clang/13.0.0
+        extra_attributes:
+          compilers:
+            c: clang
+            cxx: clang++
       - spec: llvm@17.0.6 +clang
         modules:
+        - gcc/13.2.0
         - clang/17.0.6
+        extra_attributes:
+          compilers:
+            c: clang
+            cxx: clang++
   openmpi:
     require:
       - "@5.0.5 fabrics=ucx schedulers=slurm %gcc"
