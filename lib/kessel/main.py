@@ -120,8 +120,8 @@ def symbolic_to_octal(perm_str, directory=False):
     return int(f"{perms['u']}{perms['g']}{perms['o']}", 8)
 
 class Context(object):
-    def __init__(self):
-        pass
+    def __init__(self, senv):
+        self.senv = senv
 
     @property
     def kessel_root(self):
@@ -141,9 +141,35 @@ class Context(object):
         deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
         return Path(deployment_dir) if deployment_dir else None
 
+    @deployment_dir.setter
+    def deployment_dir(self, value):
+        d = Path(value).resolve()
+        config = KesselConfig(d / ".kessel.yaml")
+        self.senv.echo(f"Activating deployment at {d}")
+        self.senv.set_env_var("SPACK_USER_CACHE_PATH", f"{d}/.spack")
+        self.senv.unset_env_var("SPACK_DISABLE_LOCAL_CONFIG")
+        self.senv.set_env_var("SPACK_USER_CONFIG_PATH", "${KESSEL_CONFIG_DIR}")
+        self.senv.set_env_var("SPACK_SKIP_MODULES", "true")
+        self.senv.set_env_var("KESSEL_DEPLOYMENT", d)
+        self.senv.set_env_var("KESSEL_PARENT_DEPLOYMENT", config.parent if config.parent else d)
+        self.senv.source("${KESSEL_DEPLOYMENT}/spack/share/spack/setup-env.sh")
+
     @property
     def system(self):
         return os.environ.get('KESSEL_SYSTEM', default=None)
+
+    @system.setter
+    def system(self, value):
+        if self.deployment_dir:
+            sys_dir = self.deployment_dir / "environments" / value
+            if sys_dir.exists():
+                self.senv.echo(f"Activating {value}")
+                self.senv.set_env_var("KESSEL_SYSTEM", value)
+                self.senv.set_env_var("SPACK_SYSTEM_CONFIG_PATH", "${KESSEL_CONFIG_DIR}/${KESSEL_SYSTEM}")
+            else:
+                raise Exception(f"Unknown system '{value}'!")
+        else:
+            raise Exception("No active deployment!")
 
     @property
     def config(self):
@@ -161,6 +187,10 @@ class Context(object):
     def group(self):
         grp_name = os.environ.get('KESSEL_GROUP', default=f"{os.environ['USER']}")
         return grp.getgrnam(grp_name).gr_gid
+
+    @property
+    def replicate_sqfs(self):
+        return self.deployment_dir / ".replicate.sqfs"
 
     def replicate(self, dest):
         print("Creating deployment copy...")
@@ -183,6 +213,23 @@ class Context(object):
         print(" ".join(cmd2))
         subprocess.run(" ".join(cmd2), shell=True)
 
+        replica_config = {
+          'kessel' : {
+            'version' : KESSEL_VERSION,
+            'build' : self.config.build.to_dict(),
+            'mirror' : self.config.mirror.to_dict(),
+            'parent' : str(self.deployment_dir),
+          }
+        }
+
+        replica_config_file = Path(dest) / ".kessel.yaml"
+
+        with open(replica_config_file, 'w') as f:
+            yaml = YAML(typ="safe")
+            yaml.default_flow_style = False
+            yaml.width = 256
+            yaml.dump(replica_config, f)
+
     def create_squashfs(self, dest):
         with tempfile.TemporaryDirectory() as d:
             if Path(dest).exists():
@@ -197,6 +244,11 @@ class Context(object):
         except:
           pass
 
+    def create_ci_deployment(self):
+        ci_deployment_dir = f"{os.environ['TMPDIR']}/{os.environ['USER']}-ci-env"
+        subprocess.run(["unsquashfs", "-d", ci_deployment_dir, self.replicate_sqfs])
+        return ci_deployment_dir
+
 class KesselConfig(object):
     def __init__(self, config_file):
         self.config_file = config_file
@@ -207,6 +259,7 @@ class KesselConfig(object):
 
         self.mirror = MirrorConfig(config.get("mirror", {}))
         self.build = BuildConfig(config.get("build", {}))
+        self.parent = config.get("parent", None)
 
 class KesselSourceConfig(object):
     def __init__(self, config_root):
@@ -338,39 +391,49 @@ class ShellEnvironment(object):
         for line in str.splitlines():
             self.eval(f"echo '{line}'")
 
-    def section_start(self, section, msg, collapsed=False):
+    def section_start(self, section, msg, collapsed=False, passthrough=False):
+        self.set_env_var("KESSEL_RUN_STATE", section)
         if "CI" in os.environ:
             if collapsed:
                 section += "[collapsed=true]"
-            self.eval(f"echo -e \"\033[0Ksection_start:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
+            if passthrough:
+                print(f"\033[0Ksection_start:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}")
+            else:
+                self.eval(f"echo -e \"\033[0Ksection_start:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
         else:
-            self.eval(f"echo -e \"{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
+            if passthrough:
+                print(f"{COLOR_CYAN}{msg}{COLOR_PLAIN}")
+            else:
+                self.eval(f"echo -e \"{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
 
-    def section_end(self, section):
+    def section_end(self, section, passthrough=False):
         if "CI" in os.environ:
-            self.eval(f"echo -e \"\033[0Ksection_start:$(date +%s):{section}\r\033[0K\"")
+            if passthrough:
+                print(f"\033[0Ksection_start:$(date +%s):{section}\r\033[0K")
+            else:
+                self.eval(f"echo -e \"\033[0Ksection_start:$(date +%s):{section}\r\033[0K\"")
         else:
-            self.echo()
+            if passthrough:
+                print()
+            else:
+                self.echo()
 
 def init(args, senv):
-    ctx = Context()
+    ctx = Context(senv)
     source_config = KesselSourceConfig(args.config_dir)
     deployment = KesselDeployment()
     deployment.init(ctx, source_config)
 
 def activate(args, senv):
-    deployment_dir = Path(args.path).resolve()
-
+    ctx = Context(senv)
+    deployment_dir = Path(args.path).resolve() 
     if deployment_dir.exists():
-        senv.set_env_var("SPACK_USER_CACHE_PATH", f"{deployment_dir}/.spack")
-        senv.unset_env_var("SPACK_DISABLE_LOCAL_CONFIG")
-        senv.set_env_var("SPACK_USER_CONFIG_PATH", "${KESSEL_CONFIG_DIR}")
-        senv.set_env_var("SPACK_SKIP_MODULES", "true")
-        senv.set_env_var("KESSEL_DEPLOYMENT", deployment_dir)
-        senv.source("${KESSEL_DEPLOYMENT}/spack/share/spack/setup-env.sh")
+        ctx.deployment_dir = deployment_dir
+    else:
+        raise Exception(f"Deployment at '{deployment_dir} does not exist!")
 
 def system_list(args, senv):
-    ctx = Context()
+    ctx = Context(senv)
 
     if ctx.deployment_dir:
         environments_dir = ctx.deployment_dir / "environments"
@@ -379,17 +442,11 @@ def system_list(args, senv):
             print(d)
 
 def system_activate(args, senv):
-    ctx = Context()
-
-    if ctx.deployment_dir:
-        sys_dir = ctx.deployment_dir / "environments" / args.system
-        if sys_dir.exists():
-            print(f"Activating {args.system}")
-            senv.set_env_var("KESSEL_SYSTEM", args.system)
-            senv.set_env_var("SPACK_SYSTEM_CONFIG_PATH", "${KESSEL_CONFIG_DIR}/${KESSEL_SYSTEM}")
+    ctx = Context(senv)
+    ctx.system = args.system
 
 def env_list(args, senv):
-    ctx = Context()
+    ctx = Context(senv)
 
     if ctx.deployment_dir and ctx.system:
         env_dir = ctx.deployment_dir / "environments" / ctx.system
@@ -400,7 +457,7 @@ def env_list(args, senv):
             print(Path(e).relative_to(env_dir).parent)
 
 def env_activate(args, senv):
-    ctx = Context()
+    ctx = Context(senv)
 
     if ctx.deployment_dir and ctx.system:
         env_dir = ctx.deployment_dir / "environments" / ctx.system / args.env
@@ -453,13 +510,13 @@ def create_system_source_mirror(ctx, envs, senv):
         create_env_mirror(mirror_dir, mirror_exclude_file, env_path.relative_to(env_dir), env_path, senv)
 
 def bootstrap_create(args, senv):
-    ctx = Context()
+    ctx = Context(senv)
 
     if ctx.deployment_dir and ctx.system:
         create_bootstrap_mirror(ctx, senv)
 
 def mirror_create(args, senv):
-    ctx = Context()
+    ctx = Context(senv)
 
     if ctx.deployment_dir and ctx.system:
         env_dir = ctx.deployment_dir / "environments" / ctx.system
@@ -476,14 +533,14 @@ def remove_packages(pkgs, senv):
         senv.eval(f"spack uninstall -y --all --dependents {pkg} || true")
 
 def clean(args, senv):
-    ctx = Context()
+    ctx = Context(senv)
     if ctx.deployment_dir:
         config = ctx.config
         remove_packages(config.build.exclude, senv)
         senv.eval("spack clean -a")
 
 def finalize(args, senv):
-    ctx = Context()
+    ctx = Context(senv)
 
     if ctx.deployment_dir:
         group = ctx.group
@@ -539,35 +596,57 @@ def status(step=None):
     s += "    Spack   Environment\n\n"
     return s
 
-def run(args, senv):
-    senv.section_start("prepare_spack", "Prepare Spack", collapsed=True)
-    senv.echo(status('prepare_spack'))
-    senv.section_end("prepare_spack")
+def prepare_spack(ctx, senv):
+    senv.section_start("prepare_spack", "Prepare Spack", collapsed=True, passthrough=True)
+    print(status('prepare_spack'))
+    os.umask(0o007)
+    senv.eval("umask 0007")
+    if ctx.system == "local":
+        senv.echo("Using Spack install at ${SPACK_ROOT}")
+    else:
+        ctx.deployment_dir = ctx.create_ci_deployment()
+    senv.section_end("prepare_spack", passthrough=True)
 
+def prepare_env(ctx, senv):
     senv.section_start("prepare_env", "Create environment", collapsed=True)
     senv.echo(status('prepare_env'))
     senv.section_end("prepare_env")
 
-
+def spack_cmake_configure(ctx, senv):
     senv.section_start("spack_cmake_configure", "Initial Spack CMake Configure", collapsed=True)
     senv.echo(status('spack_cmake_configure'))
     senv.section_end("spack_cmake_configure")
 
+def cmake_build(ctx, senv):
     senv.section_start("cmake_build", "CMake build")
     senv.echo(status('cmake_build'))
     senv.section_end("cmake_build")
 
+def cmake_test(ctx, senv):
     senv.section_start("cmake_test", "Tests")
     senv.echo(status('cmake_test'))
     senv.section_end("cmake_test")
 
+def cmake_install(ctx, senv):
     senv.section_start("cmake_install", "Install")
     senv.echo(status('cmake_install'))
     senv.section_end("cmake_install")
 
+def cmake_submit(ctx, senv):
     senv.section_start("cmake_submit", "Submit results to CDash")
     senv.echo(status('cmake_submit'))
     senv.section_end("cmake_submit")
+
+def run(args, senv):
+    ctx = Context(senv)
+    senv.unset_env_var("KESSEL_RUN_STATE")
+    prepare_spack(ctx, senv)
+    prepare_env(ctx, senv)
+    spack_cmake_configure(ctx, senv)
+    cmake_build(ctx, senv)
+    cmake_test(ctx, senv)
+    cmake_install(ctx, senv)
+    cmake_submit(ctx, senv)
 
 def main():
     status()

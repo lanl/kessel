@@ -1,0 +1,5 @@
+upstreams:
+  upstream:
+    install_tree: $KESSEL_PARENT_DEPLOYMENT/spack/opt/spack
+mirrors:
+  upstream: $KESSEL_PARENT_DEPLOYMENT/spack-mirror

@@ -1,0 +1,3 @@
+include:
+  - when: env['KESSEL_DEPLOYMENT'] != env['KESSEL_PARENT_DEPLOYMENT']
+    path: parent.yaml
