@@ -5,6 +5,12 @@ spack:
       root: .spack-env/view
       exclude: ['gcc-runtime']
   packages:
-    all:
+    c:
       prefer:
         - '%clang'
+    cxx:
+      prefer:
+        - '%clang'
+    fortran:
+      prefer:
+        - '%gcc'
