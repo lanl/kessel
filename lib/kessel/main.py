@@ -124,6 +124,22 @@ class Context(object):
         self.senv = senv
 
     @property
+    def build_dir(self):
+        return Path(os.environ.get("BUILD_DIR", Path.cwd() / "build"))
+
+    @property
+    def source_dir(self):
+        return Path(os.environ.get("SOURCE_DIR", Path.cwd()))
+
+    @property
+    def project(self):
+        return os.environ.["PROJECT"]
+
+    @property
+    def default_branch(self):
+        return os.environ.get("PROJECT_DEFAULT_BRANCH", "main")
+
+    @property
     def kessel_root(self):
         return Path(os.environ["KESSEL_ROOT"])
 
@@ -426,7 +442,7 @@ def init(args, senv):
 
 def activate(args, senv):
     ctx = Context(senv)
-    deployment_dir = Path(args.path).resolve() 
+    deployment_dir = Path(args.path).resolve()
     if deployment_dir.exists():
         ctx.deployment_dir = deployment_dir
     else:
@@ -607,14 +623,32 @@ def prepare_spack(ctx, senv):
         ctx.deployment_dir = ctx.create_ci_deployment()
     senv.section_end("prepare_spack", passthrough=True)
 
-def prepare_env(ctx, senv):
+def prepare_env(ctx, senv, system, env):
     senv.section_start("prepare_env", "Create environment", collapsed=True)
     senv.echo(status('prepare_env'))
+
+    ctx.system = system
+
+    # TODO local system, which will create a new Spack env and activate it
+    # TODO custom-spec, which uses custom/spack.yaml
+    ctx.environment = env
+
+    if os.path.exists("spack-repo"):
+        senv.eval(f"spack repo add {ctx.source_dir}/spack-repo")
+
+    senv.eval(f"spack develop -b {ctx.build_dir} -p {ctx.source_dir} --no-clone {ctx.project}@{ctx.default_branch}")
+
+    # TODO custom-spec support
+
+    # ignore first concretization output due to Spack bug https://github.com/spack/spack/issues/49326
+    senv.eval("spack concretize -f 2> /dev/null > /dev/null || true")
+    senv.eval("spack install --include-build-deps --only dependencies")
     senv.section_end("prepare_env")
 
 def spack_cmake_configure(ctx, senv):
     senv.section_start("spack_cmake_configure", "Initial Spack CMake Configure", collapsed=True)
     senv.echo(status('spack_cmake_configure'))
+    senv.eval(f"spack install --test root --include-build-deps -u cmake -v {ctx.project}")
     senv.section_end("spack_cmake_configure")
 
 def cmake_build(ctx, senv):
@@ -641,7 +675,7 @@ def run(args, senv):
     ctx = Context(senv)
     senv.unset_env_var("KESSEL_RUN_STATE")
     prepare_spack(ctx, senv)
-    prepare_env(ctx, senv)
+    prepare_env(ctx, senv, args.system, args.env)
     spack_cmake_configure(ctx, senv)
     cmake_build(ctx, senv)
     cmake_test(ctx, senv)
