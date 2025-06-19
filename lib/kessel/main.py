@@ -550,8 +550,8 @@ def run(args, senv):
 
 
     senv.section_start("spack_cmake_configure", "Initial Spack CMake Configure", collapsed=True)
-    senv.echo(status('configure'))
-    senv.section_end("configure")
+    senv.echo(status('spack_cmake_configure'))
+    senv.section_end("spack_cmake_configure")
 
     senv.section_start("cmake_build", "CMake build")
     senv.echo(status('cmake_build'))
