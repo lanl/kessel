@@ -438,14 +438,10 @@ class ShellEnvironment(object):
     def _section(self, marker, section, passthrough=False, msg=""):
         if "CI" in os.environ:
             if passthrough:
-                print(f"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K")
+                print(f"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}")
             else:
-                self.eval(f"echo -e \"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K\"")
+                self.eval(f"echo -e \"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
         else:
-            if passthrough:
-                print()
-            else:
-                self.echo()
             if passthrough:
                 print(f"{COLOR_CYAN}{msg}{COLOR_PLAIN}")
             else:
