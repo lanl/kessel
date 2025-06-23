@@ -133,7 +133,7 @@ class Context(object):
 
     @property
     def project(self):
-        return os.environ.["PROJECT"]
+        return os.environ["PROJECT"]
 
     @property
     def default_branch(self):
