@@ -657,8 +657,8 @@ def prepare_env(ctx, senv, system, env):
     # TODO custom-spec, which uses custom/spack.yaml
     ctx.environment = env
 
-    if os.path.exists("spack_repo"):
-        senv.eval(f"spack repo add {ctx.source_dir}/spack_repo")
+    if os.path.exists(f"spack_repo/{ctx.project}"):
+        senv.eval(f"spack repo add {ctx.source_dir}/spack_repo/{ctx.project}")
 
     senv.eval(f"spack develop -b {ctx.build_dir} -p {ctx.source_dir} --no-clone {ctx.project}@{ctx.default_branch}")
 
