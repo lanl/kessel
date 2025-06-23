@@ -35,12 +35,12 @@ packages:
     buildable: false
   llvm:
     externals:
-      - spec: llvm@13.0.0
+      - spec: llvm@13.0.0 +clang
         prefix: /projects/opt/centos8/x86_64/clang/13.0.0
         extra_attributes:
           compilers:
-            c: clang
-            cxx: clang++
+            c: /projects/opt/centos8/x86_64/clang/13.0.0/bin/clang
+            cxx: /projects/opt/centos8/x86_64/clang/13.0.0/bin/clang++
       - spec: llvm@17.0.6 +clang
         modules:
         - gcc/13.2.0
