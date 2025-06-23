@@ -446,12 +446,12 @@ class ShellEnvironment(object):
     def _section(self, marker, section, passthrough=False, msg=""):
         if "CI" in os.environ:
             if passthrough:
-                print(f"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}")
+                print(f"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}", flush=True)
             else:
                 self.eval(f"echo -e \"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
         else:
             if passthrough:
-                print(f"{COLOR_CYAN}{msg}{COLOR_PLAIN}")
+                print(f"{COLOR_CYAN}{msg}{COLOR_PLAIN}", flush=True)
             else:
                 self.eval(f"echo -e \"{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
 
@@ -642,7 +642,7 @@ def status(step=None):
 
 def prepare_spack(ctx, senv):
     senv.section_start("prepare_spack", "Prepare Spack", collapsed=True, passthrough=True)
-    print(status('prepare_spack'))
+    print(status('prepare_spack'), flush=True)
     os.umask(0o007)
     senv.eval("umask 0007")
     if ctx.system == "local":
