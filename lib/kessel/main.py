@@ -421,9 +421,12 @@ class ShellEnvironment(object):
 
     def set_env_var(self, name, value):
         self.eval(f"export {name}={value}")
+        os.environ[name] = str(value)
 
     def unset_env_var(self, name):
         self.eval(f"unset {name}")
+        if name in os.environ:
+            del os.environ[name]
 
     def source(self, path):
         self.eval(f"source {path}")
