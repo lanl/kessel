@@ -128,6 +128,14 @@ class Context(object):
         return Path(os.environ.get("BUILD_DIR", Path.cwd() / "build"))
 
     @property
+    def install_dir(self):
+        return Path(os.environ.get("INSTALL_DIR", self.build_Dir / "install"))
+
+    @property
+    def build_env(self):
+        return self.build_dir / "build_env.sh"
+
+    @property
     def source_dir(self):
         return Path(os.environ.get("SOURCE_DIR", Path.cwd()))
 
@@ -669,21 +677,32 @@ def spack_cmake_configure(ctx, senv):
     senv.section_start("spack_cmake_configure", "Initial Spack CMake Configure", collapsed=True)
     senv.echo(status('spack_cmake_configure'))
     senv.eval(f"spack install --test root --include-build-deps -u cmake -v {ctx.project}")
+
+    senv.eval(f"spack build-env --dump {ctx.build_env}.tmp {ctx.project}")
+    senv.eval(f"grep -v '^SLURM' {ctx.build_env}.tmp > {ctx.build_env}")
+    senv.eval(f"rm {ctx.build_env}.tmp")
+
+    # silently change Spack defaults
+    senv.eval("(source {ctx.build_env}; cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX={ctx.install_dir} {ctx.build_dir} 2> /dev/null > /dev/null )")
+
     senv.section_end("spack_cmake_configure")
 
 def cmake_build(ctx, senv):
     senv.section_start("cmake_build", "CMake build")
     senv.echo(status('cmake_build'))
+    senv.eval(f"(source {ctx.build_env}; cmake --build f{ctx.build_dir} --parallel)")
     senv.section_end("cmake_build")
 
 def cmake_test(ctx, senv):
     senv.section_start("cmake_test", "Tests")
     senv.echo(status('cmake_test'))
+    senv.eval(f"(source {ctx.build_env}; export CTEST_OUTPUT_ON_FAILURE=1; ctest --test-dir {ctx.build_dir} --output-junit tests.xml )")
     senv.section_end("cmake_test")
 
 def cmake_install(ctx, senv):
     senv.section_start("cmake_install", "Install")
     senv.echo(status('cmake_install'))
+    senv.eval(f"(source {ctx.build_env}; cmake --build {ctx.build_dir} --target install )")
     senv.section_end("cmake_install")
 
 def cmake_submit(ctx, senv):
