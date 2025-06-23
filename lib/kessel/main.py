@@ -188,6 +188,31 @@ class Context(object):
             raise Exception("No active deployment!")
 
     @property
+    def environment(self):
+        spack_env = os.environ.get('SPACK_ENV', default=None)
+        if spack_env:
+            env_dir = Path(spack_env).resolve().parent
+            sys_dir = self.deployment_dir / "environments" / self.system
+            return env_dir.relative_to(sys_dir)
+        return None
+
+    @environment.setter
+    def environment(self, value):
+        if self.deployment_dir:
+            if self.system:
+                env_dir = self.deployment_dir / "environments" / self.system / value
+                if env_dir.exists():
+                    self.senv.echo(f"Activating {self.system} environment {value}")
+                    self.senv.eval(f"spack env activate -d {env_dir}")
+                else:
+                    raise Exception(f"Unknown environment '{value}' for system '{self.system}'!")
+            else:
+                raise Exception("No active system!")
+        else:
+            raise Exception("No active deployment!")
+
+
+    @property
     def config(self):
         return KesselConfig(self.deployment_dir / ".kessel.yaml")
 
@@ -475,12 +500,7 @@ def env_list(args, senv):
 
 def env_activate(args, senv):
     ctx = Context(senv)
-
-    if ctx.deployment_dir and ctx.system:
-        env_dir = ctx.deployment_dir / "environments" / ctx.system / args.env
-        if env_dir.exists():
-            print(f"Activating {ctx.system} environment {args.env}")
-            senv.eval(f"spack env activate -d {env_dir}")
+    ctx.environment = args.env
 
 def create_bootstrap_mirror(ctx, senv):
     # create bootstrap mirror
