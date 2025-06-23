@@ -407,32 +407,33 @@ class ShellEnvironment(object):
         for line in str.splitlines():
             self.eval(f"echo '{line}'")
 
-    def section_start(self, section, msg, collapsed=False, passthrough=False):
-        self.set_env_var("KESSEL_RUN_STATE", section)
-        if "CI" in os.environ:
-            if collapsed:
-                section += "[collapsed=true]"
-            if passthrough:
-                print(f"\033[0Ksection_start:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}")
-            else:
-                self.eval(f"echo -e \"\033[0Ksection_start:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
-        else:
-            if passthrough:
-                print(f"{COLOR_CYAN}{msg}{COLOR_PLAIN}")
-            else:
-                self.eval(f"echo -e \"{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
-
-    def section_end(self, section, passthrough=False):
+    def _section(self, marker, section, passthrough=False, msg=""):
         if "CI" in os.environ:
             if passthrough:
-                print(f"\033[0Ksection_start:$(date +%s):{section}\r\033[0K")
+                print(f"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K")
             else:
-                self.eval(f"echo -e \"\033[0Ksection_start:$(date +%s):{section}\r\033[0K\"")
+                self.eval(f"echo -e \"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K\"")
         else:
             if passthrough:
                 print()
             else:
                 self.echo()
+            if passthrough:
+                print(f"{COLOR_CYAN}{msg}{COLOR_PLAIN}")
+            else:
+                self.eval(f"echo -e \"{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
+
+    def section_start(self, section, msg, collapsed=False, passthrough=False):
+        self.set_env_var("KESSEL_RUN_STATE", section)
+
+        if "CI" in os.environ:
+            if collapsed:
+                section += "[collapsed=true]"
+
+        self._section("start", section, passthrough, msg)
+
+    def section_end(self, section, passthrough=False):
+        self._section("end", section, passthrough)
 
 def init(args, senv):
     ctx = Context(senv)
