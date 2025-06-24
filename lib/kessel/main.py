@@ -129,7 +129,7 @@ class Context(object):
 
     @property
     def install_dir(self):
-        return Path(os.environ.get("INSTALL_DIR", self.build_Dir / "install"))
+        return Path(os.environ.get("INSTALL_DIR", self.build_dir / "install"))
 
     @property
     def build_env(self):
