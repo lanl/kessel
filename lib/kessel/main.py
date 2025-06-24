@@ -186,14 +186,13 @@ class Context(object):
     def system(self, value):
         if self.deployment_dir:
             sys_dir = self.deployment_dir / "environments" / value
-            if sys_dir.exists():
-                self.senv.echo(f"Activating {value}")
-                self.senv.set_env_var("KESSEL_SYSTEM", value)
-                self.senv.set_env_var("SPACK_SYSTEM_CONFIG_PATH", "${KESSEL_CONFIG_DIR}/${KESSEL_SYSTEM}")
-            else:
+            if not sys_dir.exists():
                 raise Exception(f"Unknown system '{value}'!")
-        else:
+        elif value != "local":
             raise Exception("No active deployment!")
+        self.senv.echo(f"Activating {value} system")
+        self.senv.set_env_var("KESSEL_SYSTEM", value)
+        self.senv.set_env_var("SPACK_SYSTEM_CONFIG_PATH", "${KESSEL_CONFIG_DIR}/${KESSEL_SYSTEM}")
 
     @property
     def environment(self):
@@ -216,6 +215,9 @@ class Context(object):
                     raise Exception(f"Unknown environment '{value}' for system '{self.system}'!")
             else:
                 raise Exception("No active system!")
+        elif self.system and self.system == "local":
+            self.senv.echo(f"Activating {self.system} environment {value}")
+            self.senv.eval(f"spack env activate {value}")
         else:
             raise Exception("No active deployment!")
 
@@ -423,9 +425,14 @@ class KesselDeployment(object):
 class ShellEnvironment(object):
     def __init__(self):
         self.fd = open(3, 'w', closefd=False)
+        self.cmd_count = 0
 
     def eval(self, cmd):
-        print(cmd, file=self.fd, flush=True)
+        if self.cmd_count > 0:
+            print(" && " + cmd, file=self.fd, flush=True, end="")
+        else:
+            print(cmd, file=self.fd, flush=True, end="")
+        self.cmd_count += 1
 
     def set_env_var(self, name, value):
         self.eval(f"export {name}={value}")
@@ -614,17 +621,17 @@ def finalize(args, senv):
 
 def status(step=None):
     steps = [
-        "prepare_spack",
-        "prepare_env",
-        "spack_cmake_configure",
-        "cmake_build",
-        "cmake_test",
-        "cmake_install",
-        "cmake_submit",
+        "setup",
+        "env",
+        "configure",
+        "build",
+        "test",
+        "install",
+        "submit",
     ]
     step_size = [0, 10, 11, 9, 7, 6, 7]
 
-    s = "\n"
+    s = " \n"
     s += " "*6
     completed = steps.index(step) if step in steps else -1
     for i, _ in enumerate(steps):
@@ -636,32 +643,39 @@ def status(step=None):
             s += PROGRESS_STEP_PENDING
     s += "\n\n"
 
-    s += "   Prepare    Prepare    Configure   Build   Test  Install  Submit\n"
-    s += "    Spack   Environment\n\n"
+    s += "    Setup    Prepare    Configure   Build   Test  Install  Submit\n"
+    s += "           Environment\n \n"
     return s
 
-def prepare_spack(ctx, senv):
-    senv.section_start("prepare_spack", "Prepare Spack", collapsed=True, passthrough=True)
-    print(status('prepare_spack'), flush=True)
+def pipeline_setup(args, senv):
+    ctx = Context(senv)
+    senv.section_start("setup", "Setup", collapsed=True, passthrough=True)
+    print(status("setup"), flush=True)
     os.umask(0o007)
     senv.eval("umask 0007")
-    if ctx.system == "local":
-        senv.echo("Using Spack install at ${SPACK_ROOT}")
+
+    if args.system == "local":
+        if "SPACK_ROOT" in os.environ:
+            print(f"Using Spack install at {os.environ['SPACK_ROOT']}")
+        else:
+            raise Exception("No Spack installation active!")
     else:
         ctx.deployment_dir = ctx.create_ci_deployment()
-    senv.section_end("prepare_spack", passthrough=True)
 
-def prepare_env(ctx, senv, system, env):
-    senv.section_start("prepare_env", "Create environment", collapsed=True)
-    senv.echo(status('prepare_env'))
+    ctx.system = args.system
+    senv.section_end("setup", passthrough=True)
 
-    ctx.system = system
+def pipeline_env(args, senv):
+    ctx = Context(senv)
+    senv.section_start("env", "Create environment", collapsed=True)
+    senv.echo(status("env"))
 
     # TODO local system, which will create a new Spack env and activate it
     # TODO custom-spec, which uses custom/spack.yaml
-    ctx.environment = env
+    ctx.environment = args.env
 
     if os.path.exists(f"spack_repo/{ctx.project}"):
+        senv.eval(f"(spack repo remove {ctx.project} 2> /dev/null > /dev/null || true)")
         senv.eval(f"spack repo add {ctx.source_dir}/spack_repo/{ctx.project}")
 
     senv.eval(f"spack develop -b {ctx.build_dir} -p {ctx.source_dir} --no-clone {ctx.project}@{ctx.default_branch}")
@@ -669,13 +683,16 @@ def prepare_env(ctx, senv, system, env):
     # TODO custom-spec support
 
     # ignore first concretization output due to Spack bug https://github.com/spack/spack/issues/49326
-    senv.eval("spack concretize -f 2> /dev/null > /dev/null || true")
+    senv.eval("(spack concretize -f 2> /dev/null > /dev/null || true)")
+    senv.eval("spack concretize -f")
     senv.eval("spack install --include-build-deps --only dependencies")
-    senv.section_end("prepare_env")
+    senv.section_end("env")
+    senv.eval("test -d \"$SPACK_ENV\"")
 
-def spack_cmake_configure(ctx, senv):
-    senv.section_start("spack_cmake_configure", "Initial Spack CMake Configure", collapsed=True)
-    senv.echo(status('spack_cmake_configure'))
+def pipeline_configure(args, senv):
+    ctx = Context(senv)
+    senv.section_start("configure", "Initial Spack CMake Configure", collapsed=True)
+    senv.echo(status("configure"))
     senv.eval(f"spack install --test root --include-build-deps -u cmake -v {ctx.project}")
 
     senv.eval(f"spack build-env --dump {ctx.build_env} {ctx.project}")
@@ -686,44 +703,65 @@ def spack_cmake_configure(ctx, senv):
     # silently change Spack defaults
     senv.eval(f"(source {ctx.build_env}; cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX={ctx.install_dir} {ctx.build_dir} 2> /dev/null > /dev/null )")
 
-    senv.section_end("spack_cmake_configure")
+    senv.section_end("configure")
 
-def cmake_build(ctx, senv):
-    senv.section_start("cmake_build", "CMake build")
-    senv.echo(status('cmake_build'))
-    senv.eval(f"(source {ctx.build_env}; cmake --build {ctx.build_dir} --parallel)")
-    senv.section_end("cmake_build")
+def pipeline_build(args, senv):
+    ctx = Context(senv)
+    senv.section_start("build", "CMake build")
+    senv.echo(status("build"))
+    senv.eval(f"(source {ctx.build_env}; cmake {ctx.build_dir}; cmake --build {ctx.build_dir} --parallel)")
+    senv.section_end("build")
 
-def cmake_test(ctx, senv):
-    senv.section_start("cmake_test", "Tests")
-    senv.echo(status('cmake_test'))
+def pipeline_test(args, senv):
+    ctx = Context(senv)
+    senv.section_start("test", "Tests")
+    senv.echo(status("test"))
     senv.eval(f"(source {ctx.build_env}; export CTEST_OUTPUT_ON_FAILURE=1; ctest --test-dir {ctx.build_dir} --output-junit tests.xml )")
-    senv.section_end("cmake_test")
+    senv.section_end("test")
 
-def cmake_install(ctx, senv):
-    senv.section_start("cmake_install", "Install")
-    senv.echo(status('cmake_install'))
+def pipeline_install(args, senv):
+    ctx = Context(senv)
+    senv.section_start("install", "Install")
+    senv.echo(status("install"))
     senv.eval(f"(source {ctx.build_env}; cmake --build {ctx.build_dir} --target install )")
-    senv.section_end("cmake_install")
+    senv.section_end("install")
 
-def cmake_submit(ctx, senv):
-    senv.section_start("cmake_submit", "Submit results to CDash")
-    senv.echo(status('cmake_submit'))
-    senv.section_end("cmake_submit")
+def pipeline_submit(args, senv):
+    ctx = Context(senv)
+    senv.section_start("submit", "Submit results to CDash")
+    senv.echo(status("submit"))
+    senv.section_end("submit")
 
 def run(args, senv):
     ctx = Context(senv)
     senv.unset_env_var("KESSEL_RUN_STATE")
-    prepare_spack(ctx, senv)
-    prepare_env(ctx, senv, args.system, args.env)
-    spack_cmake_configure(ctx, senv)
-    cmake_build(ctx, senv)
-    cmake_test(ctx, senv)
-    cmake_install(ctx, senv)
-    cmake_submit(ctx, senv)
+
+    if "CI" in os.environ:
+        print(f"{COLOR_BLUE} ")
+        print("######################################################################")
+        print(" ")
+        print("To recreate this CI run, follow these steps:")
+        print(" ")
+        print(f"ssh {args.system}")
+        print(f"cd /your/{ctx.project}/checkout")
+        if "LLNL_FLUX_SCHEDULER_PARAMETERS" in os.environ:
+            print("flux alloc", os.environ["LLNL_FLUX_SCHEDULER_PARAMETERS"])
+        elif "SCHEDULER_PARAMETERS" in os.environ:
+            print("salloc", os.environ["SCHEDULER_PARAMETERS"])
+        print(f"kessel run {args.system} {args.env}")
+        print(" ")
+        print("######################################################################")
+        print(f"{COLOR_PLAIN} ", flush=True)
+
+    senv.eval(f"kessel pipeline setup {args.system}")
+    senv.eval(f"kessel pipeline env {args.env}")
+    senv.eval(f"kessel pipeline configure")
+    senv.eval(f"kessel pipeline build")
+    senv.eval(f"kessel pipeline test")
+    senv.eval(f"kessel pipeline install")
+    senv.eval(f"kessel pipeline submit")
 
 def main():
-    status()
     senv = ShellEnvironment()
     parser = argparse.ArgumentParser(prog='kessel')
     subparsers = parser.add_subparsers()
@@ -768,6 +806,32 @@ def main():
 
     finalize_cmd = subparsers.add_parser('finalize')
     finalize_cmd.set_defaults(func=finalize)
+
+    pipeline_cmd = subparsers.add_parser('pipeline')
+    pipeline_subparsers = pipeline_cmd.add_subparsers()
+
+    pipeline_setup_cmd = pipeline_subparsers.add_parser('setup')
+    pipeline_setup_cmd.add_argument('system')
+    pipeline_setup_cmd.set_defaults(func=pipeline_setup)
+
+    pipeline_env_cmd = pipeline_subparsers.add_parser('env')
+    pipeline_env_cmd.add_argument('env')
+    pipeline_env_cmd.set_defaults(func=pipeline_env)
+
+    pipeline_configure_cmd = pipeline_subparsers.add_parser('configure')
+    pipeline_configure_cmd.set_defaults(func=pipeline_configure)
+
+    pipeline_build_cmd = pipeline_subparsers.add_parser('build')
+    pipeline_build_cmd.set_defaults(func=pipeline_build)
+
+    pipeline_test_cmd = pipeline_subparsers.add_parser('test')
+    pipeline_test_cmd.set_defaults(func=pipeline_test)
+
+    pipeline_install_cmd = pipeline_subparsers.add_parser('install')
+    pipeline_install_cmd.set_defaults(func=pipeline_install)
+
+    pipeline_submit_cmd = pipeline_subparsers.add_parser('submit')
+    pipeline_submit_cmd.set_defaults(func=pipeline_submit)
 
     run_cmd = subparsers.add_parser('run')
     run_cmd.add_argument('system')
