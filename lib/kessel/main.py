@@ -678,12 +678,13 @@ def spack_cmake_configure(ctx, senv):
     senv.echo(status('spack_cmake_configure'))
     senv.eval(f"spack install --test root --include-build-deps -u cmake -v {ctx.project}")
 
-    senv.eval(f"spack build-env --dump {ctx.build_env}.tmp {ctx.project}")
+    senv.eval(f"spack build-env --dump {ctx.build_env} {ctx.project}")
+    senv.eval(f"mv {ctx.build_env} {ctx.build_env}.tmp")
     senv.eval(f"grep -v '^SLURM' {ctx.build_env}.tmp > {ctx.build_env}")
     senv.eval(f"rm {ctx.build_env}.tmp")
 
     # silently change Spack defaults
-    senv.eval("(source {ctx.build_env}; cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX={ctx.install_dir} {ctx.build_dir} 2> /dev/null > /dev/null )")
+    senv.eval(f"(source {ctx.build_env}; cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX={ctx.install_dir} {ctx.build_dir} 2> /dev/null > /dev/null )")
 
     senv.section_end("spack_cmake_configure")
 
