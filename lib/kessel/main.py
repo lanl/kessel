@@ -691,7 +691,7 @@ def spack_cmake_configure(ctx, senv):
 def cmake_build(ctx, senv):
     senv.section_start("cmake_build", "CMake build")
     senv.echo(status('cmake_build'))
-    senv.eval(f"(source {ctx.build_env}; cmake --build f{ctx.build_dir} --parallel)")
+    senv.eval(f"(source {ctx.build_env}; cmake --build {ctx.build_dir} --parallel)")
     senv.section_end("cmake_build")
 
 def cmake_test(ctx, senv):
