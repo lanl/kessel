@@ -127,20 +127,54 @@ class Context(object):
         self.senv = senv
 
     @property
+    def steps(self):
+        steps = [
+            "setup",
+            "env",
+            "configure",
+            "build",
+            "test",
+            "install",
+        ]
+        if hasattr(self.builder, "submit"):
+            steps.append("submit")
+        return steps
+
+    @property
+    def enable_cdash_support(self):
+        return "KESSEL_CDASH_SUPPORT" in os.environ and os.environ["KESSEL_CDASH_SUPPORT"].upper() in ('ON', 'TRUE', 'YES', '1')
+
+    @property
+    def builder(self):
+        return CTestBuildDriver(self) if self.enable_cdash_support else CMakeBuildDriver(self)
+
+    @property
+    def source_dir(self):
+        return Path(os.environ["KESSEL_PIPELINE_SOURCE_DIR"])
+
+    @source_dir.setter
+    def source_dir(self, value):
+        self.senv.set_env_var("KESSEL_PIPELINE_SOURCE_DIR", Path(value).resolve())
+
+    @property
     def build_dir(self):
-        return Path(os.environ.get("BUILD_DIR", Path.cwd() / "build"))
+        return Path(os.environ["KESSEL_PIPELINE_BUILD_DIR"])
+
+    @build_dir.setter
+    def build_dir(self, value):
+        self.senv.set_env_var("KESSEL_PIPELINE_BUILD_DIR", Path(value).resolve())
 
     @property
     def install_dir(self):
-        return Path(os.environ.get("INSTALL_DIR", self.build_dir / "install"))
+        return Path(os.environ["KESSEL_PIPELINE_INSTALL_DIR"])
+
+    @install_dir.setter
+    def install_dir(self, value):
+        self.senv.set_env_var("KESSEL_PIPELINE_INSTALL_DIR", Path(value).resolve())
 
     @property
     def build_env(self):
         return self.build_dir / "build_env.sh"
-
-    @property
-    def source_dir(self):
-        return Path(os.environ.get("SOURCE_DIR", Path.cwd()))
 
     @property
     def pipeline_state(self):
@@ -158,6 +192,7 @@ class Context(object):
     def project_spec(self, value):
         # TODO validate
         self.senv.set_env_var("KESSEL_ENV_PROJECT_SPEC", value.strip())
+        self.senv.set_env_var("KESSEL_ENV_PROJECT", self.project)
 
     @property
     def project(self):
@@ -510,6 +545,50 @@ class ShellEnvironment(object):
     def section_end(self, section, passthrough=False):
         self._section("end", section, passthrough)
 
+
+class BuildDriver(object):
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+    def buildenv_cmd(self, cmd):
+        self.ctx.senv.eval(f"(source {self.ctx.build_env}; {cmd})")
+
+
+class CMakeBuildDriver(BuildDriver):
+    def __init__(self, ctx):
+        super().__init__(ctx)
+
+    def build(self):
+        self.buildenv_cmd("cmake {self.ctx.build_dir}; cmake --build {self.ctx.build_dir} --parallel")
+
+    def test(self):
+        self.buildenv_cmd("export CTEST_OUTPUT_ON_FAILURE=1; ctest --test-dir {self.ctx.build_dir} --output-junit tests.xml")
+
+    def install(self):
+        self.buildenv_cmd("cmake --build {ctx.build_dir} --target install")
+
+
+class CTestBuildDriver(CMakeBuildDriver):
+    def __init__(self, ctx, submit_on_error=False):
+        super().__init__(ctx)
+        if "CTEST_MODE" not in os.environ:
+            ctx.senv.set_env_var("CTEST_MODE", "Continous")
+        self.report_errors = "ReportErrors" if submit_on_error else ""
+
+    @property
+    def ctest_driver_script(self):
+        return self.ctx.kessel_root / "share" / "kessel" / "cmake" / "ctest_driver.cmake"
+
+    def build(self):
+        self.buildenv_cmd(f"ctest -VV -S {self.ctest_driver_script},Configure,Build,{self.report_errors}")
+
+    def test(self):
+        self.buildenv_cmd(f"export CTEST_OUTPUT_ON_FAILURE=1; ctest -V -S {self.ctest_driver_script},Test,{self.report_errors}")
+
+    def submit(self):
+        self.buildenv_cmd(f"ctest -V -S {self.ctest_driver_script},Submit")
+
+
 def init(args, senv):
     ctx = Context(senv)
     source_config = KesselSourceConfig(args.config_dir)
@@ -657,22 +736,13 @@ def finalize(args, senv):
 
         ctx.create_squashfs(ctx.deployment_dir / ".replicate.sqfs")
 
-def status(step=None):
-    steps = [
-        "setup",
-        "env",
-        "configure",
-        "build",
-        "test",
-        "install",
-        "submit",
-    ]
+def status(ctx, step=None):
     step_size = [0, 9, 11, 9, 7, 6, 7]
 
     s = " \n"
     s += " "*6
-    completed = steps.index(step) if step in steps else -1
-    for i, _ in enumerate(steps):
+    completed = ctx.steps.index(step) if step in ctx.steps else -1
+    for i, _ in enumerate(ctx.steps):
         if i <= completed:
             s += PROGRESS_BAR_COMPLETE * step_size[i]
             s += PROGRESS_STEP_COMPLETE
@@ -681,14 +751,17 @@ def status(step=None):
             s += PROGRESS_STEP_PENDING
     s += "\n\n"
 
-    s += "    Setup    Prepare    Configure   Build   Test  Install  Submit\n"
+    if "submit" in ctx.steps:
+        s += "    Setup    Prepare    Configure   Build   Test  Install  Submit\n"
+    else:
+        s += "    Setup    Prepare    Configure   Build   Test  Install\n"
     s += "           Environment\n \n"
     return s
 
 def pipeline_setup(args, senv):
     ctx = Context(senv)
     senv.section_start("setup", "Setup", collapsed=True, passthrough=True)
-    print(status("setup"), flush=True)
+    print(status(ctx, "setup"), flush=True)
     os.umask(0o007)
     senv.eval("umask 0007")
 
@@ -707,12 +780,14 @@ def pipeline_setup(args, senv):
 def pipeline_env(args, senv):
     ctx = Context(senv)
     senv.section_start("env", "Create environment", collapsed=True)
-    senv.echo(status("env"))
+    senv.echo(status(ctx, "env"))
 
     # TODO local system, which will create a new Spack env and activate it
     # TODO custom-spec, which uses custom/spack.yaml
     ctx.environment = args.env
     ctx.project_spec = args.spec
+    ctx.source_dir = args.source_dir
+    ctx.build_dir = args.build_dir
 
     if os.path.exists(f"spack_repo/{ctx.project}"):
         senv.eval(f"(spack repo remove {ctx.project} 2> /dev/null > /dev/null || true)")
@@ -739,8 +814,10 @@ def pipeline_env(args, senv):
 
 def pipeline_configure(args, senv):
     ctx = Context(senv)
+    ctx.install_dir = args.install_dir
+
     senv.section_start("configure", "Initial Spack CMake Configure", collapsed=True)
-    senv.echo(status("configure"))
+    senv.echo(status(ctx, "configure"))
     senv.eval(f"spack install --test root --include-build-deps -u cmake -v {ctx.project}")
 
     senv.eval(f"spack build-env --dump {ctx.build_env} {ctx.project}")
@@ -757,37 +834,38 @@ def pipeline_configure(args, senv):
 def pipeline_build(args, senv):
     ctx = Context(senv)
     senv.section_start("build", "CMake build")
-    senv.echo(status("build"))
-    senv.eval(f"(source {ctx.build_env}; cmake {ctx.build_dir}; cmake --build {ctx.build_dir} --parallel)")
+    senv.echo(status(ctx, "build"))
+    ctx.builder.build()
     senv.section_end("build")
     ctx.pipeline_state = "build"
 
 def pipeline_test(args, senv):
     ctx = Context(senv)
     senv.section_start("test", "Tests")
-    senv.echo(status("test"))
-    senv.eval(f"(source {ctx.build_env}; export CTEST_OUTPUT_ON_FAILURE=1; ctest --test-dir {ctx.build_dir} --output-junit tests.xml )")
+    senv.echo(status(ctx, "test"))
+    ctx.builder.test()
     senv.section_end("test")
     ctx.pipeline_state = "test"
 
 def pipeline_install(args, senv):
     ctx = Context(senv)
     senv.section_start("install", "Install")
-    senv.echo(status("install"))
-    senv.eval(f"(source {ctx.build_env}; cmake --build {ctx.build_dir} --target install )")
+    senv.echo(status(ctx, "install"))
+    ctx.builder.install()
     senv.section_end("install")
     ctx.pipeline_state = "install"
 
 def pipeline_submit(args, senv):
     ctx = Context(senv)
     senv.section_start("submit", "Submit results to CDash")
-    senv.echo(status("submit"))
+    senv.echo(status(ctx, "submit"))
+    ctx.builder.submit()
     senv.section_end("submit")
     ctx.pipeline_state = "submit"
 
 def pipeline_status(args, senv):
     ctx = Context(senv)
-    senv.echo(status(ctx.pipeline_state))
+    senv.echo(status(ctx, ctx.pipeline_state))
 
 def run(args, senv):
     ctx = Context(senv)
@@ -814,10 +892,10 @@ def run(args, senv):
     senv.eval(f"kessel pipeline setup -s {args.system}")
     if args.until == "setup": return
 
-    senv.eval(f"kessel pipeline env -e {args.env} {args.spec}")
+    senv.eval(f"kessel pipeline env -e {args.env} -S {args.source_dir} -B {args.build_dir} {args.spec}")
     if args.until == "env": return
 
-    senv.eval(f"kessel pipeline configure")
+    senv.eval(f"kessel pipeline configure -I {args.install_dir}")
     if args.until == "configure": return
 
     senv.eval(f"kessel pipeline build")
@@ -829,8 +907,8 @@ def run(args, senv):
     senv.eval(f"kessel pipeline install")
     if args.until == "install": return
 
-    senv.eval(f"kessel pipeline submit")
-    if args.until == "submit": return
+    if hasattr(ctx.builder, "submit"):
+        senv.eval(f"kessel pipeline submit")
 
 def main():
     senv = ShellEnvironment()
@@ -887,10 +965,13 @@ def main():
 
     pipeline_env_cmd = pipeline_subparsers.add_parser('env')
     pipeline_env_cmd.add_argument('-e', '--env', required=True)
+    pipeline_env_cmd.add_argument('-S', '--source_dir', default=Path.cwd(), type=Path)
+    pipeline_env_cmd.add_argument('-B', '--build_dir', default=Path.cwd() / "build", type=Path)
     pipeline_env_cmd.add_argument('spec', help="project spec to build")
     pipeline_env_cmd.set_defaults(func=pipeline_env)
 
     pipeline_configure_cmd = pipeline_subparsers.add_parser('configure')
+    pipeline_configure_cmd.add_argument('-I', '--install_dir', default=Path.cwd() / "install", type=Path)
     pipeline_configure_cmd.set_defaults(func=pipeline_configure)
 
     pipeline_build_cmd = pipeline_subparsers.add_parser('build')
@@ -912,6 +993,9 @@ def main():
     run_cmd.add_argument('-s', '--system', default="local")
     run_cmd.add_argument('-e', '--env', required=True)
     run_cmd.add_argument('-u', '--until', choices=("setup", "env", "configure", "build", "test", "install", "submit"), default="submit")
+    run_cmd.add_argument('-S', '--source_dir', default=Path.cwd(), type=Path)
+    run_cmd.add_argument('-B', '--build_dir', default=Path.cwd() / "build", type=Path)
+    run_cmd.add_argument('-I', '--install_dir', default=Path.cwd() / "install", type=Path)
     run_cmd.add_argument('spec', help="project spec to build")
     run_cmd.set_defaults(func=run)
 
