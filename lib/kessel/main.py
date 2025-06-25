@@ -771,6 +771,7 @@ def pipeline_submit(args, senv):
 
 def run(args, senv):
     ctx = Context(senv)
+    ctx.project_spec = args.spec
     senv.unset_env_var("KESSEL_RUN_STATE")
 
     if "CI" in os.environ:
