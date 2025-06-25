@@ -72,6 +72,8 @@ class GitConfig(object):
     def checkout(self, directory):
         if not Path(directory).exists():
             subprocess.call(["git", "clone", "-c", "feature.manyFiles=true", "--depth=1",  self.git_url, directory])
+        else:
+            subprocess.call(["git", "-C", directory, "remote", "set-url", "origin", self.git_url])
 
         spack_head = subprocess.check_output(["git", "-C", directory, "rev-parse", "HEAD"]).decode().strip()
         if spack_head != self.git_commit:
