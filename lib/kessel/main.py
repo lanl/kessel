@@ -1,4 +1,5 @@
 import os
+import re
 import grp
 import json
 import argparse
@@ -142,12 +143,42 @@ class Context(object):
         return Path(os.environ.get("SOURCE_DIR", Path.cwd()))
 
     @property
-    def project(self):
-        return os.environ["PROJECT"]
+    def project_spec(self):
+        return os.environ["KESSEL_ENV_PROJECT_SPEC"]
+
+    @project_spec.setter
+    def project_spec(self, value):
+        # TODO validate
+        self.senv.set_env_var("KESSEL_ENV_PROJECT_SPEC", value.strip())
 
     @property
-    def default_branch(self):
-        return os.environ.get("PROJECT_DEFAULT_BRANCH", "main")
+    def project(self):
+        # cases to cover
+        # foo@1.2.0 +bar
+        # foo@=1.2.0 ~bar
+        # foo@git.sha=1.2.0 ~bar
+        # foo+bar@1.2.0
+        # foo+bar@1.2.0 ^dep@1.2.3
+        # foo +bar @1.2.0
+        # foo +bar @1.2.0 ^dep@1.2.3
+        spec = self.project_spec
+        root_match = re.search(r'\b[a-zA-Z0-9_-]+\b', spec)
+        return root_match.group()
+
+    @property
+    def project_version(self):
+        spec = self.project_spec
+        cutoff_match = re.search(r'[\^%]', spec)
+        if cutoff_match:
+            spec = spec[:cutoff_match.start()]
+        version_match = re.search(r'@[^+\s~^%]+', spec)
+        return version_match.group() if version_match else ""
+
+    @property
+    def project(self):
+        spec = self.project_spec.split(" ")
+        root_spec = spec[0].split("@")
+        return root_spec[0]
 
     @property
     def kessel_root(self):
@@ -182,7 +213,7 @@ class Context(object):
 
     @property
     def system(self):
-        return os.environ.get('KESSEL_SYSTEM', default=None)
+        return os.environ.get('KESSEL_SYSTEM', default="local")
 
     @system.setter
     def system(self, value):
@@ -493,6 +524,8 @@ def activate(args, senv):
 def system_list(args, senv):
     ctx = Context(senv)
 
+    print("local")
+
     if ctx.deployment_dir:
         environments_dir = ctx.deployment_dir / "environments"
 
@@ -631,7 +664,7 @@ def status(step=None):
         "install",
         "submit",
     ]
-    step_size = [0, 10, 11, 9, 7, 6, 7]
+    step_size = [0, 9, 11, 9, 7, 6, 7]
 
     s = " \n"
     s += " "*6
@@ -675,12 +708,20 @@ def pipeline_env(args, senv):
     # TODO local system, which will create a new Spack env and activate it
     # TODO custom-spec, which uses custom/spack.yaml
     ctx.environment = args.env
+    ctx.project_spec = args.spec
 
     if os.path.exists(f"spack_repo/{ctx.project}"):
         senv.eval(f"(spack repo remove {ctx.project} 2> /dev/null > /dev/null || true)")
         senv.eval(f"spack repo add {ctx.source_dir}/spack_repo/{ctx.project}")
 
-    senv.eval(f"spack develop -b {ctx.build_dir} -p {ctx.source_dir} --no-clone {ctx.project}@{ctx.default_branch}")
+    if ctx.project_version:
+        senv.set_env_var("PROJECT_PREFERRED_VERSION", ctx.project_version)
+    else:
+        # the preferred version is dependent on the active spack package in this spack environment and needs to be determined at runtime
+        # we could avoid this if spack develop would chose the preferred version if nothing is specified
+        senv.eval(f"export PROJECT_PREFERRED_VERSION=$(spack-python -c \"spec = spack.spec.Spec('{ctx.project}');pkg_cls = spack.repo.PATH.get_pkg_class(spec.fullname);print(spack.package_base.preferred_version(pkg_cls(spec)))\")")
+    senv.eval(f"spack develop -b {ctx.build_dir} -p {ctx.source_dir} --no-clone {ctx.project}@${{PROJECT_PREFERRED_VERSION}}")
+    senv.unset_env_var("PROJECT_PREFERRED_VERSION")
 
     # TODO custom-spec support
 
@@ -750,13 +791,13 @@ def run(args, senv):
             print("flux alloc", os.environ["LLNL_FLUX_SCHEDULER_PARAMETERS"])
         elif "SCHEDULER_PARAMETERS" in os.environ:
             print("salloc", os.environ["SCHEDULER_PARAMETERS"])
-        print(f"kessel run {args.system} {args.env}")
+        print(f"kessel run -s {args.system} -e {args.env} {args.project_spec}")
         print(" ")
         print("######################################################################")
         print(f"{COLOR_PLAIN} ", flush=True)
 
-    senv.eval(f"kessel pipeline setup {args.system}")
-    senv.eval(f"kessel pipeline env {args.env}")
+    senv.eval(f"kessel pipeline setup -s {args.system}")
+    senv.eval(f"kessel pipeline env -e {args.env} {args.spec}")
     senv.eval(f"kessel pipeline configure")
     senv.eval(f"kessel pipeline build")
     senv.eval(f"kessel pipeline test")
@@ -813,11 +854,12 @@ def main():
     pipeline_subparsers = pipeline_cmd.add_subparsers()
 
     pipeline_setup_cmd = pipeline_subparsers.add_parser('setup')
-    pipeline_setup_cmd.add_argument('system')
+    pipeline_setup_cmd.add_argument('-s', '--system', default="local")
     pipeline_setup_cmd.set_defaults(func=pipeline_setup)
 
     pipeline_env_cmd = pipeline_subparsers.add_parser('env')
-    pipeline_env_cmd.add_argument('env')
+    pipeline_env_cmd.add_argument('-e', '--env', required=True)
+    pipeline_env_cmd.add_argument('spec', help="project spec to build")
     pipeline_env_cmd.set_defaults(func=pipeline_env)
 
     pipeline_configure_cmd = pipeline_subparsers.add_parser('configure')
@@ -836,8 +878,9 @@ def main():
     pipeline_submit_cmd.set_defaults(func=pipeline_submit)
 
     run_cmd = subparsers.add_parser('run')
-    run_cmd.add_argument('system')
-    run_cmd.add_argument('env')
+    run_cmd.add_argument('-s', '--system', default="local")
+    run_cmd.add_argument('-e', '--env', required=True)
+    run_cmd.add_argument('spec', help="project spec to build")
     run_cmd.set_defaults(func=run)
 
     args = parser.parse_args()
