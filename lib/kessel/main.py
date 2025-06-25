@@ -143,8 +143,16 @@ class Context(object):
         return Path(os.environ.get("SOURCE_DIR", Path.cwd()))
 
     @property
+    def pipeline_state(self):
+        return os.environ.get("KESSEL_PIPELINE_STATE", None)
+
+    @pipeline_state.setter
+    def pipeline_state(self, value):
+        self.senv.set_env_var("KESSEL_PIPELINE_STATE", value)
+
+    @property
     def project_spec(self):
-        return os.environ["KESSEL_ENV_PROJECT_SPEC"]
+        return os.environ.get("KESSEL_ENV_PROJECT_SPEC", None)
 
     @project_spec.setter
     def project_spec(self, value):
@@ -462,6 +470,9 @@ class ShellEnvironment(object):
         self.cmd_count += 1
 
     def set_env_var(self, name, value):
+        if value is None:
+            self.unset_env_var(name)
+            return
         self.eval(f"export {name}={value}")
         os.environ[name] = str(value)
 
@@ -490,8 +501,6 @@ class ShellEnvironment(object):
                 self.eval(f"echo -e \"{COLOR_CYAN}{msg}{COLOR_PLAIN}\"")
 
     def section_start(self, section, msg, collapsed=False, passthrough=False):
-        self.set_env_var("KESSEL_RUN_STATE", section)
-
         if "CI" in os.environ:
             if collapsed:
                 section += "[collapsed=true]"
@@ -693,6 +702,7 @@ def pipeline_setup(args, senv):
 
     ctx.system = args.system
     senv.section_end("setup", passthrough=True)
+    ctx.pipeline_state = "setup"
 
 def pipeline_env(args, senv):
     ctx = Context(senv)
@@ -725,6 +735,7 @@ def pipeline_env(args, senv):
     senv.eval("spack install --include-build-deps --only dependencies")
     senv.section_end("env")
     senv.eval("test -d \"$SPACK_ENV\"")
+    ctx.pipeline_state = "env"
 
 def pipeline_configure(args, senv):
     ctx = Context(senv)
@@ -741,6 +752,7 @@ def pipeline_configure(args, senv):
     senv.eval(f"(source {ctx.build_env}; cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX={ctx.install_dir} {ctx.build_dir} 2> /dev/null > /dev/null )")
 
     senv.section_end("configure")
+    ctx.pipeline_state = "configure"
 
 def pipeline_build(args, senv):
     ctx = Context(senv)
@@ -748,6 +760,7 @@ def pipeline_build(args, senv):
     senv.echo(status("build"))
     senv.eval(f"(source {ctx.build_env}; cmake {ctx.build_dir}; cmake --build {ctx.build_dir} --parallel)")
     senv.section_end("build")
+    ctx.pipeline_state = "build"
 
 def pipeline_test(args, senv):
     ctx = Context(senv)
@@ -755,6 +768,7 @@ def pipeline_test(args, senv):
     senv.echo(status("test"))
     senv.eval(f"(source {ctx.build_env}; export CTEST_OUTPUT_ON_FAILURE=1; ctest --test-dir {ctx.build_dir} --output-junit tests.xml )")
     senv.section_end("test")
+    ctx.pipeline_state = "test"
 
 def pipeline_install(args, senv):
     ctx = Context(senv)
@@ -762,17 +776,23 @@ def pipeline_install(args, senv):
     senv.echo(status("install"))
     senv.eval(f"(source {ctx.build_env}; cmake --build {ctx.build_dir} --target install )")
     senv.section_end("install")
+    ctx.pipeline_state = "install"
 
 def pipeline_submit(args, senv):
     ctx = Context(senv)
     senv.section_start("submit", "Submit results to CDash")
     senv.echo(status("submit"))
     senv.section_end("submit")
+    ctx.pipeline_state = "submit"
+
+def pipeline_status(args, senv):
+    ctx = Context(senv)
+    senv.echo(status(ctx.pipeline_state))
 
 def run(args, senv):
     ctx = Context(senv)
     ctx.project_spec = args.spec
-    senv.unset_env_var("KESSEL_RUN_STATE")
+    ctx.pipeline_state = None
 
     if "CI" in os.environ:
         print(f"{COLOR_BLUE} ")
@@ -792,12 +812,25 @@ def run(args, senv):
         print(f"{COLOR_PLAIN} ", flush=True)
 
     senv.eval(f"kessel pipeline setup -s {args.system}")
+    if args.until == "setup": return
+
     senv.eval(f"kessel pipeline env -e {args.env} {args.spec}")
+    if args.until == "env": return
+
     senv.eval(f"kessel pipeline configure")
+    if args.until == "configure": return
+
     senv.eval(f"kessel pipeline build")
+    if args.until == "build": return
+
     senv.eval(f"kessel pipeline test")
+    if args.until == "test": return
+
     senv.eval(f"kessel pipeline install")
+    if args.until == "install": return
+
     senv.eval(f"kessel pipeline submit")
+    if args.until == "submit": return
 
 def main():
     senv = ShellEnvironment()
@@ -872,9 +905,13 @@ def main():
     pipeline_submit_cmd = pipeline_subparsers.add_parser('submit')
     pipeline_submit_cmd.set_defaults(func=pipeline_submit)
 
+    pipeline_status_cmd = pipeline_subparsers.add_parser('status')
+    pipeline_status_cmd.set_defaults(func=pipeline_status)
+
     run_cmd = subparsers.add_parser('run')
     run_cmd.add_argument('-s', '--system', default="local")
     run_cmd.add_argument('-e', '--env', required=True)
+    run_cmd.add_argument('-u', '--until', choices=("setup", "env", "configure", "build", "test", "install", "submit"), default="submit")
     run_cmd.add_argument('spec', help="project spec to build")
     run_cmd.set_defaults(func=run)
 
