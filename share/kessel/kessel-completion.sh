@@ -1,9 +1,10 @@
 _kessel() {
     # Variables
-    local cur prev opts opts_dir
+    local cur prev opts pipeline_opts
 
     # Autocomplete variables
-    opts="-h init activate system env bootstrap mirror"
+    opts="-h init activate system env bootstrap mirror clean finalize pipeline run"
+    pipeline_opts="setup env configure build test install submit"
 
     # Create empty COMPREPLY
     COMPREPLY=()
@@ -46,6 +47,9 @@ _kessel() {
             ;;
         mirror)
             COMPREPLY=($(compgen -W "create" -- ${cur}))
+            ;;
+        pipeline)
+            COMPREPLY=($(compgen -W "${pipeline_opts}" -- ${cur}))
             ;;
         esac
         ;;
