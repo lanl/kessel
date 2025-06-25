@@ -175,12 +175,6 @@ class Context(object):
         return version_match.group() if version_match else ""
 
     @property
-    def project(self):
-        spec = self.project_spec.split(" ")
-        root_spec = spec[0].split("@")
-        return root_spec[0]
-
-    @property
     def kessel_root(self):
         return Path(os.environ["KESSEL_ROOT"])
 
