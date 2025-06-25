@@ -786,7 +786,7 @@ def run(args, senv):
             print("flux alloc", os.environ["LLNL_FLUX_SCHEDULER_PARAMETERS"])
         elif "SCHEDULER_PARAMETERS" in os.environ:
             print("salloc", os.environ["SCHEDULER_PARAMETERS"])
-        print(f"kessel run -s {args.system} -e {args.env} {args.project_spec}")
+        print(f"kessel run -s {args.system} -e {args.env} {args.spec}")
         print(" ")
         print("######################################################################")
         print(f"{COLOR_PLAIN} ", flush=True)
