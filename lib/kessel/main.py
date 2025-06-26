@@ -122,6 +122,12 @@ def symbolic_to_octal(perm_str, directory=False):
 
     return int(f"{perms['u']}{perms['g']}{perms['o']}", 8)
 
+
+def create_squashfs(src, dest):
+    print(f"Creating squashfs file {dest}...")
+    subprocess.run(["mksquashfs", src, dest, "-comp", "gzip"])
+
+
 class Context(object):
     def __init__(self, senv):
         self.senv = senv
@@ -351,13 +357,12 @@ class Context(object):
             yaml.width = 256
             yaml.dump(replica_config, f)
 
-    def create_squashfs(self, dest):
+    def create_replicate_squashfs(self, dest):
         with tempfile.TemporaryDirectory() as d:
             if Path(dest).exists():
                 os.remove(dest)
             self.replicate(d)
-            print(f"Creating squashfs file {dest}...")
-            subprocess.run(["mksquashfs", d, dest, "-comp", "gzip"])
+            create_squashfs(d, dest)
 
         try:
           os.chown(dest, -1, self.group)
@@ -734,7 +739,7 @@ def finalize(args, senv):
             mode |= stat.S_ISGID
             os.chmod(spack_db_dir, mode)
 
-        ctx.create_squashfs(ctx.deployment_dir / ".replicate.sqfs")
+        ctx.create_replicate_squashfs(ctx.deployment_dir / ".replicate.sqfs")
 
 def status(ctx, step=None):
     step_size = [0, 9, 11, 9, 7, 6, 7]
@@ -867,6 +872,19 @@ def pipeline_status(args, senv):
     ctx = Context(senv)
     senv.echo(status(ctx, ctx.pipeline_state))
 
+def snapshot_create(args, senv):
+    ctx = Context(senv)
+    if ctx.deployment_dir:
+        print("Creating snapshot of current deployment...")
+        print(f"  src: {ctx.deployment_dir}")
+        print(f"  dst: {args.snapshot_file}")
+        create_squashfs(ctx.deployment_dir, args.snapshot_file)
+    else:
+        raise Exception("No active deployment")
+
+def snapshot_restore(args, senv):
+    subprocess.run(["unsquashfs", "-d", args.dest, args.snapshot_file])
+
 def run(args, senv):
     ctx = Context(senv)
     ctx.project_spec = args.spec
@@ -917,9 +935,21 @@ def main():
     init_cmd = subparsers.add_parser('init')
     init_cmd.add_argument('config_dir')
     init_cmd.set_defaults(func=init)
+
     activate_cmd = subparsers.add_parser('activate')
     activate_cmd.add_argument('path', nargs='?', default=Path.cwd())
     activate_cmd.set_defaults(func=activate)
+
+    snapshot_cmd = subparsers.add_parser('snapshot')
+    snapshot_subparsers = snapshot_cmd.add_subparsers()
+
+    snapshot_create_cmd = snapshot_subparsers.add_parser('create')
+    snapshot_create_cmd.add_argument('snapshot_file', help="destination", type=Path)
+    snapshot_create_cmd.set_defaults(func=snapshot_create)
+    snapshot_restore_cmd = snapshot_subparsers.add_parser('restore')
+    snapshot_restore_cmd.add_argument('-d', '--dest', help="destination", default=Path.cwd(), type=Path)
+    snapshot_restore_cmd.add_argument('snapshot_file', help="snapshot file", type=Path)
+    snapshot_restore_cmd.set_defaults(func=snapshot_restore)
 
     system_cmd = subparsers.add_parser('system')
     sys_subparsers = system_cmd.add_subparsers()
