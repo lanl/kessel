@@ -559,13 +559,13 @@ class CMakeBuildDriver(BuildDriver):
         super().__init__(ctx)
 
     def build(self):
-        self.buildenv_cmd("cmake {self.ctx.build_dir}; cmake --build {self.ctx.build_dir} --parallel")
+        self.buildenv_cmd(f"cmake {self.ctx.build_dir}; cmake --build {self.ctx.build_dir} --parallel")
 
     def test(self):
-        self.buildenv_cmd("export CTEST_OUTPUT_ON_FAILURE=1; ctest --test-dir {self.ctx.build_dir} --output-junit tests.xml")
+        self.buildenv_cmd(f"export CTEST_OUTPUT_ON_FAILURE=1; ctest --test-dir {self.ctx.build_dir} --output-junit tests.xml")
 
     def install(self):
-        self.buildenv_cmd("cmake --build {ctx.build_dir} --target install")
+        self.buildenv_cmd(f"cmake --build {ctx.build_dir} --target install")
 
 
 class CTestBuildDriver(CMakeBuildDriver):
