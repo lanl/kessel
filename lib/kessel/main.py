@@ -856,7 +856,7 @@ def pipeline_step(args, ctx, senv):
 
     workflow = ctx.workflow_config
     step = next(s for s in workflow["steps"] if s["name"] == args.step)
-    
+
     senv.section_start(step["name"], step["title"], collapsed=step.get("collapsed", False))
     senv.echo(status(ctx, step["name"]))
 
@@ -916,7 +916,7 @@ def snapshot_restore(args, ctx, senv):
 
 def run(args, ctx, senv):
     ctx.pipeline_state = None
-    
+
     for prop in ctx.visible_variables:
         if hasattr(args, prop):
             setattr(ctx, prop, getattr(args, prop))
@@ -1029,37 +1029,38 @@ def main():
     pipeline_status_cmd = pipeline_subparsers.add_parser('status')
     pipeline_status_cmd.set_defaults(func=pipeline_status)
 
-    run_cmd = subparsers.add_parser('run')
+    if ctx.kessel_dir:
+        run_cmd = subparsers.add_parser('run')
 
-    workflow = ctx.workflow_config
-    names = [s["name"] for s in workflow["steps"]]
+        workflow = ctx.workflow_config
+        names = [s["name"] for s in workflow["steps"]]
 
-    def _add_arguments(cmd, cmd_args, local_vars=[]):
-        for a in cmd_args:
-            atype = list(a.keys())[0]
-            if atype == "argument":
-                arg = a["argument"]
-                pos_args = []
-                kw_args = {}
-                for p in arg:
-                    if isinstance(p, str):
-                        pos_args.append(p)
-                    elif isinstance(p, dict):
-                        kw_args.update({k: ctx.evaluate(v, [local_vars]) for k,v in p.items()})
-                try:
-                    cmd.add_argument(*pos_args, **kw_args)
-                except Exception as e:
-                    print("add_argument params:", pos_args, kw_args)
-                    raise e
+        def _add_arguments(cmd, cmd_args, local_vars=[]):
+            for a in cmd_args:
+                atype = list(a.keys())[0]
+                if atype == "argument":
+                    arg = a["argument"]
+                    pos_args = []
+                    kw_args = {}
+                    for p in arg:
+                        if isinstance(p, str):
+                            pos_args.append(p)
+                        elif isinstance(p, dict):
+                            kw_args.update({k: ctx.evaluate(v, [local_vars]) for k,v in p.items()})
+                    try:
+                        cmd.add_argument(*pos_args, **kw_args)
+                    except Exception as e:
+                        print("add_argument params:", pos_args, kw_args)
+                        raise e
 
-    _add_arguments(run_cmd, workflow.get("arguments", []), workflow.get("variables", {}))
-    run_cmd.add_argument('-u', '--until', choices=names, default=names[-1])
-    run_cmd.set_defaults(func=run)
+        _add_arguments(run_cmd, workflow.get("arguments", []), workflow.get("variables", {}))
+        run_cmd.add_argument('-u', '--until', choices=names, default=names[-1])
+        run_cmd.set_defaults(func=run)
 
-    for step in workflow["steps"]:
-        pipeline_step_cmd = pipeline_subparsers.add_parser(step["name"])
-        _add_arguments(pipeline_step_cmd, step.get("arguments", []), workflow.get("variables", {}))
-        pipeline_step_cmd.set_defaults(func=pipeline_step, step=step["name"])
+        for step in workflow["steps"]:
+            pipeline_step_cmd = pipeline_subparsers.add_parser(step["name"])
+            _add_arguments(pipeline_step_cmd, step.get("arguments", []), workflow.get("variables", {}))
+            pipeline_step_cmd.set_defaults(func=pipeline_step, step=step["name"])
 
     args = parser.parse_args()
     senv.debug = args.shell_debug
