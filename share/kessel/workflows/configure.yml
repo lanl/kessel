@@ -2,7 +2,8 @@ arguments:
   - argument:
       - '-I'
       - '--install-dir'
-      - default: "$cwd/build/install"
+      - default: $install_dir
+        help: "install directory (default: %(default)s)"
 steps:
  - name: configure
    title: Configure
@@ -10,7 +11,8 @@ steps:
      - argument:
          - '-I'
          - '--install-dir'
-         - default: "$cwd/build/install"
+         - default: $install_dir
+           help: "install directory (default: %(default)s)"
    script:
     - spack install --test root --include-build-deps -u cmake -v $project
     - spack build-env --dump $build_env $project

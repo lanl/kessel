@@ -1,5 +1,17 @@
+arguments:
+  - argument:
+      - '-s'
+      - '--system'
+      - default: $system
+        help: "system that should be used (default: %(default)s)"
 steps:
  - name: setup
    title: Setup
+   arguments:
+     - argument:
+         - '-s'
+         - '--system'
+         - default: $system
+           help: "system that should be used (default: %(default)s)"
    script:
-    - kessel pipeline setup -s $system
+    - kessel pipeline _setup -s $system

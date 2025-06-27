@@ -29,6 +29,8 @@ COLOR_MAGENTA='\033[1;35m'
 COLOR_CYAN='\033[1;36m'
 COLOR_PLAIN='\033[0m'
 
+_VAR_PATTERN = re.compile(r"\$([A-Za-z_]\w*)")
+
 def merge(envA, envB):
     a = envA['spack']
     for k, b in envB['spack'].items():
@@ -77,6 +79,34 @@ def merge_yaml(A, B):
         else:
             a[k] = b
     return A
+
+def replace_variables(text, scopes=[os.environ]):
+    """
+    Replace all occurrences of $var in `text` by looking up `var`
+    in each of the given `scopes` (in order). Scopes can be dicts or
+    objects; if an object has a `visible_variables` attribute (an iterable
+    of names), only attributes in that iterable will be considered.
+    """
+    def _lookup(var):
+        for scope in scopes:
+            if isinstance(scope, dict):
+                if var in scope:
+                    return scope[var]
+                continue
+            vis = getattr(scope, "visible_variables", None)
+            if vis is not None:
+                if var not in vis:
+                    continue
+            if hasattr(scope, var):
+                return getattr(scope, var)
+        return None
+    def _sub(match):
+        name = match.group(1)
+        val = _lookup(name)
+        if val is None:
+            return match.group(0)
+        return str(val)
+    return _VAR_PATTERN.sub(_sub, text)
 
 def load_workflow(path, template_dirs=[]):
     with open(path) as f:
@@ -211,16 +241,8 @@ class Context(object):
         return self.load_workflow(self.workflow)
 
     @property
-    def enable_cdash_support(self):
-        return "KESSEL_CDASH_SUPPORT" in os.environ and os.environ["KESSEL_CDASH_SUPPORT"].upper() in ('ON', 'TRUE', 'YES', '1')
-
-    @property
-    def builder(self):
-        return CTestBuildDriver(self) if self.enable_cdash_support else CMakeBuildDriver(self)
-
-    @property
     def source_dir(self):
-        return Path(os.environ["KESSEL_PIPELINE_SOURCE_DIR"])
+        return Path(os.environ.get("KESSEL_PIPELINE_SOURCE_DIR", Path.cwd()))
 
     @source_dir.setter
     def source_dir(self, value):
@@ -228,7 +250,7 @@ class Context(object):
 
     @property
     def build_dir(self):
-        return Path(os.environ["KESSEL_PIPELINE_BUILD_DIR"])
+        return Path(os.environ.get("KESSEL_PIPELINE_BUILD_DIR", Path.cwd() / "build"))
 
     @build_dir.setter
     def build_dir(self, value):
@@ -236,7 +258,7 @@ class Context(object):
 
     @property
     def install_dir(self):
-        return Path(os.environ["KESSEL_PIPELINE_INSTALL_DIR"])
+        return Path(os.environ.get("KESSEL_PIPELINE_INSTALL_DIR", self.build_dir / "install"))
 
     @install_dir.setter
     def install_dir(self, value):
@@ -340,31 +362,11 @@ class Context(object):
 
     @property
     def environment(self):
-        spack_env = os.environ.get('SPACK_ENV', default=None)
-        if spack_env:
-            env_dir = Path(spack_env).resolve().parent
-            sys_dir = self.deployment_dir / "environments" / self.system
-            return env_dir.relative_to(sys_dir)
-        return None
+        return os.environ.get('KESSEL_ENVIRONMENT', default="default")
 
     @environment.setter
     def environment(self, value):
-        if self.deployment_dir:
-            if self.system:
-                env_dir = self.deployment_dir / "environments" / self.system / value
-                if env_dir.exists():
-                    self.senv.echo(f"Activating {self.system} environment {value}")
-                    self.senv.eval(f"spack env activate -d {env_dir}")
-                else:
-                    raise Exception(f"Unknown environment '{value}' for system '{self.system}'!")
-            else:
-                raise Exception("No active system!")
-        elif self.system and self.system == "local":
-            self.senv.echo(f"Activating {self.system} environment {value}")
-            self.senv.eval(f"spack env activate {value}")
-        else:
-            raise Exception("No active deployment!")
-
+        self.senv.set_env_var("KESSEL_ENVIRONMENT", value)
 
     @property
     def config(self):
@@ -387,8 +389,27 @@ class Context(object):
     def replicate_sqfs(self):
         return self.deployment_dir / ".replicate.sqfs"
 
-    def evaluate(self, text, locals={}):
-        return text
+    @property
+    def cwd(self):
+        return Path.cwd()
+
+    @property
+    def visible_variables(self):
+        return [
+          'system',
+          'environment',
+          'build_dir',
+          'source_dir',
+          'install_dir',
+          'build_env',
+          'project',
+          'project_spec',
+          'project_version',
+          'cwd',
+        ]
+
+    def evaluate(self, text, locals=[]):
+        return replace_variables(text, locals + [self, os.environ])
 
     def replicate(self, dest):
         print("Creating deployment copy...")
@@ -571,20 +592,23 @@ class KesselDeployment(object):
 class ShellEnvironment(object):
     def __init__(self):
         self.fd = open(3, 'w', closefd=False)
-        self.cmd_count = 0
+        self.debug = False
+
+    @property
+    def target(self):
+        return sys.stdout if self.debug else self.fd
 
     def begin_subshell(self,env_script=None):
-        pass
+        if env_script:
+            print(f"(source {env_script};", file=self.target, flush=True)
+        else:
+            print("(", flush=True)
 
     def end_subshell(self):
-        pass
+        print(")", flush=True, file=self.target)
 
-    def eval(self, cmd):
-        if self.cmd_count > 0:
-            print(" && " + cmd, file=self.fd, flush=True, end="")
-        else:
-            print(cmd, file=self.fd, flush=True, end="")
-        self.cmd_count += 1
+    def eval(self, cmd, end="\n"):
+        print(cmd, file=self.target, flush=True, end=end)
 
     def set_env_var(self, name, value):
         if value is None:
@@ -626,49 +650,6 @@ class ShellEnvironment(object):
 
     def section_end(self, section, passthrough=False):
         self._section("end", section, passthrough)
-
-
-class BuildDriver(object):
-    def __init__(self, ctx):
-        self.ctx = ctx
-
-    def buildenv_cmd(self, cmd):
-        self.ctx.senv.eval(f"(source {self.ctx.build_env}; {cmd})")
-
-
-class CMakeBuildDriver(BuildDriver):
-    def __init__(self, ctx):
-        super().__init__(ctx)
-
-    def build(self):
-        self.buildenv_cmd(f"cmake {self.ctx.build_dir}; cmake --build {self.ctx.build_dir} --parallel")
-
-    def test(self):
-        self.buildenv_cmd(f"export CTEST_OUTPUT_ON_FAILURE=1; ctest --test-dir {self.ctx.build_dir} --output-junit tests.xml")
-
-    def install(self):
-        self.buildenv_cmd(f"cmake --build {self.ctx.build_dir} --target install")
-
-
-class CTestBuildDriver(CMakeBuildDriver):
-    def __init__(self, ctx, submit_on_error=False):
-        super().__init__(ctx)
-        if "CTEST_MODE" not in os.environ:
-            ctx.senv.set_env_var("CTEST_MODE", "Continous")
-        self.report_errors = "ReportErrors" if submit_on_error else ""
-
-    @property
-    def ctest_driver_script(self):
-        return self.ctx.kessel_root / "share" / "kessel" / "cmake" / "ctest_driver.cmake"
-
-    def build(self):
-        self.buildenv_cmd(f"ctest -VV -S {self.ctest_driver_script},Configure,Build,{self.report_errors}")
-
-    def test(self):
-        self.buildenv_cmd(f"export CTEST_OUTPUT_ON_FAILURE=1; ctest -V -S {self.ctest_driver_script},Test,{self.report_errors}")
-
-    def submit(self):
-        self.buildenv_cmd(f"ctest -V -S {self.ctest_driver_script},Submit")
 
 
 def init(args, senv):
@@ -714,6 +695,21 @@ def env_list(args, senv):
 def env_activate(args, senv):
     ctx = Context(senv)
     ctx.environment = args.env
+    if ctx.deployment_dir:
+        if ctx.system:
+            env_dir = ctx.deployment_dir / "environments" / ctx.system / value
+            if env_dir.exists():
+                senv.echo(f"Activating {self.system} environment {value}")
+                senv.eval(f"spack env activate -d {env_dir}")
+            else:
+                raise Exception(f"Unknown environment '{value}' for system '{ctx.system}'!")
+        else:
+            raise Exception("No active system!")
+    elif ctx.system and ctx.system == "local":
+        senv.echo(f"Activating {ctx.system} environment {ctx.environment}")
+        senv.eval(f"spack env activate {ctx.environment}")
+    else:
+        raise Exception("No active deployment!")
 
 def create_bootstrap_mirror(ctx, senv):
     # create bootstrap mirror
@@ -856,8 +852,6 @@ def status(ctx, step=None):
 
 def pipeline_setup(args, senv):
     ctx = Context(senv)
-    senv.section_start("setup", "Setup", collapsed=True, passthrough=True)
-    print(status(ctx, "setup"), flush=True)
     os.umask(0o007)
     senv.eval("umask 0007")
 
@@ -870,46 +864,14 @@ def pipeline_setup(args, senv):
         ctx.deployment_dir = ctx.create_ci_deployment()
 
     ctx.system = args.system
-    senv.section_end("setup", passthrough=True)
-    ctx.pipeline_state = "setup"
-
-def pipeline_env(args, senv):
-    ctx = Context(senv)
-    senv.section_start("env", "Create environment", collapsed=True)
-    senv.echo(status(ctx, "env"))
-
-    # TODO local system, which will create a new Spack env and activate it
-    # TODO custom-spec, which uses custom/spack.yaml
-    ctx.environment = args.env
-    ctx.project_spec = args.spec
-    ctx.source_dir = args.source_dir
-    ctx.build_dir = args.build_dir
-
-    if os.path.exists(f"spack_repo/{ctx.project}"):
-        senv.eval(f"(spack repo remove {ctx.project} 2> /dev/null > /dev/null || true)")
-        senv.eval(f"spack repo add {ctx.source_dir}/spack_repo/{ctx.project}")
-
-    if ctx.project_version:
-        senv.set_env_var("PROJECT_PREFERRED_VERSION", ctx.project_version)
-    else:
-        # the preferred version is dependent on the active spack package in this spack environment and needs to be determined at runtime
-        # we could avoid this if spack develop would chose the preferred version if nothing is specified
-        senv.eval(f"export PROJECT_PREFERRED_VERSION=$(spack-python -c \"spec = spack.spec.Spec('{ctx.project}');pkg_cls = spack.repo.PATH.get_pkg_class(spec.fullname);print(spack.package_base.preferred_version(pkg_cls(spec)))\")")
-    senv.eval(f"spack develop -b {ctx.build_dir} -p {ctx.source_dir} --no-clone {ctx.project}@${{PROJECT_PREFERRED_VERSION}}")
-    senv.unset_env_var("PROJECT_PREFERRED_VERSION")
-
-    # TODO custom-spec support
-
-    # ignore first concretization output due to Spack bug https://github.com/spack/spack/issues/49326
-    senv.eval("(spack concretize -f 2> /dev/null > /dev/null || true)")
-    senv.eval("spack concretize -f")
-    senv.eval("spack install --include-build-deps --only dependencies")
-    senv.section_end("env")
-    senv.eval("test -d \"$SPACK_ENV\"")
-    ctx.pipeline_state = "env"
 
 def pipeline_step(args, senv):
     ctx = Context(senv)
+
+    for prop in ctx.visible_variables:
+        if hasattr(args, prop):
+            setattr(ctx, prop, getattr(args, prop))
+
     workflow = ctx.workflow_config
     step = next(s for s in workflow["steps"] if s["name"] == args.step)
     
@@ -919,20 +881,24 @@ def pipeline_step(args, senv):
     script = step["script"]
     for line in script:
         if isinstance(line, str):
-            print(ctx.evaluate(line, locals=workflow["variables"]))
+            senv.eval("[ $? ] && " + ctx.evaluate(line, [args, workflow["variables"]]))
         elif isinstance(line, dict):
             if "buildenv" in line and line["buildenv"]:
                 senv.begin_subshell(env_script=ctx.build_env)
 
             if isinstance(line["run"], str):
-                print(ctx.evaluate(line["run"], locals=workflow["variables"]))
+                senv.eval("[ $? ] && " + ctx.evaluate(line["run"], [args, workflow["variables"]]))
             elif isinstance(line["run"], list):
-                print(ctx.evaluate(subcmd, locals=workflow["variables"]))
+                for sline in line["run"]:
+                    for subcmd in sline.splitlines():
+                        senv.eval("[ $? ] && " + ctx.evaluate(subcmd, [args, workflow["variables"]]))
 
             if "buildenv" in line and line["buildenv"]:
                 senv.end_subshell()
+    senv.eval("ret=$?")
 
     senv.section_end(step["name"])
+    senv.eval("test $ret -eq 0 && ", end="")
     ctx.pipeline_state = step["name"]
 
 def pipeline_status(args, senv):
@@ -974,8 +940,11 @@ def snapshot_restore(args, senv):
 
 def run(args, senv):
     ctx = Context(senv)
-    ctx.project_spec = args.spec
     ctx.pipeline_state = None
+    
+    for prop in ctx.visible_variables:
+        if hasattr(args, prop):
+            setattr(ctx, prop, getattr(args, prop))
 
     if "CI" in os.environ:
         print(f"{COLOR_BLUE} ")
@@ -989,21 +958,21 @@ def run(args, senv):
             print("flux alloc", os.environ["LLNL_FLUX_SCHEDULER_PARAMETERS"])
         elif "SCHEDULER_PARAMETERS" in os.environ:
             print("salloc", os.environ["SCHEDULER_PARAMETERS"])
-        print(f"kessel run -s {args.system} -e {args.env} {args.spec}")
+        print(f"kessel run -s {ctx.system} -e {ctx.environment} {ctx.project_spec}")
         print(" ")
         print("######################################################################")
         print(f"{COLOR_PLAIN} ", flush=True)
 
     workflow = ctx.workflow_config
-
     for step in workflow["steps"]:
-        senv.eval(f"kessel pipeline {step['name']}")
+        senv.eval(f"[ $? ] && kessel pipeline {step['name']}")
         if args.until == step["name"]: break
 
 def main():
     senv = ShellEnvironment()
     ctx = Context(senv)
-    parser = argparse.ArgumentParser(prog='kessel')
+    parser = argparse.ArgumentParser(prog='kessel', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--shell-debug', action="store_true", help="output shell commands instead of executing them")
     subparsers = parser.add_subparsers()
     init_cmd = subparsers.add_parser('init')
     init_cmd.add_argument('config_dir')
@@ -1082,42 +1051,42 @@ def main():
     pipeline_setup_cmd.add_argument('-s', '--system', default="local")
     pipeline_setup_cmd.set_defaults(func=pipeline_setup)
 
-    pipeline_env_cmd = pipeline_subparsers.add_parser('_env')
-    pipeline_env_cmd.add_argument('-e', '--env', required=True)
-    pipeline_env_cmd.add_argument('-S', '--source_dir', default=Path.cwd(), type=Path)
-    pipeline_env_cmd.add_argument('-B', '--build_dir', default=Path.cwd() / "build", type=Path)
-    pipeline_env_cmd.add_argument('spec', help="project spec to build")
-    pipeline_env_cmd.set_defaults(func=pipeline_env)
-
     pipeline_status_cmd = pipeline_subparsers.add_parser('status')
     pipeline_status_cmd.set_defaults(func=pipeline_status)
 
     run_cmd = subparsers.add_parser('run')
-    run_cmd.add_argument('-s', '--system', default="local")
 
     workflow = ctx.workflow_config
     names = [s["name"] for s in workflow["steps"]]
 
-    for a in workflow["arguments"]:
-        atype = list(a.keys())[0]
-        if atype == "argument":
-            arg = a["argument"]
-            pos_args = []
-            kw_args = {}
-            for p in arg:
-                if isinstance(p, str):
-                    pos_args.append(p)
-                elif isinstance(p, dict):
-                    kw_args.update({k: ctx.evaluate(v, locals=workflow['variables']) for k,v in p.items()})
-            run_cmd.add_argument(*pos_args, **kw_args)
+    def _add_arguments(cmd, cmd_args, local_vars=[]):
+        for a in cmd_args:
+            atype = list(a.keys())[0]
+            if atype == "argument":
+                arg = a["argument"]
+                pos_args = []
+                kw_args = {}
+                for p in arg:
+                    if isinstance(p, str):
+                        pos_args.append(p)
+                    elif isinstance(p, dict):
+                        kw_args.update({k: ctx.evaluate(v, [local_vars]) for k,v in p.items()})
+                try:
+                    cmd.add_argument(*pos_args, **kw_args)
+                except Exception as e:
+                    print("add_argument params:", pos_args, kw_args)
+                    raise e
 
+    _add_arguments(run_cmd, workflow.get("arguments", []), workflow.get("variables", {}))
     run_cmd.add_argument('-u', '--until', choices=names, default=names[-1])
     run_cmd.set_defaults(func=run)
 
     for step in workflow["steps"]:
         pipeline_step_cmd = pipeline_subparsers.add_parser(step["name"])
+        _add_arguments(pipeline_step_cmd, step.get("arguments", []), workflow.get("variables", {}))
         pipeline_step_cmd.set_defaults(func=pipeline_step, step=step["name"])
 
     args = parser.parse_args()
+    senv.debug = args.shell_debug
     args.func(args, senv)
     return 0
