@@ -689,12 +689,12 @@ def env_activate(args, ctx, senv):
     ctx.environment = args.env
     if ctx.deployment_dir:
         if ctx.system:
-            env_dir = ctx.deployment_dir / "environments" / ctx.system / value
+            env_dir = ctx.deployment_dir / "environments" / ctx.system / ctx.environment
             if env_dir.exists():
-                senv.echo(f"Activating {self.system} environment {value}")
+                senv.echo(f"Activating {ctx.system} environment {ctx.environment}")
                 senv.eval(f"spack env activate -d {env_dir}")
             else:
-                raise Exception(f"Unknown environment '{value}' for system '{ctx.system}'!")
+                raise Exception(f"Unknown environment '{ctx.environment}' for system '{ctx.system}'!")
         else:
             raise Exception("No active system!")
     elif ctx.system and ctx.system == "local":
