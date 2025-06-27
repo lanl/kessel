@@ -1,0 +1,5 @@
+steps:
+ - name: setup
+   title: Setup
+   script:
+    - kessel pipeline setup -s $system

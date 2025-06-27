@@ -1,0 +1,27 @@
+extends:
+ - setup
+ - env
+ - configure
+steps:
+ - name: build
+   title: Build
+   steps:
+    - run: ctest -VV -S $ctest_driver_script,Configure,Build,$report_errors
+      buildenv: true
+ - name: test
+   title: Test 
+   steps:
+    - run:
+       - export CTEST_OUTPUT_ON_FAILURE=1
+       - ctest -V -S $ctest_driver_script,Test,$report_errors
+      buildenv: true
+ - name: install
+   title: Install
+   steps:
+    - run: cmake --build $build_dir --target install
+      buildenv: true
+ - name: submit
+   title: Submit
+   steps:
+    - run: ctest -V -S $ctest_driver_script,Submit
+      buildenv: true

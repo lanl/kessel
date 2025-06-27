@@ -1,0 +1,24 @@
+extends:
+ - setup
+ - env
+ - configure
+steps:
+ - name: build
+   title: Build
+   script:
+    - run:
+       - cmake $build_dir
+       - cmake --build $build_dir --parallel
+      buildenv: true
+ - name: test
+   title: Test 
+   script:
+    - run:
+       - export CTEST_OUTPUT_ON_FAILURE=1
+       - ctest --test-dir $build_dir --output-junit tests.xml
+      buildenv: true
+ - name: install
+   title: Install
+   script:
+    - run: cmake --build $build_dir --target install
+      buildenv: true

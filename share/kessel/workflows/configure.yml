@@ -1,0 +1,21 @@
+arguments:
+  - argument:
+      - '-I'
+      - '--install-dir'
+      - default: "$cwd/build/install"
+steps:
+ - name: configure
+   title: Configure
+   arguments:
+     - argument:
+         - '-I'
+         - '--install-dir'
+         - default: "$cwd/build/install"
+   script:
+    - spack install --test root --include-build-deps -u cmake -v $project
+    - spack build-env --dump $build_env $project
+    - mv $build_env $build_env.tmp
+    - grep -v '^SLURM' $build_env.tmp > $build_env
+    - rm $build_env.tmp
+    - run: cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX=$install_dir $build_dir 2> /dev/null > /dev/null
+      buildenv: true

@@ -8,6 +8,7 @@ import subprocess
 import shutil
 import tempfile
 import textwrap
+import itertools
 
 from ruamel.yaml import YAML
 from pathlib import Path
@@ -16,7 +17,7 @@ import glob
 import sys
 from pathlib import Path
 
-KESSEL_VERSION="0.0.1"
+KESSEL_VERSION="0.0.2"
 
 PROGRESS_STEP_COMPLETE = "●"
 PROGRESS_STEP_PENDING = "○"
@@ -65,6 +66,42 @@ def load_env(path, template_dirs=[]):
             sys.exit(f"ERROR: unknown template '{base_name}'")
     return merge(env, new_env)
 
+def merge_yaml(A, B):
+    a = A
+    for k, b in B.items():
+        a1 = a.get(k)
+        if isinstance(a1, list):
+            a1 += b
+        elif isinstance(a1, dict):
+            a1 |= b
+        else:
+            a[k] = b
+    return A
+
+def load_workflow(path, template_dirs=[]):
+    with open(path) as f:
+        yaml = YAML(typ="safe")
+        new_wf = yaml.load(f)
+
+    base_names = new_wf.get('extends', ())
+
+    if isinstance(base_names, str):
+        base_names = [base_names]
+
+    new_wf.pop('extends', None)
+
+    wf = {}
+    for base_name in base_names:
+        found = False
+        for template_dir in template_dirs:
+            template = template_dir / f"{base_name}.yml"
+            if template.exists():
+                wf = merge_yaml(wf, load_workflow(template, template_dirs))
+                found = True
+
+        if not found:
+            sys.exit(f"ERROR: unknown template '{base_name}'")
+    return merge_yaml(wf, new_wf)
 
 class GitConfig(object):
     def __init__(self, git_url, git_commit):
@@ -134,18 +171,44 @@ class Context(object):
         self.senv = senv
 
     @property
-    def steps(self):
-        steps = [
-            {'name': "setup", 'title': "Setup"},
-            {'name': "env", 'title': "Prepare Environment"},
-            {'name': "configure", 'title': "Configure"},
-            {'name': "build", 'title': "Build"},
-            {'name': "test", 'title': "Test"},
-            {'name': "install", 'title': "Install"},
+    def kessel_dir(self):
+        canditates = itertools.chain([Path.cwd()], Path.cwd().parents)
+        for d in canditates:
+            path = d / ".kessel"
+            if path.exists() and path.is_dir():
+                return path
+        return None
+
+    @property
+    def workflows(self):
+        d = self.kessel_dir
+        if d:
+            wd = d / "workflows"
+            if wd.exists() and wd.is_dir():
+                for f in wd.iterdir():
+                    if f.suffix == ".yml":
+                        yield f.stem
+
+    def load_workflow(self, name):
+        workflow_file = self.kessel_dir / "workflows" / f"{name}.yml"
+        template_dirs = [
+            self.kessel_dir / "workflows" / "templates",
+            self.kessel_workflow_template_dir,
         ]
-        if hasattr(self.builder, "submit"):
-            steps.append({'name': "submit", 'title': "Submit"})
-        return steps
+        return load_workflow(workflow_file, template_dirs)
+
+    @property
+    def workflow(self):
+        return os.environ.get("KESSEL_WORKFLOW", "default")
+
+    @workflow.setter
+    def workflow(self, value):
+        self.senv.echo(f"Activating {value} workflow")
+        self.senv.set_env_var("KESSEL_WORKFLOW", value)
+
+    @property
+    def workflow_config(self):
+        return self.load_workflow(self.workflow)
 
     @property
     def enable_cdash_support(self):
@@ -238,6 +301,10 @@ class Context(object):
         return self.kessel_config_dir / "templates"
 
     @property
+    def kessel_workflow_template_dir(self):
+        return self.kessel_root / "share" / "kessel" / "workflows"
+
+    @property
     def deployment_dir(self):
         deployment_dir = os.environ.get('KESSEL_DEPLOYMENT', default=None)
         return Path(deployment_dir) if deployment_dir else None
@@ -319,6 +386,9 @@ class Context(object):
     @property
     def replicate_sqfs(self):
         return self.deployment_dir / ".replicate.sqfs"
+
+    def evaluate(self, text, locals={}):
+        return text
 
     def replicate(self, dest):
         print("Creating deployment copy...")
@@ -502,6 +572,12 @@ class ShellEnvironment(object):
     def __init__(self):
         self.fd = open(3, 'w', closefd=False)
         self.cmd_count = 0
+
+    def begin_subshell(self,env_script=None):
+        pass
+
+    def end_subshell(self):
+        pass
 
     def eval(self, cmd):
         if self.cmd_count > 0:
@@ -747,8 +823,9 @@ def step_lines(title):
     return [line.center(min_width) for line in textwrap.wrap(title, width=min_width, break_long_words=False, break_on_hyphens=False)]
 
 def status(ctx, step=None):
-    names = [s["name"] for s in ctx.steps]
-    captions = [step_lines(s["title"]) for s in ctx.steps]
+    steps = ctx.workflow_config["steps"]
+    names = [s["name"] for s in steps]
+    captions = [step_lines(s["title"]) for s in steps]
     lines = len(max(captions, key=len))
     widths = [len(c[0])  for c in captions] + [0]
     step_size = [0] + [(widths[i] + widths[i+1]) // 2 - widths[i] % 2 for i in range(len(widths)-1)]
@@ -756,8 +833,8 @@ def status(ctx, step=None):
     s = " \n"
     s += "  "
     s += " "*(widths[0] // 2)
-    completed = names.index(step) if step in ctx.steps else -1
-    for i, _ in enumerate(ctx.steps):
+    completed = names.index(step) if step in names else -1
+    for i, _ in enumerate(names):
         if i <= completed:
             s += PROGRESS_BAR_COMPLETE * step_size[i]
             s += PROGRESS_STEP_COMPLETE
@@ -831,60 +908,56 @@ def pipeline_env(args, senv):
     senv.eval("test -d \"$SPACK_ENV\"")
     ctx.pipeline_state = "env"
 
-def pipeline_configure(args, senv):
+def pipeline_step(args, senv):
     ctx = Context(senv)
-    ctx.install_dir = args.install_dir
+    workflow = ctx.workflow_config
+    step = next(s for s in workflow["steps"] if s["name"] == args.step)
+    
+    senv.section_start(step["name"], step["title"], collapsed=step.get("collapsed", False))
+    senv.echo(status(ctx, step["name"]))
 
-    senv.section_start("configure", "Initial Spack CMake Configure", collapsed=True)
-    senv.echo(status(ctx, "configure"))
-    senv.eval(f"spack install --test root --include-build-deps -u cmake -v {ctx.project}")
+    script = step["script"]
+    for line in script:
+        if isinstance(line, str):
+            print(ctx.evaluate(line, locals=workflow["variables"]))
+        elif isinstance(line, dict):
+            if "buildenv" in line and line["buildenv"]:
+                senv.begin_subshell(env_script=ctx.build_env)
 
-    senv.eval(f"spack build-env --dump {ctx.build_env} {ctx.project}")
-    senv.eval(f"mv {ctx.build_env} {ctx.build_env}.tmp")
-    senv.eval(f"grep -v '^SLURM' {ctx.build_env}.tmp > {ctx.build_env}")
-    senv.eval(f"rm {ctx.build_env}.tmp")
+            if isinstance(line["run"], str):
+                print(ctx.evaluate(line["run"], locals=workflow["variables"]))
+            elif isinstance(line["run"], list):
+                print(ctx.evaluate(subcmd, locals=workflow["variables"]))
 
-    # silently change Spack defaults
-    senv.eval(f"(source {ctx.build_env}; cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX={ctx.install_dir} {ctx.build_dir} 2> /dev/null > /dev/null )")
+            if "buildenv" in line and line["buildenv"]:
+                senv.end_subshell()
 
-    senv.section_end("configure")
-    ctx.pipeline_state = "configure"
-
-def pipeline_build(args, senv):
-    ctx = Context(senv)
-    senv.section_start("build", "CMake build")
-    senv.echo(status(ctx, "build"))
-    ctx.builder.build()
-    senv.section_end("build")
-    ctx.pipeline_state = "build"
-
-def pipeline_test(args, senv):
-    ctx = Context(senv)
-    senv.section_start("test", "Tests")
-    senv.echo(status(ctx, "test"))
-    ctx.builder.test()
-    senv.section_end("test")
-    ctx.pipeline_state = "test"
-
-def pipeline_install(args, senv):
-    ctx = Context(senv)
-    senv.section_start("install", "Install")
-    senv.echo(status(ctx, "install"))
-    ctx.builder.install()
-    senv.section_end("install")
-    ctx.pipeline_state = "install"
-
-def pipeline_submit(args, senv):
-    ctx = Context(senv)
-    senv.section_start("submit", "Submit results to CDash")
-    senv.echo(status(ctx, "submit"))
-    ctx.builder.submit()
-    senv.section_end("submit")
-    ctx.pipeline_state = "submit"
+    senv.section_end(step["name"])
+    ctx.pipeline_state = step["name"]
 
 def pipeline_status(args, senv):
     ctx = Context(senv)
     senv.echo(status(ctx, ctx.pipeline_state))
+
+def workflow_list(args, senv):
+    ctx = Context(senv)
+    for wf in ctx.workflows:
+        print(wf)
+
+def workflow_activate(args, senv):
+    ctx = Context(senv)
+    ctx.workflow = args.name
+
+def workflow_status(args, senv):
+    ctx = Context(senv)
+    senv.echo(status(ctx, ctx.pipeline_state))
+
+def workflow_get(args, senv):
+    ctx = Context(senv)
+    yaml = YAML(typ="safe")
+    yaml.default_flow_style = False
+    yaml.width = 256
+    yaml.dump(ctx.workflow_config, sys.stdout)
 
 def snapshot_create(args, senv):
     ctx = Context(senv)
@@ -921,29 +994,15 @@ def run(args, senv):
         print("######################################################################")
         print(f"{COLOR_PLAIN} ", flush=True)
 
-    senv.eval(f"kessel pipeline setup -s {args.system}")
-    if args.until == "setup": return
+    workflow = ctx.workflow_config
 
-    senv.eval(f"kessel pipeline env -e {args.env} -S {args.source_dir} -B {args.build_dir} {args.spec}")
-    if args.until == "env": return
-
-    senv.eval(f"kessel pipeline configure -I {args.install_dir}")
-    if args.until == "configure": return
-
-    senv.eval(f"kessel pipeline build")
-    if args.until == "build": return
-
-    senv.eval(f"kessel pipeline test")
-    if args.until == "test": return
-
-    senv.eval(f"kessel pipeline install")
-    if args.until == "install": return
-
-    if hasattr(ctx.builder, "submit"):
-        senv.eval(f"kessel pipeline submit")
+    for step in workflow["steps"]:
+        senv.eval(f"kessel pipeline {step['name']}")
+        if args.until == step["name"]: break
 
 def main():
     senv = ShellEnvironment()
+    ctx = Context(senv)
     parser = argparse.ArgumentParser(prog='kessel')
     subparsers = parser.add_subparsers()
     init_cmd = subparsers.add_parser('init')
@@ -1000,48 +1059,64 @@ def main():
     finalize_cmd = subparsers.add_parser('finalize')
     finalize_cmd.set_defaults(func=finalize)
 
+    workflow_cmd = subparsers.add_parser('workflow')
+    workflow_subparsers = workflow_cmd.add_subparsers()
+
+    workflow_list_cmd = workflow_subparsers.add_parser('list')
+    workflow_list_cmd.set_defaults(func=workflow_list)
+
+    workflow_activate_cmd = workflow_subparsers.add_parser('activate')
+    workflow_activate_cmd.add_argument('name')
+    workflow_activate_cmd.set_defaults(func=workflow_activate)
+
+    workflow_status_cmd = workflow_subparsers.add_parser('status')
+    workflow_status_cmd.set_defaults(func=workflow_status)
+
+    workflow_get_cmd = workflow_subparsers.add_parser('get')
+    workflow_get_cmd.set_defaults(func=workflow_get)
+
     pipeline_cmd = subparsers.add_parser('pipeline')
     pipeline_subparsers = pipeline_cmd.add_subparsers()
 
-    pipeline_setup_cmd = pipeline_subparsers.add_parser('setup')
+    pipeline_setup_cmd = pipeline_subparsers.add_parser('_setup')
     pipeline_setup_cmd.add_argument('-s', '--system', default="local")
     pipeline_setup_cmd.set_defaults(func=pipeline_setup)
 
-    pipeline_env_cmd = pipeline_subparsers.add_parser('env')
+    pipeline_env_cmd = pipeline_subparsers.add_parser('_env')
     pipeline_env_cmd.add_argument('-e', '--env', required=True)
     pipeline_env_cmd.add_argument('-S', '--source_dir', default=Path.cwd(), type=Path)
     pipeline_env_cmd.add_argument('-B', '--build_dir', default=Path.cwd() / "build", type=Path)
     pipeline_env_cmd.add_argument('spec', help="project spec to build")
     pipeline_env_cmd.set_defaults(func=pipeline_env)
 
-    pipeline_configure_cmd = pipeline_subparsers.add_parser('configure')
-    pipeline_configure_cmd.add_argument('-I', '--install_dir', default=Path.cwd() / "install", type=Path)
-    pipeline_configure_cmd.set_defaults(func=pipeline_configure)
-
-    pipeline_build_cmd = pipeline_subparsers.add_parser('build')
-    pipeline_build_cmd.set_defaults(func=pipeline_build)
-
-    pipeline_test_cmd = pipeline_subparsers.add_parser('test')
-    pipeline_test_cmd.set_defaults(func=pipeline_test)
-
-    pipeline_install_cmd = pipeline_subparsers.add_parser('install')
-    pipeline_install_cmd.set_defaults(func=pipeline_install)
-
-    pipeline_submit_cmd = pipeline_subparsers.add_parser('submit')
-    pipeline_submit_cmd.set_defaults(func=pipeline_submit)
-
     pipeline_status_cmd = pipeline_subparsers.add_parser('status')
     pipeline_status_cmd.set_defaults(func=pipeline_status)
 
     run_cmd = subparsers.add_parser('run')
     run_cmd.add_argument('-s', '--system', default="local")
-    run_cmd.add_argument('-e', '--env', required=True)
-    run_cmd.add_argument('-u', '--until', choices=("setup", "env", "configure", "build", "test", "install", "submit"), default="submit")
-    run_cmd.add_argument('-S', '--source_dir', default=Path.cwd(), type=Path)
-    run_cmd.add_argument('-B', '--build_dir', default=Path.cwd() / "build", type=Path)
-    run_cmd.add_argument('-I', '--install_dir', default=Path.cwd() / "install", type=Path)
-    run_cmd.add_argument('spec', help="project spec to build")
+
+    workflow = ctx.workflow_config
+    names = [s["name"] for s in workflow["steps"]]
+
+    for a in workflow["arguments"]:
+        atype = list(a.keys())[0]
+        if atype == "argument":
+            arg = a["argument"]
+            pos_args = []
+            kw_args = {}
+            for p in arg:
+                if isinstance(p, str):
+                    pos_args.append(p)
+                elif isinstance(p, dict):
+                    kw_args.update({k: ctx.evaluate(v, locals=workflow['variables']) for k,v in p.items()})
+            run_cmd.add_argument(*pos_args, **kw_args)
+
+    run_cmd.add_argument('-u', '--until', choices=names, default=names[-1])
     run_cmd.set_defaults(func=run)
+
+    for step in workflow["steps"]:
+        pipeline_step_cmd = pipeline_subparsers.add_parser(step["name"])
+        pipeline_step_cmd.set_defaults(func=pipeline_step, step=step["name"])
 
     args = parser.parse_args()
     args.func(args, senv)
