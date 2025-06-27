@@ -652,23 +652,19 @@ class ShellEnvironment(object):
         self._section("end", section, passthrough)
 
 
-def init(args, senv):
-    ctx = Context(senv)
+def init(args, ctx, senv):
     source_config = KesselSourceConfig(args.config_dir)
     deployment = KesselDeployment()
     deployment.init(ctx, source_config)
 
-def activate(args, senv):
-    ctx = Context(senv)
+def activate(args, ctx, senv):
     deployment_dir = Path(args.path).resolve()
     if deployment_dir.exists():
         ctx.deployment_dir = deployment_dir
     else:
         raise Exception(f"Deployment at '{deployment_dir} does not exist!")
 
-def system_list(args, senv):
-    ctx = Context(senv)
-
+def system_list(args, ctx, senv):
     print("local")
 
     if ctx.deployment_dir:
@@ -677,13 +673,10 @@ def system_list(args, senv):
         for d in [c.name for c in environments_dir.iterdir() if c.is_dir()]:
             print(d)
 
-def system_activate(args, senv):
-    ctx = Context(senv)
+def system_activate(args, ctx, senv):
     ctx.system = args.system
 
-def env_list(args, senv):
-    ctx = Context(senv)
-
+def env_list(args, ctx, senv):
     if ctx.deployment_dir and ctx.system:
         env_dir = ctx.deployment_dir / "environments" / ctx.system
         env_glob = (env_dir /  "**" / "*.yaml").resolve()
@@ -692,8 +685,7 @@ def env_list(args, senv):
         for e in envs:
             print(Path(e).relative_to(env_dir).parent)
 
-def env_activate(args, senv):
-    ctx = Context(senv)
+def env_activate(args, ctx, senv):
     ctx.environment = args.env
     if ctx.deployment_dir:
         if ctx.system:
@@ -755,15 +747,11 @@ def create_system_source_mirror(ctx, envs, senv):
         env_path = Path(e).parent
         create_env_mirror(mirror_dir, mirror_exclude_file, env_path.relative_to(env_dir), env_path, senv)
 
-def bootstrap_create(args, senv):
-    ctx = Context(senv)
-
+def bootstrap_create(args, ctx, senv):
     if ctx.deployment_dir and ctx.system:
         create_bootstrap_mirror(ctx, senv)
 
-def mirror_create(args, senv):
-    ctx = Context(senv)
-
+def mirror_create(args, ctx, senv):
     if ctx.deployment_dir and ctx.system:
         env_dir = ctx.deployment_dir / "environments" / ctx.system
         if args.all:
@@ -778,16 +766,13 @@ def remove_packages(pkgs, senv):
     for pkg in pkgs:
         senv.eval(f"spack uninstall -y --all --dependents {pkg} || true")
 
-def clean(args, senv):
-    ctx = Context(senv)
+def clean(args, ctx, senv):
     if ctx.deployment_dir:
         config = ctx.config
         remove_packages(config.build.exclude, senv)
         senv.eval("spack clean -a")
 
-def finalize(args, senv):
-    ctx = Context(senv)
-
+def finalize(args, ctx, senv):
     if ctx.deployment_dir:
         group = ctx.group
         dperms = ctx.directory_permissions # also applies to executables
@@ -850,8 +835,7 @@ def status(ctx, step=None):
     s += " \n"
     return s
 
-def pipeline_setup(args, senv):
-    ctx = Context(senv)
+def pipeline_setup(args, ctx, senv):
     os.umask(0o007)
     senv.eval("umask 0007")
 
@@ -865,9 +849,7 @@ def pipeline_setup(args, senv):
 
     ctx.system = args.system
 
-def pipeline_step(args, senv):
-    ctx = Context(senv)
-
+def pipeline_step(args, ctx, senv):
     for prop in ctx.visible_variables:
         if hasattr(args, prop):
             setattr(ctx, prop, getattr(args, prop))
@@ -901,32 +883,26 @@ def pipeline_step(args, senv):
     senv.eval("test $ret -eq 0 && ", end="")
     ctx.pipeline_state = step["name"]
 
-def pipeline_status(args, senv):
-    ctx = Context(senv)
+def pipeline_status(args, ctx, senv):
     senv.echo(status(ctx, ctx.pipeline_state))
 
-def workflow_list(args, senv):
-    ctx = Context(senv)
+def workflow_list(args, ctx, senv):
     for wf in ctx.workflows:
         print(wf)
 
-def workflow_activate(args, senv):
-    ctx = Context(senv)
+def workflow_activate(args, ctx, senv):
     ctx.workflow = args.name
 
-def workflow_status(args, senv):
-    ctx = Context(senv)
+def workflow_status(args, ctx, senv):
     senv.echo(status(ctx, ctx.pipeline_state))
 
-def workflow_get(args, senv):
-    ctx = Context(senv)
+def workflow_get(args, ctx, senv):
     yaml = YAML(typ="safe")
     yaml.default_flow_style = False
     yaml.width = 256
     yaml.dump(ctx.workflow_config, sys.stdout)
 
-def snapshot_create(args, senv):
-    ctx = Context(senv)
+def snapshot_create(args, ctx, senv):
     if ctx.deployment_dir:
         print("Creating snapshot of current deployment...")
         print(f"  src: {ctx.deployment_dir}")
@@ -935,11 +911,10 @@ def snapshot_create(args, senv):
     else:
         raise Exception("No active deployment")
 
-def snapshot_restore(args, senv):
+def snapshot_restore(args, ctx, senv):
     subprocess.run(["unsquashfs", "-d", args.dest, args.snapshot_file])
 
-def run(args, senv):
-    ctx = Context(senv)
+def run(args, ctx, senv):
     ctx.pipeline_state = None
     
     for prop in ctx.visible_variables:
@@ -1088,5 +1063,5 @@ def main():
 
     args = parser.parse_args()
     senv.debug = args.shell_debug
-    args.func(args, senv)
+    args.func(args, ctx, senv)
     return 0
