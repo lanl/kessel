@@ -7,6 +7,7 @@ import stat
 import subprocess
 import shutil
 import tempfile
+import textwrap
 
 from ruamel.yaml import YAML
 from pathlib import Path
@@ -135,15 +136,15 @@ class Context(object):
     @property
     def steps(self):
         steps = [
-            "setup",
-            "env",
-            "configure",
-            "build",
-            "test",
-            "install",
+            {'name': "setup", 'title': "Setup"},
+            {'name': "env", 'title': "Prepare Environment"},
+            {'name': "configure", 'title': "Configure"},
+            {'name': "build", 'title': "Build"},
+            {'name': "test", 'title': "Test"},
+            {'name': "install", 'title': "Install"},
         ]
         if hasattr(self.builder, "submit"):
-            steps.append("submit")
+            steps.append({'name': "submit", 'title': "Submit"})
         return steps
 
     @property
@@ -741,12 +742,21 @@ def finalize(args, senv):
 
         ctx.create_replicate_squashfs(ctx.deployment_dir / ".replicate.sqfs")
 
+def step_lines(title):
+    min_width = len(max(title.split(), key=len)) + 2
+    return [line.center(min_width) for line in textwrap.wrap(title, width=min_width, break_long_words=False, break_on_hyphens=False)]
+
 def status(ctx, step=None):
-    step_size = [0, 9, 11, 9, 7, 6, 7]
+    names = [s["name"] for s in ctx.steps]
+    captions = [step_lines(s["title"]) for s in ctx.steps]
+    lines = len(max(captions, key=len))
+    widths = [len(c[0])  for c in captions] + [0]
+    step_size = [0] + [(widths[i] + widths[i+1]) // 2 - widths[i] % 2 for i in range(len(widths)-1)]
 
     s = " \n"
-    s += " "*6
-    completed = ctx.steps.index(step) if step in ctx.steps else -1
+    s += "  "
+    s += " "*(widths[0] // 2)
+    completed = names.index(step) if step in ctx.steps else -1
     for i, _ in enumerate(ctx.steps):
         if i <= completed:
             s += PROGRESS_BAR_COMPLETE * step_size[i]
@@ -754,13 +764,17 @@ def status(ctx, step=None):
         else:
             s += PROGRESS_BAR_PENDING * step_size[i]
             s += PROGRESS_STEP_PENDING
-    s += "\n\n"
+    s += "\n \n"
 
-    if "submit" in ctx.steps:
-        s += "    Setup    Prepare    Configure   Build   Test  Install  Submit\n"
-    else:
-        s += "    Setup    Prepare    Configure   Build   Test  Install\n"
-    s += "           Environment\n \n"
+    for i in range(lines):
+        s += "  "
+        for c in captions:
+            if i < len(c):
+              s += c[i]
+            else:
+              s += " "*len(c[0])
+        s += '\n'
+    s += " \n"
     return s
 
 def pipeline_setup(args, senv):
