@@ -1,17 +1,26 @@
-# Autocomplete variables
-set -l kessel_not_follow "list create init activate system env bootstrap mirror clean finalize pipeline run"
-set -l kessel_subcommands "init activate system env bootstrap mirror clean finalize pipeline run"
-set -l kessel_subcommands_dir "init activate"
+function __seen_in_position
+    set -l cmd (commandline -poc)
+    set -e cmd[1]
 
-# Commands that admit other commands
-set -l kessel_sys_env "system env"
-set -l kessel_sys_env_sub "list activate"
-set -l kessel_bstr_mirr "bootstrap mirror"
-set -l kessel_bstr_mirr_sub "create"
-set -l kessel_pipeline "pipeline"
-set -l kessel_pipeline_sub "setup env configure build test install submit"
-set -l kessel_run "run"
-set -l kessel_run_sub "-e --env -s --system"
+    if not set -q cmd[$argv[1]]
+        return 1
+    end
+
+    if test $cmd[$argv[1]] = $argv[2]
+        return 0
+    end
+    return 1
+end
+
+# Autocomplete variables
+set -l kessel_commands "init activate snapshot system env bootstrap mirror clean finalize workflow pipeline"
+set -l snapshot_commands "create restore"
+set -l system_commands "list activate"
+set -l env_commands "list activate"
+set -l bootstrap_commands "create"
+set -l mirror_commands "create"
+set -l workflow_commands "list activate status get"
+set -l pipeline_commands "_setup status"
 
 # Remove file autocompletion
 complete -c kessel -f
@@ -22,25 +31,38 @@ complete -c kessel -l help
 
 # Add autocompletion for kessel_subcommands (without description)
 complete -c kessel -n \
-    "not __fish_seen_subcommand_from $kessel_not_follow" -a $kessel_subcommands
+    "not __fish_seen_subcommand_from $kessel_commands" -a $kessel_commands
 
-# If it is one of the commands that require a secondary sub-command, autocomplete
-complete -c kessel -n \
-    "__fish_seen_subcommand_from $kessel_sys_env &&\
-    not __fish_seen_subcommand_from $kessel_sys_env_sub" -a $kessel_sys_env_sub
-complete -c kessel -n \
-    "__fish_seen_subcommand_from $kessel_bstr_mirr &&\
-    not __fish_seen_subcommand_from $kessel_bstr_mirr_sub" -a $kessel_bstr_mirr_sub
-complete -c kessel -n \
-    "__fish_seen_subcommand_from $kessel_pipeline &&\
-    not __fish_seen_subcommand_from $kessel_pipeline_sub" -a $kessel_pipeline_sub
-complete -c kessel -n \
-    "__fish_seen_subcommand_from $kessel_run &&\
-    not __fish_seen_subcommand_from $kessel_run_sub" -a $kessel_run_sub
-complete -c kessel -n \
-    "__fish_seen_subcommand_from -e --env" -a "$(spack env list)"
+# Add subcommands that need a path
+complete -c kessel -n "__seen_in_position 1 init" -Fr
+complete -c kessel -n "__seen_in_position 1 activate" -F
 
-# If it is one of the commands that require a directory, re-enable file
-# autocompletion and request the file name
-complete -c kessel -n \
-    "__fish_seen_subcommand_from $kessel_subcommands_dir" -Fr
+complete -c kessel -n "__fish_seen_subcommand_from snapshot &&\
+    not __fish_seen_subcommand_from $snapshot_commands" -a $snapshot_commands
+complete -c kessel -n "__fish_seen_subcommand_from snapshot &&\
+    __fish_seen_subcommand_from $snapshot_commands" -Fr
+
+complete -c kessel -n "__fish_seen_subcommand_from system &&\
+    not __fish_seen_subcommand_from $system_commands" -a $system_commands
+complete -c kessel -n "__fish_seen_subcommand_from system &&\
+    __fish_seen_subcommand_from activate" -a "$(kessel system list)"
+
+complete -c kessel -n "__fish_seen_subcommand_from env &&\
+    not __fish_seen_subcommand_from $env_commands" -a $env_commands
+complete -c kessel -n "__fish_seen_subcommand_from env &&\
+    __fish_seen_subcommand_from activate" -a "$(kessel env list)"
+
+complete -c kessel -n "__fish_seen_subcommand_from bootstrap &&\
+    not __fish_seen_subcommand_from $bootstrap_commands" -a $bootstrap_commands
+
+complete -c kessel -n "__fish_seen_subcommand_from mirror &&\
+    not __fish_seen_subcommand_from $mirror_commands" -a $mirror_commands
+
+complete -c kessel -n "__fish_seen_subcommand_from workflow &&\
+    not __fish_seen_subcommand_from $workflow_commands" -a $workflow_commands
+
+complete -c kessel -n "__fish_seen_subcommand_from workflow &&\
+    __fish_seen_subcommand_from activate" -a "$(kessel workflow list)"
+
+complete -c kessel -n "__fish_seen_subcommand_from pipeline &&\
+    not __fish_seen_subcommand_from $pipeline_commands" -a $pipeline_commands
