@@ -409,7 +409,9 @@ class Context(object):
         ]
 
     def evaluate(self, text, locals=[]):
-        return replace_variables(text, locals + [self, os.environ])
+        if isinstance(text, str):
+            return replace_variables(text, locals + [self, os.environ])
+        return text
 
     def replicate(self, dest):
         print("Creating deployment copy...")
