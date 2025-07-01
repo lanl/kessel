@@ -3,9 +3,12 @@ _kessel() {
     local cur prev opts pipeline_opts
 
     # Autocomplete variables
-    opts="-h init activate system env bootstrap mirror clean finalize pipeline run"
-    pipeline_opts="setup env configure build test install submit"
-    run_opts="-s --system -e --env"
+    opts="-h init activate snapshot system env bootstrap mirror clean finalize workflow pipeline"
+    pipeline_opts="_setup status"
+    system_opts="list activate"
+    env_opts="list activate"
+    snapshot_opts="create restore"
+    workflow_opts="list activate status get"
 
     # Create empty COMPREPLY
     COMPREPLY=()
@@ -37,11 +40,14 @@ _kessel() {
             compopt -o default
             COMPREPLY=()
             ;;
+        snapshot)
+            COMPREPLY=($(compgen -W "${snapshot_opts}" -- ${cur}))
+            ;;
         system)
-            COMPREPLY=($(compgen -W "list activate" -- ${cur}))
+            COMPREPLY=($(compgen -W "${system_opts}" -- ${cur}))
             ;;
         env)
-            COMPREPLY=($(compgen -W "list activate" -- ${cur}))
+            COMPREPLY=($(compgen -W "${env_opts}" -- ${cur}))
             ;;
         bootstrap)
             COMPREPLY=($(compgen -W "create" -- ${cur}))
@@ -52,25 +58,57 @@ _kessel() {
         pipeline)
             COMPREPLY=($(compgen -W "${pipeline_opts}" -- ${cur}))
             ;;
-        run)
-            COMPREPLY=($(compgen -W "${run_opts}" -- ${cur}))
-            ;;
-        *)
-            COMPREPLY=($(compgen -W "${run_opts}" -- ${cur}))
+        workflow)
+            COMPREPLY=($(compgen -W "${workflow_opts}" -- ${cur}))
             ;;
         esac
         ;;
     # Compounded commands
+    3)
+        # Other words in command
+        second=${COMP_WORDS[1]}
+
+        case ${second} in
+        snapshot)
+            compopt -o default
+            COMPREPLY=()
+            ;;
+        system)
+            case ${prev} in
+            activate)
+                COMPREPLY=($(compgen -W "$(kessel system list)" -- ${cur}))
+                ;;
+            esac
+            ;;
+        env)
+            case ${prev} in
+            activate)
+                COMPREPLY=($(compgen -W "$(kessel env list)" -- ${cur}))
+                ;;
+            esac
+            ;;
+        workflow)
+            case ${prev} in
+            activate)
+                COMPREPLY=($(compgen -W "$(kessel workflow list)" -- ${cur}))
+                ;;
+            esac
+            ;;
+        esac
+        ;;
     *)
-        case ${prev} in
-        -e | --env)
-            COMPREPLY=($(compgen -W "$(spack env list)" -- ${cur}))
-            ;;
-        -s | --system)
-            COMPREPLY=($(compgen -W "local" -- ${cur}))
-            ;;
-        *)
-            COMPREPLY=($(compgen -W "${run_opts}" -- ${cur}))
+        # Other words in command
+        second=${COMP_WORDS[1]}
+        third=${COMP_WORDS[2]}
+
+        case ${second} in
+        snapshot)
+            case ${third} in
+            create)
+                compopt -o default
+                COMPREPLY=()
+                ;;
+            esac
             ;;
         esac
         ;;
