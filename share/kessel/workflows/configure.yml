@@ -7,6 +7,7 @@ arguments:
 steps:
  - name: configure
    title: Configure
+   collapsed: true
    arguments:
      - argument:
          - '-I'
