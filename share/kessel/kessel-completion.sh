@@ -5,6 +5,7 @@ _kessel() {
     # Autocomplete variables
     opts="-h init activate system env bootstrap mirror clean finalize pipeline run"
     pipeline_opts="setup env configure build test install submit"
+    run_opts="-s --system -e --env"
 
     # Create empty COMPREPLY
     COMPREPLY=()
@@ -50,6 +51,26 @@ _kessel() {
             ;;
         pipeline)
             COMPREPLY=($(compgen -W "${pipeline_opts}" -- ${cur}))
+            ;;
+        run)
+            COMPREPLY=($(compgen -W "${run_opts}" -- ${cur}))
+            ;;
+        *)
+            COMPREPLY=($(compgen -W "${run_opts}" -- ${cur}))
+            ;;
+        esac
+        ;;
+    # Compounded commands
+    *)
+        case ${prev} in
+        -e | --env)
+            COMPREPLY=($(compgen -W "$(spack env list)" -- ${cur}))
+            ;;
+        -s | --system)
+            COMPREPLY=($(compgen -W "local" -- ${cur}))
+            ;;
+        *)
+            COMPREPLY=($(compgen -W "${run_opts}" -- ${cur}))
             ;;
         esac
         ;;

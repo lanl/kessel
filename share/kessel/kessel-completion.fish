@@ -10,6 +10,8 @@ set -l kessel_bstr_mirr "bootstrap mirror"
 set -l kessel_bstr_mirr_sub "create"
 set -l kessel_pipeline "pipeline"
 set -l kessel_pipeline_sub "setup env configure build test install submit"
+set -l kessel_run "run"
+set -l kessel_run_sub "-e --env -s --system"
 
 # Remove file autocompletion
 complete -c kessel -f
@@ -32,6 +34,11 @@ complete -c kessel -n \
 complete -c kessel -n \
     "__fish_seen_subcommand_from $kessel_pipeline &&\
     not __fish_seen_subcommand_from $kessel_pipeline_sub" -a $kessel_pipeline_sub
+complete -c kessel -n \
+    "__fish_seen_subcommand_from $kessel_run &&\
+    not __fish_seen_subcommand_from $kessel_run_sub" -a $kessel_run_sub
+complete -c kessel -n \
+    "__fish_seen_subcommand_from -e --env" -a "$(spack env list)"
 
 # If it is one of the commands that require a directory, re-enable file
 # autocompletion and request the file name
