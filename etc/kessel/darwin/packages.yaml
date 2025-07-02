@@ -51,17 +51,17 @@ packages:
             cxx: clang++
   openmpi:
     require:
-      - "@5.0.5 fabrics=ucx schedulers=slurm %gcc"
+      - "fabrics=ucx schedulers=slurm %gcc"
     conflict:
      - "^mpich"
   mpich:
     require:
-     - "@4.2.3 +hydra +slurm +fortran device=ch4 netmod=ucx %gcc"
+     - "+hydra +slurm +fortran device=ch4 netmod=ucx %gcc"
     conflict:
      - "^openmpi"
   ucx:
     require:
-     - "@1.17.0 +cma+dc+rc+rdmacm+thread_multiple+ud+verbs+debug %gcc"
+     - "+cma+dc+rc+rdmacm+thread_multiple+ud+verbs+debug %gcc"
   libfabric:
     require:
      - spec: "%gcc"
