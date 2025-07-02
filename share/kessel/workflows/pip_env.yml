@@ -1,0 +1,23 @@
+variables:
+  environment: format
+  spec: kessel
+steps:
+ - name: setup
+   title: Setup
+   collapsed: true
+   script:
+    - env_dir=$build_dir/envs
+    - env=$env_dir/format
+    - mkdir -p $env_dir
+    - |
+      if [[ ! -d $env ]]; then
+          python3 -m venv $env
+      fi
+      source $env/bin/activate
+      if [[ ${?} -ne 0 ]]; then
+          echo "Failed to activate environment"
+          false
+      fi
+    - python3 -m pip install mypy
+    - python3 -m pip install flake8
+    - python3 -m pip install autopep8

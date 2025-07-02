@@ -1,0 +1,40 @@
+stages:
+  - Checks
+
+default:
+  interruptible: true
+  before_script:
+   - unset CI_MERGE_REQUEST_DESCRIPTION
+   - unset CI_MERGE_REQUEST_TITLE
+
+.ascgit_job:
+  id_tokens:
+    SITE_ID_TOKEN:
+      aud: https://asc-git.lanl.gov
+
+.darwin_job:
+  variables:
+    CLUSTER: darwin
+    PARTITIONS: general,skylake-gold,skylake-platinum
+    GENERAL_ARCH_CONSTRAINT: "(cpu_family:haswell|cpu_family:broadwell|cpu_family:skylake|cpu_family:cascadelake)"
+    JOB_CONSTRAINTS: "--constraint=\"${GENERAL_ARCH_CONSTRAINT}\""
+    SCHEDULER_PARAMETERS: "-N1 --qos=debug -p ${PARTITIONS} ${JOB_CONSTRAINTS}"
+  tags:
+    - darwin-slurm-shared
+
+.darwin_regular_job:
+  rules:
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "schedule"
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "pipeline"
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "web"
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+format:
+  stage: Checks
+  extends: [.ascgit_job, .darwin_job, .darwin_regular_job]
+  needs: []
+  script:
+    - source share/kessel/setup-env.sh
+    - kessel workflow activate format
+    - kessel run

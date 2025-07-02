@@ -13,3 +13,7 @@ namespace = ""
 
 [tool.pytest.ini_options]
 pythonpath = "lib lib/kessel/external/_vendoring"
+
+[[tool.mypy.overrides]]
+module = ["ruamel.*"]
+ignore_missing_imports = true
