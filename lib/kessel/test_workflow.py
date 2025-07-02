@@ -1,8 +1,10 @@
 from kessel.workflow import load_workflow_from_string
 from kessel.context import Context
 
+
 class MockShellEnvironment:
     pass
+
 
 def test_variable_reference():
     ctx = Context(MockShellEnvironment())

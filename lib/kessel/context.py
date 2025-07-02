@@ -315,7 +315,7 @@ class Context(object):
         try:
             os.chown(dest, -1, self.group)
             os.chmod(dest, self.file_permissions)
-        except:
+        except BaseException:
             pass
 
     def create_ci_deployment(self):
