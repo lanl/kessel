@@ -30,10 +30,14 @@ def step(args, ctx, senv):
     )
     senv.echo(status(ctx, step["name"]))
 
+    variables = {}
+    for k, v in workflow["variables"].items():
+        variables[k] = ctx.evaluate(v, [args, variables])
+
     script = step["script"]
     for line in script:
         if isinstance(line, str):
-            senv.eval("[ $? ] && " + ctx.evaluate(line, [args, workflow["variables"]]))
+            senv.eval("[ $? ] && " + ctx.evaluate(line, [args, variables]))
         elif isinstance(line, dict):
             if "buildenv" in line and line["buildenv"]:
                 senv.begin_subshell(env_script=ctx.build_env)
@@ -41,14 +45,14 @@ def step(args, ctx, senv):
             if isinstance(line["run"], str):
                 senv.eval(
                     "[ $? ] && "
-                    + ctx.evaluate(line["run"], [args, workflow["variables"]])
+                    + ctx.evaluate(line["run"], [args, variables])
                 )
             elif isinstance(line["run"], list):
                 for sline in line["run"]:
                     for subcmd in sline.splitlines():
                         senv.eval(
                             "[ $? ] && "
-                            + ctx.evaluate(subcmd, [args, workflow["variables"]])
+                            + ctx.evaluate(subcmd, [args, variables])
                         )
 
             if "buildenv" in line and line["buildenv"]:
@@ -90,9 +94,13 @@ def setup_command(subparser, ctx):
                         print("add_argument params:", pos_args, kw_args)
                         raise e
 
+        variables = {}
+        for k, v in workflow["variables"].items():
+            variables[k] = ctx.evaluate(v, [variables])
+
         for s in workflow["steps"]:
             pipeline_step_cmd = subparsers.add_parser(s["name"])
             _add_arguments(
-                pipeline_step_cmd, s.get("arguments", []), workflow.get("variables", {})
+                pipeline_step_cmd, s.get("arguments", []), variables
             )
             pipeline_step_cmd.set_defaults(func=step, step=s["name"])
