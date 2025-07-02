@@ -158,13 +158,13 @@ class Context(object):
         self.senv.echo(f"Activating deployment at {d}")
         self.senv.set_env_var("SPACK_USER_CACHE_PATH", f"{d}/.spack")
         self.senv.unset_env_var("SPACK_DISABLE_LOCAL_CONFIG")
-        self.senv.set_env_var("SPACK_USER_CONFIG_PATH", "${KESSEL_CONFIG_DIR}")
+        self.senv.set_env_var("SPACK_USER_CONFIG_PATH", "$KESSEL_CONFIG_DIR")
         self.senv.set_env_var("SPACK_SKIP_MODULES", "true")
         self.senv.set_env_var("KESSEL_DEPLOYMENT", d)
         self.senv.set_env_var(
             "KESSEL_PARENT_DEPLOYMENT", config.parent if config.parent else d
         )
-        self.senv.source("${KESSEL_DEPLOYMENT}/spack/share/spack/setup-env.sh")
+        self.senv.source("$KESSEL_DEPLOYMENT/spack/share/spack/setup-env.sh")
 
     @property
     def system(self):
@@ -181,7 +181,7 @@ class Context(object):
         self.senv.echo(f"Activating {value} system")
         self.senv.set_env_var("KESSEL_SYSTEM", value)
         self.senv.set_env_var(
-            "SPACK_SYSTEM_CONFIG_PATH", "${KESSEL_CONFIG_DIR}/${KESSEL_SYSTEM}"
+            "SPACK_SYSTEM_CONFIG_PATH", "$KESSEL_CONFIG_DIR/$KESSEL_SYSTEM"
         )
 
     @property
