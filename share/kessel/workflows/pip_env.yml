@@ -1,6 +1,5 @@
 variables:
-  environment: format
-  spec: kessel
+   build_env: "$build_dir/envs/format/bin/activate"
 steps:
  - name: setup
    title: Setup
@@ -21,3 +20,4 @@ steps:
     - python3 -m pip install mypy
     - python3 -m pip install flake8
     - python3 -m pip install autopep8
+    - deactivate

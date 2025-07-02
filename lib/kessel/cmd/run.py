@@ -10,13 +10,24 @@ def run(args, ctx, senv):
         if hasattr(args, prop):
             setattr(ctx, prop, getattr(args, prop))
 
+    workflow = ctx.workflow_config
+
+    variables = {}
+    for k, v in workflow["variables"].items():
+        variables[k] = ctx.evaluate(v, [args, variables])
+
+    for prop in ctx.visible_variables:
+        if prop in variables:
+            setattr(ctx, prop, variables[prop])
+
     if "CI" in os.environ:
         print(f"{COLOR_BLUE} ")
         print("######################################################################")
         print(" ")
         print("To recreate this CI run, follow these steps:")
         print(" ")
-        print(f"ssh {ctx.system}")
+        if ctx.system != "local":
+            print(f"ssh {ctx.system}")
         print(f"cd /your/{ctx.project}/checkout")
         if "LLNL_FLUX_SCHEDULER_PARAMETERS" in os.environ:
             print("flux alloc", os.environ["LLNL_FLUX_SCHEDULER_PARAMETERS"])
@@ -27,7 +38,6 @@ def run(args, ctx, senv):
         print("######################################################################")
         print(f"{COLOR_PLAIN} ", flush=True)
 
-    workflow = ctx.workflow_config
     for step in workflow["steps"]:
         senv.eval(f"[ $? ] && kessel pipeline {step['name']}")
         if args.until == step["name"]:

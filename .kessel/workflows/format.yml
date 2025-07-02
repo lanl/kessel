@@ -1,15 +1,21 @@
+variables:
+  environment: format
+  project_spec: kessel@main
 extends:
    - pip_env
 steps:
   - name: autopep8
     title: "Autoformat"
     script:
-      - python3 -m autopep8 -iaar --max-line-length 120 --exclude _vendoring $source_dir/lib
+      - run: python3 -m autopep8 -iaar --max-line-length 120 --exclude _vendoring $source_dir/lib
+        buildenv: true
   - name: flake8
     title: "Linting"
     script:
-      - python3 -m flake8 --max-line-length 120 --exclude _vendoring --ignore=F401,E226,W503,W504 $source_dir/lib
+      - run: python3 -m flake8 --max-line-length 120 --exclude _vendoring --ignore=F401,E226,W503,W504 $source_dir/lib
+        buildenv: true
   - name: mypy
     title: "Type checking"
     script:
-      - python3 -m mypy --exclude _vendoring $source_dir/lib
+      - run: python3 -m mypy --exclude _vendoring $source_dir/lib
+        buildenv: true
