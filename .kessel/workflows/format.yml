@@ -1,0 +1,15 @@
+extends:
+   - pip_env
+steps:
+  - name: autopep8
+    title: "Autoformat"
+    script:
+      - autopep8 -iaar --exclude "${kessel_parent_dir}/kessel/lib/kessel/external/_vendoring/*" $kessel_parent_dir/kessel
+  - name: flake8
+    title: "Linting"
+    script:
+      - flake8 --ignore=F401,E226,W503,W504 $kessel_parent_dir/kessel
+  - name: mypy
+    title: "Type checking"
+    script:
+      - mypy $kessel_parent_dir/kessel

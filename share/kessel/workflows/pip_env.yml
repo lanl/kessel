@@ -1,0 +1,24 @@
+variables:
+  environment: format
+  spec: kessel
+steps:
+ - name: setup
+   title: Setup
+   collapsed: true
+   script:
+    - kessel_parent_dir=$(dirname $(dirname $(realpath ${0})))
+    - testing_env_dir=$build_dir/python_envs
+    - testing_env=${testing_env_dir}/kessel_testing_venv
+    - mkdir -p $testing_env_dir
+    - |
+      if [[ ! -d ${testing_env} ]]; then
+          spack-python -m venv ${testing_env}
+      fi
+      source ${testing_env}/bin/activate
+      if [[ ${?} -ne 0 ]]; then
+          echo "Failed to activate environment"
+          false
+      fi
+    - python3 -m pip install mypy
+    - python3 -m pip install flake8
+    - python3 -m pip install autopep8
