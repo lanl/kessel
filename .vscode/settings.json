@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/lib",
+        "${workspaceFolder}/lib/kessel/external/_vendoring",
+    ]
+}
