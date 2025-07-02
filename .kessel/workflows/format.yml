@@ -4,12 +4,12 @@ steps:
   - name: autopep8
     title: "Autoformat"
     script:
-      - autopep8 -iaar --max-line-length 120 --exclude "${kessel_parent_dir}/kessel/lib/kessel/external/_vendoring/*" $kessel_parent_dir/kessel
+      - python3 -m autopep8 -iaar --max-line-length 120 --exclude _vendoring $kessel_parent_dir/kessel/lib
   - name: flake8
     title: "Linting"
     script:
-      - flake8 --max-line-length 120 --ignore=F401,E226,W503,W504 $kessel_parent_dir/kessel
+      - python3 -m flake8 --max-line-length 120 --exclude _vendoring --ignore=F401,E226,W503,W504 $kessel_parent_dir/kessel/lib
   - name: mypy
     title: "Type checking"
     script:
-      - mypy $kessel_parent_dir/kessel
+      - python3 -m mypy --exclude _vendoring $kessel_parent_dir/kessel/lib
