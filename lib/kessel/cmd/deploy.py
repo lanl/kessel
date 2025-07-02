@@ -81,7 +81,8 @@ def concretize_env_for_mirror(name, env_path, senv):
     senv.eval(f"spack env activate -d {env_path}")
     senv.eval("spack config add view:false")
     senv.eval(
-        f"spack concretize -f --fresh 2>&1 > {env_path}/.spack-env/concretization.txt || touch {env_path}/.spack-env/failure &"
+        f"spack concretize -f --fresh 2>&1 > {env_path}/.spack-env/concretization.txt || "
+        f"touch {env_path}/.spack-env/failure &"
     )
     senv.eval("spack env deactivate")
 
