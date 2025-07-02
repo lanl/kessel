@@ -1,5 +1,6 @@
 variables:
    build_env: "$build_dir/envs/format/bin/activate"
+   python: python3
 steps:
  - name: setup
    title: Setup
@@ -10,7 +11,7 @@ steps:
     - mkdir -p $env_dir
     - |
       if [[ ! -d $env ]]; then
-          python3 -m venv $env
+          $python -m venv $env
       fi
       source $env/bin/activate
       if [[ ${?} -ne 0 ]]; then

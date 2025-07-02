@@ -1,6 +1,7 @@
 variables:
   environment: format
   project_spec: kessel@main
+  python: python3.11
 extends:
    - pip_env
 steps:
