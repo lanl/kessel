@@ -63,7 +63,7 @@ def replace_variables(text, scopes=[os.environ]):
 
     def _lookup(var):
         for scope in scopes:
-            if isinstance(scope, dict):
+            if hasattr(scope, "__getitem__"):
                 if var in scope:
                     return scope[var]
                 continue
