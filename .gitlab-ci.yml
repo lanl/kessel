@@ -1,6 +1,9 @@
 stages:
   - Checks
 
+variables:
+  ENABLED_CLUSTERS: darwin
+
 default:
   interruptible: true
   before_script:
