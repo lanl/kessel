@@ -110,7 +110,6 @@ class Deployment(object):
             relpath = Path(path.relative_to(source_config.env_dir.resolve()))
             system = relpath.parts[0]
             target = self.env_dir / relpath.parent / relpath.stem / "spack.yaml"
-            source = path.parent / path.stem
 
             template_dirs = [
                 source_config.template_dir(system),
