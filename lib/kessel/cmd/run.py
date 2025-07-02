@@ -35,7 +35,7 @@ def run(args, ctx, senv):
 
 
 def setup_command(subparser, ctx):
-    if ctx.kessel_dir:
+    if ctx.kessel_dir and ctx.workflow_config:
         workflow = ctx.workflow_config
         names = [s["name"] for s in workflow["steps"]]
 

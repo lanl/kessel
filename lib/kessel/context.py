@@ -56,7 +56,10 @@ class Context(object):
 
     @property
     def workflow_config(self):
-        return self.load_workflow(self.workflow)
+        try:
+            return self.load_workflow(self.workflow)
+        except FileNotFoundError:
+            return None
 
     @property
     def source_dir(self):

@@ -67,7 +67,7 @@ def setup_command(subparser, ctx):
     setup_cmd.add_argument("-s", "--system", default="local")
     setup_cmd.set_defaults(func=setup)
 
-    if ctx.kessel_dir:
+    if ctx.kessel_dir and ctx.workflow_config:
         workflow = ctx.workflow_config
 
         def _add_arguments(cmd, cmd_args, local_vars=[]):
