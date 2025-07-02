@@ -16,7 +16,7 @@ def run(args, ctx, senv):
         print(" ")
         print("To recreate this CI run, follow these steps:")
         print(" ")
-        print(f"ssh {args.system}")
+        print(f"ssh {ctx.system}")
         print(f"cd /your/{ctx.project}/checkout")
         if "LLNL_FLUX_SCHEDULER_PARAMETERS" in os.environ:
             print("flux alloc", os.environ["LLNL_FLUX_SCHEDULER_PARAMETERS"])
