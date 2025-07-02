@@ -51,21 +51,20 @@ packages:
             cxx: clang++
   openmpi:
     require:
-      - "fabrics=ucx schedulers=slurm %gcc"
+      - "fabrics=ucx schedulers=slurm %c,cxx,fortran=gcc"
     conflict:
      - "^mpich"
   mpich:
     require:
-     - "+hydra +slurm +fortran device=ch4 netmod=ucx %gcc"
+     - "+hydra +slurm +fortran device=ch4 netmod=ucx %c,cxx,fortran=gcc"
     conflict:
      - "^openmpi"
   ucx:
     require:
-     - "+cma+dc+rc+rdmacm+thread_multiple+ud+verbs+debug %gcc"
+     - "+cma+dc+rc+rdmacm+thread_multiple+ud+verbs+debug %c,cxx,fortran=gcc"
   libfabric:
     require:
-     - spec: "%gcc"
-    variants: fabrics=verbs,shm,sockets,tcp,udp
+     - spec: "fabrics=verbs,shm,sockets,tcp,udp %c,cxx,fortran=gcc"
   cuda:
     version: [12.8.0]
     externals:
