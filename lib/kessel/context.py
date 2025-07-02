@@ -9,7 +9,7 @@ from pathlib import Path
 from kessel import KESSEL_VERSION
 from kessel.config import KesselConfig
 from kessel.util import create_squashfs, symbolic_to_octal
-from kessel.workflow import load_workflow, replace_variables
+from kessel.workflow import load_workflow_from_file, replace_variables
 
 from ruamel.yaml import YAML
 
@@ -43,7 +43,7 @@ class Context(object):
             self.kessel_dir / "workflows" / "templates",
             self.kessel_workflow_template_dir,
         ]
-        return load_workflow(workflow_file, template_dirs)
+        return load_workflow_from_file(workflow_file, template_dirs)
 
     @property
     def workflow(self):

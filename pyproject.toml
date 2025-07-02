@@ -10,3 +10,6 @@ dependencies=[
 destination = "lib/kessel/external/_vendoring"
 requirements = "lib/kessel/external/vendor.txt"
 namespace = ""
+
+[tool.pytest.ini_options]
+pythonpath = "lib lib/kessel/external/_vendoring"

@@ -19,12 +19,16 @@ def merge_yaml(A, B):
             a[k] = b
     return A
 
+def load_workflow_from_string(s, template_dirs=[]):
+    yaml = YAML(typ="safe")
+    return load_workflow(yaml.load(s), template_dirs=template_dirs)
 
-def load_workflow(path, template_dirs=[]):
+def load_workflow_from_file(path, template_dirs=[]):
     with open(path) as f:
         yaml = YAML(typ="safe")
-        new_wf = yaml.load(f)
+        return load_workflow(yaml.load(f), template_dirs=template_dirs)
 
+def load_workflow(new_wf, template_dirs=[]):
     base_names = new_wf.get("extends", ())
 
     if isinstance(base_names, str):
@@ -38,7 +42,7 @@ def load_workflow(path, template_dirs=[]):
         for template_dir in template_dirs:
             template = template_dir / f"{base_name}.yml"
             if template.exists():
-                wf = merge_yaml(wf, load_workflow(template, template_dirs))
+                wf = merge_yaml(wf, load_workflow_from_file(template, template_dirs))
                 found = True
 
         if not found:
