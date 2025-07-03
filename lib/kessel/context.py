@@ -51,8 +51,9 @@ class Context(object):
 
     @workflow.setter
     def workflow(self, value):
-        self.senv.echo(f"Activating {value} workflow")
-        self.senv.set_env_var("KESSEL_WORKFLOW", value)
+        if self.workflow != value:
+            self.senv.echo(f"Activating {value} workflow")
+            self.senv.set_env_var("KESSEL_WORKFLOW", value)
 
     @property
     def workflow_config(self):
@@ -162,7 +163,8 @@ class Context(object):
     def deployment_dir(self, value):
         d = Path(value).resolve()
         config = KesselConfig(d / ".kessel.yaml")
-        self.senv.echo(f"Activating deployment at {d}")
+        if self.deployment_dir != d:
+            self.senv.echo(f"Activating deployment at {d}")
         self.senv.set_env_var("SPACK_USER_CACHE_PATH", f"{d}/.spack")
         self.senv.unset_env_var("SPACK_DISABLE_LOCAL_CONFIG")
         self.senv.set_env_var("SPACK_USER_CONFIG_PATH", "${KESSEL_CONFIG_DIR}")
@@ -185,7 +187,8 @@ class Context(object):
                 raise Exception(f"Unknown system '{value}'!")
         elif value != "local":
             raise Exception("No active deployment!")
-        self.senv.echo(f"Activating {value} system")
+        if self.system != value:
+            self.senv.echo(f"Activating {value} system")
         self.senv.set_env_var("KESSEL_SYSTEM", value)
         self.senv.set_env_var(
             "SPACK_SYSTEM_CONFIG_PATH", "${KESSEL_CONFIG_DIR}/${KESSEL_SYSTEM}"
