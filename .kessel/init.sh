@@ -1,3 +1,4 @@
-PARENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]:-$0}" )" &>/dev/null && pwd )"
-export KESSEL_INIT="source $0"
+SCRIPT_PATH=${BASH_SOURCE[0]:-${(%):-%x}}
+PARENT_DIR="$( cd "$( dirname "${SCRIPT_PATH}" )" &>/dev/null && pwd )"
+export KESSEL_INIT="source $SCRIPT_PATH"
 source $PARENT_DIR/../share/kessel/setup-env.sh
