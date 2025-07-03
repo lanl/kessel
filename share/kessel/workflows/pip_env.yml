@@ -1,5 +1,5 @@
 variables:
-   build_env: "$build_dir/envs/format/bin/activate"
+   build_env: "$build_dir/envs/$environment/bin/activate"
    python: python3
 steps:
  - name: setup
@@ -7,7 +7,7 @@ steps:
    collapsed: true
    script:
     - env_dir=$build_dir/envs
-    - env=$env_dir/format
+    - env=$env_dir/$environment
     - mkdir -p $env_dir
     - |
       if [[ ! -d $env ]]; then
@@ -18,7 +18,5 @@ steps:
           echo "Failed to activate environment"
           false
       fi
-    - python3 -m pip install mypy
-    - python3 -m pip install flake8
-    - python3 -m pip install autopep8
+    - python3 -m pip install -r $requirements
     - deactivate

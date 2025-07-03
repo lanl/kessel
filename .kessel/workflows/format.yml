@@ -2,6 +2,7 @@ variables:
   environment: format
   project_spec: kessel@main
   python: $KESSEL_PYTHON
+  requirements: $source_dir/format_requirements.txt
 extends:
    - pip_env
 steps:

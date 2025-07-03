@@ -33,6 +33,34 @@ default:
     - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "web"
     - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
+.darwin_regular_mr_only_job:
+  rules:
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: never
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_COMMIT_TAG
+      when: never
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "pipeline"
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_PIPELINE_SOURCE == "web"
+
+.darwin_regular_default_branch_only_job:
+  rules:
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule"
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "pipeline"
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "web"
+    - if: $ENABLED_CLUSTERS =~ /darwin/ && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+
+.build_docs:
+  stage: Checks
+  script:
+    - source .kessel/init.sh
+    - kessel workflow activate docs
+    - kessel run
+    - rm -rf public
+    - mv doc/sphinx/_build/html public
+
 format:
   stage: Checks
   extends: [.ascgit_job, .darwin_job, .darwin_regular_job]
@@ -41,3 +69,12 @@ format:
     - source .kessel/init.sh
     - kessel workflow activate format
     - kessel run
+
+docs_check:
+  extends: [.ascgit_job, .darwin_job, .darwin_regular_mr_only_job, .build_docs]
+
+docs:
+  extends: [.ascgit_job, .darwin_job, .darwin_regular_default_branch_only_job, .build_docs]
+  artifacts:
+    paths:
+      - public
