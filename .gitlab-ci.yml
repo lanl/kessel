@@ -38,6 +38,6 @@ format:
   extends: [.ascgit_job, .darwin_job, .darwin_regular_job]
   needs: []
   script:
-    - source share/kessel/setup-env.sh
+    - source .kessel/init.sh
     - kessel workflow activate format
     - kessel run

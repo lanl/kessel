@@ -1,4 +1,5 @@
 import os
+import sys
 
 from kessel.cmd.workflow import COLOR_BLUE, COLOR_PLAIN
 
@@ -29,11 +30,15 @@ def run(args, ctx, senv):
         if ctx.system != "local":
             print(f"ssh {ctx.system}")
         print(f"cd /your/{ctx.project}/checkout")
+        if "KESSEL_INIT" in os.environ:
+            print(os.environ["KESSEL_INIT"])
         if "LLNL_FLUX_SCHEDULER_PARAMETERS" in os.environ:
             print("flux alloc", os.environ["LLNL_FLUX_SCHEDULER_PARAMETERS"])
         elif "SCHEDULER_PARAMETERS" in os.environ:
             print("salloc", os.environ["SCHEDULER_PARAMETERS"])
-        print(f"kessel run -s {ctx.system} -e {ctx.environment} {ctx.project_spec}")
+        if ctx.workflow != "default":
+            print("kessel workflow activate", ctx.workflow)
+        print("kessel", *sys.argv[1:])
         print(" ")
         print("######################################################################")
         print(f"{COLOR_PLAIN} ", flush=True)
