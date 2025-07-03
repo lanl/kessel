@@ -2,6 +2,12 @@ _kessel() {
     # Variables
     local cur prev opts pipeline_opts
 
+    # Keep track of whether we are in bash
+    local is_bash
+    if [[ $0 == "bash" ]]; then
+        is_bash=true
+    fi
+
     # Autocomplete variables
     opts="-h init activate snapshot system env bootstrap mirror clean finalize workflow pipeline"
     pipeline_opts="_setup status"
@@ -20,7 +26,10 @@ _kessel() {
     prev="${COMP_WORDS[COMP_CWORD - 1]}"
 
     # Remove default completion
-    compopt +o default
+    # use "compopt" only if we are in bash
+    if [[ $is_bash ]]; then
+        compopt +o default
+    fi
 
     # Do sub-command
     case ${COMP_CWORD} in
@@ -33,12 +42,20 @@ _kessel() {
         case ${prev} in
         # Complete with filenames (as is the default)
         init)
-            compopt -o default
-            COMPREPLY=()
+            COMPREPLY=($(compgen -W "$(ls)" -- ${cur}))
+
+            # Use the bash default if we are in bash
+            if [[ $is_bash ]]; then
+                compopt -o default
+                COMPREPLY=()
+            fi
             ;;
         activate)
-            compopt -o default
-            COMPREPLY=()
+            COMPREPLY=($(compgen -W "$(ls)" -- ${cur}))
+            if [[ $is_bash ]]; then
+                compopt -o default
+                COMPREPLY=()
+            fi
             ;;
         snapshot)
             COMPREPLY=($(compgen -W "${snapshot_opts}" -- ${cur}))
@@ -70,8 +87,11 @@ _kessel() {
 
         case ${second} in
         snapshot)
-            compopt -o default
-            COMPREPLY=()
+            COMPREPLY=($(compgen -W "$(ls)" -- ${cur}))
+            if [[ $is_bash ]]; then
+                compopt -o default
+                COMPREPLY=()
+            fi
             ;;
         system)
             case ${prev} in
@@ -105,8 +125,11 @@ _kessel() {
         snapshot)
             case ${third} in
             create)
-                compopt -o default
-                COMPREPLY=()
+                COMPREPLY=($(compgen -W "$(ls)" -- ${cur}))
+                if [[ $is_bash ]]; then
+                    compopt -o default
+                    COMPREPLY=()
+                fi
                 ;;
             esac
             ;;
