@@ -30,12 +30,12 @@ def run(args, ctx, senv):
         if ctx.system != "local":
             print(f"ssh {ctx.system}")
         print(f"cd /your/{ctx.project}/checkout")
-        if "KESSEL_INIT" in os.environ:
-            print(os.environ["KESSEL_INIT"])
         if "LLNL_FLUX_SCHEDULER_PARAMETERS" in os.environ:
             print("flux alloc", os.environ["LLNL_FLUX_SCHEDULER_PARAMETERS"])
         elif "SCHEDULER_PARAMETERS" in os.environ:
             print("salloc", os.environ["SCHEDULER_PARAMETERS"])
+        if "KESSEL_INIT" in os.environ:
+            print(os.environ["KESSEL_INIT"])
         if ctx.workflow != "default":
             print("kessel workflow activate", ctx.workflow)
         print("kessel", *sys.argv[1:])
