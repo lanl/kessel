@@ -75,6 +75,4 @@ docs_check:
 
 docs:
   extends: [.ascgit_job, .darwin_job, .darwin_regular_default_branch_only_job, .build_docs]
-  artifacts:
-    paths:
-      - public
+  pages: true
