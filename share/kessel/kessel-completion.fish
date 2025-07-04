@@ -6,25 +6,14 @@ function __seen_in_position
         return 1
     end
 
-    if test $cmd[$argv[1]] = $argv[2]
-        return 0
-    end
-    return 1
+    return (test $cmd[$argv[1]] = $argv[2])
 end
 
 function __total_numer_args
     set -l cmd (commandline -poc)
     set -e cmd[1]
 
-    if test (count $cmd) = $argv[1]
-        return 0
-    end
-
-    return 1
-end
-
-function __kessel_system_list
-    kessel system list
+    return (test (count $cmd) = $argv[1])
 end
 
 # Autocomplete variables
