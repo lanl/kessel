@@ -72,7 +72,7 @@ def workflow_status(args, ctx, senv):
 
 
 def workflow_get(args, ctx, senv):
-    yaml = YAML(typ="safe")
+    yaml = YAML()
     yaml.default_flow_style = False
     yaml.width = 256
     yaml.dump(ctx.workflow_config, sys.stdout)
