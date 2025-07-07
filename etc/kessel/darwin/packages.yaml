@@ -61,10 +61,10 @@ packages:
      - "^openmpi"
   ucx:
     require:
-     - "+cma+dc+rc+rdmacm+thread_multiple+ud+verbs+debug %c,cxx,fortran=gcc"
+     - "+cma+dc+rc+rdmacm+thread_multiple+ud+verbs+debug %c,cxx=gcc"
   libfabric:
     require:
-     - spec: "fabrics=verbs,shm,sockets,tcp,udp %c,cxx,fortran=gcc"
+     - spec: "fabrics=verbs,shm,sockets,tcp,udp %c=gcc"
   cuda:
     version: [12.8.0]
     externals:
