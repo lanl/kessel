@@ -5,6 +5,12 @@ spack:
       root: .spack-env/view
       exclude: [intel-oneapi-runtime, gcc-runtime]
   packages:
-    all:
+    c:
       prefer:
-        - '%oneapi'
+       - oneapi
+    cxx:
+      prefer:
+       - oneapi
+    fortran:
+      prefer:
+       - oneapi

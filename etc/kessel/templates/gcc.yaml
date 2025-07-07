@@ -7,10 +7,10 @@ spack:
   packages:
     c:
       prefer:
-        - '%gcc'
+       - gcc
     cxx:
       prefer:
-        - '%gcc'
+       - gcc
     fortran:
       prefer:
-        - '%gcc'
+       - gcc
