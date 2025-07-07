@@ -51,6 +51,10 @@ class Context(object):
 
     @workflow.setter
     def workflow(self, value):
+        if value is None:
+            self.senv.unset_env_var("KESSEL_WORKFLOW")
+            return
+
         if self.workflow != value:
             self.senv.echo(f"Activating {value} workflow")
             self.senv.set_env_var("KESSEL_WORKFLOW", value)
