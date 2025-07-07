@@ -52,11 +52,17 @@ class ShellEnvironment(object):
         if value is None:
             self.unset_env_var(name)
             return
-        self.eval(f"export {name}={value}")
+        if os.getenv("IN_FISH") is not None:
+            self.eval(f"set -g {name} {value}")
+        else:
+            self.eval(f"export {name}={value}")
         os.environ[name] = str(value)
 
     def unset_env_var(self, name):
-        self.eval(f"unset {name}")
+        if os.getenv("IN_FISH") is not None:
+            self.eval(f"set -e {name}")
+        else:
+            self.eval(f"unset {name}")
         if name in os.environ:
             del os.environ[name]
 
