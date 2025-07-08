@@ -94,7 +94,7 @@ class Context(object):
 
     @property
     def build_env(self):
-        return os.environ.get("KESSEL_BUILD_ENV", self.build_dir / "build_env.sh")
+        return Path(os.environ.get("KESSEL_BUILD_ENV", self.build_dir / "build_env.sh"))
 
     @build_env.setter
     def build_env(self, value):

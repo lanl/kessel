@@ -7,6 +7,7 @@ import kessel.cmd.workflow as workflow_cmd
 import kessel.cmd.pipeline as pipeline_cmd
 import kessel.cmd.run as run_cmd
 import kessel.cmd.clean_build_env as clean_build_env_cmd
+import kessel.cmd.build_env as build_env_cmd
 
 from kessel.context import Context
 from kessel.util import ShellEnvironment
@@ -30,6 +31,7 @@ def main():
     system_cmd.setup_command(subparsers.add_parser("system"))
     env_cmd.setup_command(subparsers.add_parser("env"))
     clean_build_env_cmd.setup_command(subparsers.add_parser("clean-build-env"))
+    build_env_cmd.setup_command(subparsers.add_parser("build-env"))
     workflow_cmd.setup_command(subparsers.add_parser("workflow"))
     pipeline_cmd.setup_command(subparsers.add_parser("pipeline"), ctx)
     run_cmd.setup_command(subparsers.add_parser("run"), ctx)

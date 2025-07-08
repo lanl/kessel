@@ -8,6 +8,7 @@ def clean_build_env(args, ctx, senv):
             for line in r:
                 if not ( line.startswith("FLUX_") or line.startswith("SLURM_") ):
                     print(line, file=w)
+            print(f"PS1='(build) {os.environ['KESSEL_PARENT_PROMPT']}'", file=w)
         os.rename(tmp_file, args.env_file)
 
 def setup_command(subparser):
