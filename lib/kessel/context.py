@@ -250,6 +250,7 @@ class Context(object):
             "project",
             "project_spec",
             "project_version",
+            "replicate_sqfs",
             "cwd",
         ]
 
@@ -324,8 +325,3 @@ class Context(object):
             os.chmod(dest, self.file_permissions)
         except BaseException:
             pass
-
-    def create_ci_deployment(self):
-        ci_deployment_dir = f"{os.environ['TMPDIR']}/{os.environ['USER']}-ci-env"
-        subprocess.run(["unsquashfs", "-d", ci_deployment_dir, self.replicate_sqfs])
-        return ci_deployment_dir

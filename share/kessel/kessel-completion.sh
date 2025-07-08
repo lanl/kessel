@@ -10,7 +10,7 @@ _kessel() {
 
     # Autocomplete variables
     opts="-h init activate snapshot system env bootstrap mirror clean finalize workflow pipeline"
-    pipeline_opts="_setup status"
+    pipeline_opts="status"
     system_opts="list activate"
     env_opts="list activate"
     snapshot_opts="create restore"

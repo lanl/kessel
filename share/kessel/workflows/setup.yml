@@ -15,4 +15,20 @@ steps:
          - default: $system
            help: "system that should be used (default: %(default)s)"
    script:
-    - kessel pipeline _setup -s $system
+    - umask 0007
+    - |
+      if [[ "$system" == "local" ]]; then
+        if [[ -z "${SPACK_ROOT}" ]]; then
+          echo "No Spack installation active!" >&2
+          false
+        else
+          echo "Using Spack install at ${SPACK_ROOT}"
+        fi
+      else
+        export KESSEL_WORKFLOW_DEPLOYMENT_DIR=${KESSEL_WORKFLOW_DEPLOYMENT_DIR:-${TMPDIR}/${USER}-ci-env}
+        if [ ! -d "${KESSEL_WORKFLOW_DEPLOYMENT_DIR}" ]; then
+            unsquashfs -d ${KESSEL_WORKFLOW_DEPLOYMENT_DIR} $replicate_sqfs
+            kessel deploy activate ${KESSEL_WORKFLOW_DEPLOYMENT_DIR}
+        fi
+      fi
+    -

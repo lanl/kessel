@@ -2,21 +2,6 @@ import os
 from kessel.cmd.workflow import status
 
 
-def setup(args, ctx, senv):
-    os.umask(0o007)
-    senv.eval("umask 0007")
-
-    if args.system == "local":
-        if "SPACK_ROOT" in os.environ:
-            print(f"Using Spack install at {os.environ['SPACK_ROOT']}")
-        else:
-            raise Exception("No Spack installation active!")
-    else:
-        ctx.deployment_dir = ctx.create_ci_deployment()
-
-    ctx.system = args.system
-
-
 def step(args, ctx, senv):
     for prop in ctx.visible_variables:
         if hasattr(args, prop):
@@ -66,10 +51,6 @@ def step(args, ctx, senv):
 
 def setup_command(subparser, ctx):
     subparsers = subparser.add_subparsers()
-
-    setup_cmd = subparsers.add_parser("_setup")
-    setup_cmd.add_argument("-s", "--system", default="local")
-    setup_cmd.set_defaults(func=setup)
 
     if ctx.kessel_dir and ctx.workflow_config:
         workflow = ctx.workflow_config

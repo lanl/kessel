@@ -24,7 +24,7 @@ set -l env_commands "list activate"
 set -l bootstrap_commands create
 set -l mirror_commands create
 set -l workflow_commands "list activate status get"
-set -l pipeline_commands "_setup status"
+set -l pipeline_commands "status"
 
 # Remove file autocompletion
 complete -c kessel -f
