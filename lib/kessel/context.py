@@ -231,7 +231,7 @@ class Context(object):
 
     @property
     def replicate_sqfs(self):
-        return self.deployment_dir / ".replicate.sqfs"
+        return self.deployment_dir / ".replicate.sqfs" if self.deployment_dir else None
 
     @property
     def cwd(self):

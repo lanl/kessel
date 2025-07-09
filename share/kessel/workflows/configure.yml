@@ -16,7 +16,6 @@ steps:
            help: "install directory (default: %(default)s)"
    script:
     - spack install --test root --include-build-deps -u cmake -v $project
-    - spack build-env --dump $build_env $project
-    - kessel clean-build-env $build_env
+    - kessel build-env generate --type spack
     - run: cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX=$install_dir $build_dir 2> /dev/null > /dev/null
       buildenv: true

@@ -1,5 +1,4 @@
 variables:
-   build_env: "$build_dir/envs/$environment/bin/activate"
    python: python3
 steps:
  - name: setup
@@ -20,3 +19,4 @@ steps:
       fi
     - python3 -m pip install -r $requirements
     - deactivate
+    - kessel build-env set ${env}/bin/activate
