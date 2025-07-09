@@ -115,6 +115,8 @@ class Context(object):
     @project_spec.setter
     def project_spec(self, value):
         # TODO validate
+        if isinstance(value, list):
+            value = " ".join(value)
         self.senv.set_env_var("KESSEL_ENV_PROJECT_SPEC", value.strip())
         self.senv.set_env_var("KESSEL_ENV_PROJECT", self.project)
 

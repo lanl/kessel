@@ -1,4 +1,3 @@
-import os
 from kessel.cmd.workflow import status
 
 
