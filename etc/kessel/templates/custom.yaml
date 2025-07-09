@@ -6,6 +6,8 @@ spack:
     path: $KESSEL_DEPLOYMENT/config/repos.yaml
   - optional: true
     path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/packages.yaml
+  - optional: true
+    path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/mirrors.yaml
   specs: []
   view: true
   concretizer:
