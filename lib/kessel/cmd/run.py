@@ -44,7 +44,7 @@ def run(args, ctx, senv):
         print(f"{COLOR_PLAIN} ", flush=True)
 
     for step in workflow["steps"]:
-        senv.eval(f"[ $? ] && kessel pipeline {step['name']}")
+        senv.eval(f"[ $? -eq 0 ] && kessel pipeline {step['name']}")
         if args.until == step["name"]:
             break
 

@@ -21,21 +21,21 @@ def step(args, ctx, senv):
     script = step["script"]
     for line in script:
         if isinstance(line, str):
-            senv.eval("[ $? ] && " + ctx.evaluate(line, [args, variables]))
+            senv.eval("[ $? -eq 0 ] && " + ctx.evaluate(line, [args, variables]))
         elif isinstance(line, dict):
             if "buildenv" in line and line["buildenv"]:
                 senv.begin_subshell(env_script=ctx.build_env)
 
             if isinstance(line["run"], str):
                 senv.eval(
-                    "[ $? ] && "
+                    "[ $? -eq 0 ] && "
                     + ctx.evaluate(line["run"], [args, variables])
                 )
             elif isinstance(line["run"], list):
                 for sline in line["run"]:
                     for subcmd in sline.splitlines():
                         senv.eval(
-                            "[ $? ] && "
+                            "[ $? -eq 0 ] && "
                             + ctx.evaluate(subcmd, [args, variables])
                         )
 
