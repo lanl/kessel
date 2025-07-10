@@ -161,6 +161,15 @@ class Context(object):
         return self.kessel_root / "share" / "kessel" / "workflows"
 
     @property
+    def workflow_deployment_dir(self):
+        return Path(os.environ.get("KESSEL_WORKFLOW_DEPLOYMENT",
+                    default=f"{os.environ.get('TMPDIR', '/tmp')}/{os.environ['USER']}-ci-env"))
+
+    @workflow_deployment_dir.setter
+    def workflow_deployment_dir(self, value):
+        self.senv.set_env_var("KESSEL_WORKFLOW_DEPLOYMENT", Path(value).resolve())
+
+    @property
     def deployment_dir(self):
         deployment_dir = os.environ.get("KESSEL_DEPLOYMENT", default=None)
         return Path(deployment_dir) if deployment_dir else None
@@ -252,6 +261,7 @@ class Context(object):
             "project",
             "project_spec",
             "project_version",
+            "workflow_deployment_dir",
             "replicate_sqfs",
             "cwd",
         ]

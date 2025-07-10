@@ -1,5 +1,10 @@
 arguments:
   - argument:
+      - '-D'
+      - '--deployment'
+      - default: $workflow_deployment_dir
+        help: "location of workflow deployment (default: %(default)s)"
+  - argument:
       - '-s'
       - '--system'
       - default: $system
@@ -9,6 +14,11 @@ steps:
    title: Setup
    collapsed: true
    arguments:
+     - argument:
+         - '-D'
+         - '--deployment'
+         - default: $workflow_deployment_dir
+           help: "location of workflow deployment (default: %(default)s)"
      - argument:
          - '-s'
          - '--system'
@@ -25,10 +35,9 @@ steps:
           echo "Using Spack install at ${SPACK_ROOT}"
         fi
       else
-        export KESSEL_WORKFLOW_DEPLOYMENT_DIR=${KESSEL_WORKFLOW_DEPLOYMENT_DIR:-${TMPDIR}/${USER}-ci-env}
-        if [ ! -d "${KESSEL_WORKFLOW_DEPLOYMENT_DIR}" ]; then
-            unsquashfs -d ${KESSEL_WORKFLOW_DEPLOYMENT_DIR} $replicate_sqfs
-            kessel deploy activate ${KESSEL_WORKFLOW_DEPLOYMENT_DIR}
+        if [ ! -d "$workflow_deployment_dir" ]; then
+            unsquashfs -d $workflow_deployment_dir $replicate_sqfs
+            kessel deploy activate $workflow_deployment_dir
         fi
       fi
     -
