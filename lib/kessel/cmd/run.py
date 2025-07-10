@@ -73,9 +73,13 @@ def setup_command(subparser, ctx):
                     except Exception as e:
                         print("add_argument params:", pos_args, kw_args)
                         raise e
+        args = []
+
+        for s in workflow["steps"]:
+            args += s.get("arguments", [])
 
         _add_arguments(
-            subparser, workflow.get("arguments", []), workflow.get("variables", {})
+            subparser, args, workflow.get("variables", {})
         )
         subparser.add_argument("-u", "--until", choices=names, default=names[-1])
         subparser.set_defaults(func=run)

@@ -1,14 +1,3 @@
-arguments:
-  - argument:
-      - '-D'
-      - '--deployment'
-      - default: $workflow_deployment_dir
-        help: "location of workflow deployment (default: %(default)s)"
-  - argument:
-      - '-s'
-      - '--system'
-      - default: $system
-        help: "system that should be used (default: %(default)s)"
 steps:
  - name: setup
    title: Setup

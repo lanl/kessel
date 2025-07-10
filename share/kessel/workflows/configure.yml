@@ -1,9 +1,3 @@
-arguments:
-  - argument:
-      - '-I'
-      - '--install-dir'
-      - default: $install_dir
-        help: "install directory (default: %(default)s)"
 steps:
  - name: configure
    title: Configure
