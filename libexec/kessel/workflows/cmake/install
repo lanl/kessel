@@ -1,6 +1,6 @@
 #!/bin/bash
 #KESSEL title: Submit
-source "$KESSEL_ROOT/share/kessel/setup-env.sh"
-
+(
 source "$KESSEL_BUILD_ENV"
 cmake --build "$KESSEL_BUILD_DIR" --target install
+)

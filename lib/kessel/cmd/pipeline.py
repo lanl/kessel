@@ -1,25 +1,25 @@
 from kessel.cmd.workflow import status
+import argparse
 import subprocess
 import sys
 
 
-def step(args, ctx, senv):
+def step(args, extra_args, ctx, senv):
     workflow = ctx.workflow_config
     step = next(s for s in workflow.steps if s.name == args.step)
 
     senv.section_start(
-        step.name, step.title, collapsed=step.collapsed, passthrough=True
+        step.name, step.title, collapsed=step.collapsed
     )
-    print(status(ctx, step.name))
+    senv.echo(status(ctx, step.name))
+    ignored_args = len(sys.argv) - len(extra_args) - 1
+    senv.eval(f"shift {ignored_args}")
+    senv.eval(f"source {step.script} " + " ".join([f"\"{a}\"" for a in extra_args]))
+    senv.eval("ret=$?")
 
-    process = subprocess.Popen(f"{step.script}", pass_fds=[3], stdout=sys.stdout, stderr=sys.stderr)
+    senv.section_end(step.name)
+    senv.eval("test $ret -eq 0 && ", end="")
     ctx.pipeline_state = step.name
-
-    try:
-        sys.exit(process.wait())
-    except KeyboardInterrupt:
-        pass
-
 
 def setup_command(subparser, ctx):
     subparsers = subparser.add_subparsers()

@@ -2,47 +2,50 @@
 #KESSEL title: Setup
 #KESSEL collapsed: true
 
-kessel_export KESSEL_SYSTEM="${KESSEL_SYSTEM:-local}"
-kessel_export KESSEL_WORKFLOW_DEPLOYMENT="${KESSEL_WORKFLOW_DEPLOYMENT:-${TMPDIR:-/tmp}/$USER-ci-envs}"
+export KESSEL_SYSTEM="${KESSEL_SYSTEM:-local}"
+export KESSEL_WORKFLOW_DEPLOYMENT="${KESSEL_WORKFLOW_DEPLOYMENT:-${TMPDIR:-/tmp}/$USER-ci-envs}"
 
 TEMP=()
 while (( "$#" )); do
   case "$1" in
     -h|--help)
       usage
-      exit 0
+      return
       ;;
     -D|--deployment)
       if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         kessel_export KESSEL_WORKFLOW_DEPLOYMENT="$2"
+         export KESSEL_WORKFLOW_DEPLOYMENT="$2"
          shift 2
       else
          echo "ERROR: -I/--install-dir requires an argument." >&2
-         exit 1
+         false
+         return
       fi
       ;;
     --deployment=*)
       value="${1#*=}"
-      kessel_export KESSEL_WORKFLOW_DEPLOYMENT="$value"
+      export KESSEL_WORKFLOW_DEPLOYMENT="$value"
       shift
       ;;
     -s|--system)
       if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         kessel_export KESSEL_SYSTEM="$2"
+         export KESSEL_SYSTEM="$2"
          shift 2
       else
-         echo "ERROR: -I/--install-dir requires an argument." >&2
-         exit 1
+         echo "ERROR: -s/--system requires an argument." >&2
+         false
+         return
       fi
       ;;
     --system=*)
       value="${1#*=}"
-      kessel_export KESSEL_SYSTEM="$value"
+      export KESSEL_SYSTEM="$value"
       shift
       ;;
     -*|--*)
       echo "ERROR: invalid option $1" >&2
-      exit 1
+      false
+      return
       ;;
     *)
       TEMP+=("$1")
@@ -55,14 +58,15 @@ umask 0007
 if [[ "$KESSEL_SYSTEM" == "local" ]]; then
   if [[ -z "$SPACK_ROOT" ]]; then
     echo "ERROR: No active Spack installation!" >&2
-    exit 1
+    false
+    return
   else
     echo "Using Spack install at $SPACK_ROOT"
   fi
 else
   if [ ! -d "$KESSEL_WORKFLOW_DEPLOYMENT" ]; then
       unsquashfs -d "$KESSEL_WORKFLOW_DEPLOYMENT" "$KESSEL_DEPLOYMENT/.replicate.sqfs"
-      kessel_export KESSEL_PARENT_DEPLOYMENT="$KESSEL_DEPLOYMENT"
-      kessel_export KESSEL_DEPLOYMENT="$KESSEL_WORKFLOW_DEPLOYMENT"
+      kessel deploy activate "$KESSEL_WORKFLOW_DEPLOYMENT"
+      kessel system activate "$KESSEL_SYSTEM"
   fi
 fi

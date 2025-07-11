@@ -2,7 +2,7 @@ import glob
 from pathlib import Path
 
 
-def env_list(args, ctx, senv):
+def env_list(args, extra, ctx, senv):
     if ctx.deployment_dir and ctx.system:
         env_dir = ctx.deployment_dir / "environments" / ctx.system
         env_glob = (env_dir / "**" / "*.yaml").resolve()
@@ -12,7 +12,7 @@ def env_list(args, ctx, senv):
             print(Path(e).relative_to(env_dir).parent)
 
 
-def env_activate(args, ctx, senv):
+def env_activate(args, extra, ctx, senv):
     ctx.environment = args.env
     if ctx.deployment_dir:
         if ctx.system:

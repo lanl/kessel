@@ -2,16 +2,12 @@
 #KESSEL title: Install Environment
 #KESSEL collapsed: true
 
-source $KESSEL_ROOT/share/kessel/setup-env.sh
-
-set -e
-
 if [ -z "$KESSEL_SYSTEM" ] || [ -z "$KESSEL_ENVIRONMENT" ]; then
   echo "ERROR: Invalid state" >&2
-  exit 1
+  false
+  return
 fi
 
-kessel env activate "$KESSEL_ENVIRONMENT"
 #spack concretize -f 2> /dev/null > /dev/null || true
 spack concretize -f
 spack install --include-build-deps --only dependencies

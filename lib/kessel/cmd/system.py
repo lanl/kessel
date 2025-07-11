@@ -1,4 +1,4 @@
-def system_list(args, ctx, senv):
+def system_list(args, extra, ctx, senv):
     print("local")
 
     if ctx.deployment_dir:
@@ -8,7 +8,7 @@ def system_list(args, ctx, senv):
             print(d)
 
 
-def system_activate(args, ctx, senv):
+def system_activate(args, extra, ctx, senv):
     ctx.system = args.system
 
 

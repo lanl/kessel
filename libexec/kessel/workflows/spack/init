@@ -1,0 +1,126 @@
+#!/bin/bash
+
+export KESSEL_WORKFLOW_DEPLOYMENT="${TMPDIR:-/tmp}/$USER-ci-envs"
+export KESSEL_SYSTEM="${KESSEL_SYSTEM:-local}"
+export KESSEL_ENVIRONMENT="${KESSEL_ENVIRONMENT:-default}"
+
+export KESSEL_SOURCE_DIR="$PWD"
+export KESSEL_BUILD_DIR="${PWD}/build"
+export KESSEL_INSTALL_DIR="$KESSEL_BUILD_DIR/install"
+
+FULL_ARGS="$@"
+
+TEMP=""
+while (( "$#" )); do
+  case "$1" in
+    -h|--help)
+      usage
+      return
+      ;;
+    -D|--deployment)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         export KESSEL_WORKFLOW_DEPLOYMENT="$2"
+         shift 2
+      else
+         echo "ERROR: -D/--deployment requires an argument." >&2
+         false
+         return
+      fi
+      ;;
+    --deployment=*)
+      value="${1#*=}"
+      export KESSEL_WORKFLOW_DEPLOYMENT="$value"
+      shift
+      ;;
+    -s|--system)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         export KESSEL_SYSTEM="$2"
+         shift 2
+      else
+         echo "ERROR: -s/--system requires an argument." >&2
+         false
+         return
+      fi
+      ;;
+    --system=*)
+      value="${1#*=}"
+      export KESSEL_SYSTEM="$value"
+      shift
+      ;;
+    -e|--env)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         export KESSEL_ENVIRONMENT="$2"
+         shift 2
+      else
+         echo "ERROR: -e/--env requires an argument." >&2
+         false
+         return
+      fi
+      ;;
+    --env=*)
+      value="${1#*=}"
+      export KESSEL_ENVIRONMENT="$value"
+      shift
+      ;;
+    -S|--source-dir)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         export KESSEL_SOURCE_DIR="$2"
+         shift 2
+      else
+         echo "ERROR: -S/--source-dir requires an argument." >&2
+         false
+         return
+      fi
+      ;;
+    --source-dir=*)
+      value="${1#*=}"
+      export KESSEL_INSTALL_DIR="$value"
+      shift
+      ;;
+    -B|--build-dir)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         export KESSEL_BUILD_DIR="$2"
+         shift 2
+      else
+         echo "ERROR: -B/--build-dir requires an argument." >&2
+         false
+         return
+      fi
+      ;;
+    --build-dir=*)
+      value="${1#*=}"
+      export KESSEL_BUILD_DIR="$value"
+      shift
+      ;;
+    -I|--install-dir)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         export KESSEL_INSTALL_DIR="$2"
+         shift 2
+      else
+         echo "ERROR: -I/--install-dir requires an argument." >&2
+         false
+         return
+      fi
+      ;;
+    --install-dir=*)
+      value="${1#*=}"
+      export KESSEL_INSTALL_DIR="$value"
+      shift
+      ;;
+    -*|--*)
+      echo "ERROR: invalid option $1" >&2
+      false
+      return
+      ;;
+    *)
+      TEMP="$TEMP $1"
+      shift
+      ;;
+  esac
+done
+
+if [ -n "$TEMP" ]; then
+  export KESSEL_PROJECT_SPEC="$TEMP"
+fi
+
+kessel_ci_message "kessel" "$KESSEL_SYSTEM" "$KESSEL_INIT" "$KESSEL_WORKFLOW" "$FULL_ARGS"

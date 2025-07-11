@@ -1,6 +1,5 @@
 import textwrap
 import sys
-from ruamel.yaml import YAML
 
 PROGRESS_STEP_COMPLETE = "●"
 PROGRESS_STEP_PENDING = "○"
@@ -59,7 +58,7 @@ def status(ctx, step=None):
     return s
 
 
-def workflow_list(args, ctx, senv):
+def workflow_list(args, extra, ctx, senv):
     for wf in ctx.workflows:
         if wf == ctx.workflow:
             print(f"{COLOR_GREEN}{wf}{COLOR_PLAIN}")
@@ -67,19 +66,23 @@ def workflow_list(args, ctx, senv):
             print(wf)
 
 
-def workflow_activate(args, ctx, senv):
+def workflow_activate(args, extra, ctx, senv):
     ctx.workflow = args.name
 
 
-def workflow_status(args, ctx, senv):
+def workflow_status(args, extra, ctx, senv):
     senv.echo(status(ctx, ctx.pipeline_state))
 
 
-def workflow_get(args, ctx, senv):
-    yaml = YAML()
-    yaml.default_flow_style = False
-    yaml.width = 256
-    yaml.dump(ctx.workflow_config, sys.stdout)
+def workflow_edit(args, extra, ctx, senv):
+    workflow = ctx.workflow_config
+
+    if args.step == "init":
+        senv.eval(f"${{EDITOR:-vim}} {workflow.init_script}")
+    else:
+        for s in workflow.steps:
+            if args.step == s.name:
+                senv.eval(f"${{EDITOR:-vim}} {s.script}")
 
 
 def setup_command(subparser):
@@ -95,5 +98,6 @@ def setup_command(subparser):
     status_cmd = subparsers.add_parser("status")
     status_cmd.set_defaults(func=workflow_status)
 
-    get_cmd = subparsers.add_parser("get")
-    get_cmd.set_defaults(func=workflow_get)
+    edit_cmd = subparsers.add_parser("edit")
+    edit_cmd.add_argument("step")
+    edit_cmd.set_defaults(func=workflow_edit)

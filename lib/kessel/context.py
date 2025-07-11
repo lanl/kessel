@@ -62,14 +62,6 @@ class Context(object):
             return None
 
     @property
-    def build_env(self):
-        return Path(os.environ.get("KESSEL_BUILD_ENV", self.build_dir / "build_env.sh"))
-
-    @build_env.setter
-    def build_env(self, value):
-        self.senv.set_env_var("KESSEL_BUILD_ENV", Path(value).resolve())
-
-    @property
     def pipeline_state(self):
         return os.environ.get("KESSEL_PIPELINE_STATE", None)
 

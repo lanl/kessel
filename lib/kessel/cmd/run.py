@@ -1,22 +1,19 @@
 import os
 import sys
+import argparse
 import subprocess
 
 from kessel.cmd.workflow import COLOR_BLUE, COLOR_PLAIN
 
 
-def run(args, ctx, senv):
+def run(args, extra_args, ctx, senv):
     ctx.pipeline_state = None
     workflow = ctx.workflow_config
 
     if workflow.init_script:
-        process = subprocess.Popen([f"{workflow.init_script}"] + sys.argv[1:], pass_fds=[3])
-        try:
-            ret = process.wait()
-            if ret != 0:
-                sys.exit(1)
-        except KeyboardInterrupt:
-            pass
+        ignored_args = len(sys.argv) - len(extra_args) - 1
+        senv.eval(f"shift {ignored_args}")
+        senv.eval(f"source {workflow.init_script} " + " ".join([f"\"{a}\"" for a in extra_args]))
 
     for step in workflow.steps:
         senv.eval(f"kessel pipeline {step.name}")

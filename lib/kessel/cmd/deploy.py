@@ -9,13 +9,13 @@ from kessel.deployment import Deployment
 from kessel.util import create_squashfs
 
 
-def init(args, ctx, senv):
+def init(args, extra, ctx, senv):
     source_config = SourceConfig(args.config_dir)
     deployment = Deployment()
     deployment.init(ctx, source_config)
 
 
-def activate(args, ctx, senv):
+def activate(args, extra, ctx, senv):
     deployment_dir = Path(args.path).resolve()
     if deployment_dir.exists():
         ctx.deployment_dir = deployment_dir
@@ -23,7 +23,7 @@ def activate(args, ctx, senv):
         raise Exception(f"Deployment at '{deployment_dir} does not exist!")
 
 
-def finalize(args, ctx, senv):
+def finalize(args, extra, ctx, senv):
     if ctx.deployment_dir:
         group = ctx.group
         dperms = ctx.directory_permissions  # also applies to executables
@@ -56,7 +56,7 @@ def remove_packages(pkgs, senv):
         senv.eval(f"spack uninstall -y --all --dependents {pkg} || true")
 
 
-def clean(args, ctx, senv):
+def clean(args, extra, ctx, senv):
     if ctx.deployment_dir:
         config = ctx.config
         remove_packages(config.build.exclude, senv)
@@ -124,12 +124,12 @@ def create_system_source_mirror(ctx, envs, senv):
         )
 
 
-def bootstrap_create(args, ctx, senv):
+def bootstrap_create(args, extra, ctx, senv):
     if ctx.deployment_dir and ctx.system:
         create_bootstrap_mirror(ctx, senv)
 
 
-def mirror_create(args, ctx, senv):
+def mirror_create(args, extra, ctx, senv):
     if ctx.deployment_dir and ctx.system:
         env_dir = ctx.deployment_dir / "environments" / ctx.system
         if args.all:
@@ -141,7 +141,7 @@ def mirror_create(args, ctx, senv):
         create_system_source_mirror(ctx, envs, senv)
 
 
-def snapshot_create(args, ctx, senv):
+def snapshot_create(args, extra, ctx, senv):
     if ctx.deployment_dir:
         print("Creating snapshot of current deployment...")
         print(f"  src: {ctx.deployment_dir}")
@@ -151,7 +151,7 @@ def snapshot_create(args, ctx, senv):
         raise Exception("No active deployment")
 
 
-def snapshot_restore(args, ctx, senv):
+def snapshot_restore(args, extra, ctx, senv):
     subprocess.run(["unsquashfs", "-d", args.dest, args.snapshot_file])
 
 

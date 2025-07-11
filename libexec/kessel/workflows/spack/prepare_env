@@ -2,18 +2,15 @@
 #KESSEL title: Prepare Environment
 #KESSEL collapsed: true
 
-source $KESSEL_ROOT/share/kessel/setup-env.sh
-
-set -e
-
 if [ -z "$KESSEL_SYSTEM" ] || [ -z "$KESSEL_PROJECT_SPEC" ]; then
-  echo "ERROR: Invalid state" >&2
-  exit 1
+  echo "ERROR: Invalid state '$KESSEL_SYSTEM' '$KESSEL_PROJECT_SPEC' " >&2
+  false
+  return
 fi
 
-kessel_export KESSEL_ENVIRONMENT="${KESSEL_ENVIRONMENT:-default}"
-kessel_export KESSEL_SOURCE_DIR="${KESSEL_INSTALL_DIR:-$PWD}"
-kessel_export KESSEL_BINARY_DIR="${KESSEL_INSTALL_DIR:-$KESSEL_SOURCE_DIR/build}"
+export KESSEL_ENVIRONMENT="${KESSEL_ENVIRONMENT:-default}"
+export KESSEL_SOURCE_DIR="${KESSEL_SOURCE_DIR:-$PWD}"
+export KESSEL_BUILD_DIR="${KESSEL_BUILD_DIR:-$KESSEL_SOURCE_DIR/build}"
 
 TEMP=""
 while (( "$#" )); do
@@ -24,7 +21,7 @@ while (( "$#" )); do
       ;;
     -e|--env)
       if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         kessel_export KESSEL_ENVIRONMENT="$2"
+         export KESSEL_ENVIRONMENT="$2"
          shift 2
       else
          echo "ERROR: -S/--source-dir requires an argument." >&2
@@ -33,12 +30,12 @@ while (( "$#" )); do
       ;;
     --env=*)
       value="${1#*=}"
-      kessel_export KESSEL_ENVIRONMENT="$value"
+      export KESSEL_ENVIRONMENT="$value"
       shift
       ;;
     -S|--source-dir)
       if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         kessel_export KESSEL_SOURCE_DIR="$2"
+         export KESSEL_SOURCE_DIR="$2"
          shift 2
       else
          echo "ERROR: -S/--source-dir requires an argument." >&2
@@ -47,12 +44,12 @@ while (( "$#" )); do
       ;;
     --source-dir=*)
       value="${1#*=}"
-      kessel_export KESSEL_INSTALL_DIR="$value"
+      export KESSEL_INSTALL_DIR="$value"
       shift
       ;;
     -B|--build-dir)
       if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         kessel_export KESSEL_BUILD_DIR="$2"
+         export KESSEL_BUILD_DIR="$2"
          shift 2
       else
          echo "ERROR: -B/--build-dir requires an argument." >&2
@@ -61,7 +58,7 @@ while (( "$#" )); do
       ;;
     --build-dir=*)
       value="${1#*=}"
-      kessel_export KESSEL_BUILD_DIR="$value"
+      export KESSEL_BUILD_DIR="$value"
       shift
       ;;
     -*|--*)
@@ -76,7 +73,7 @@ while (( "$#" )); do
 done
 
 if [ "$TEMP" ]; then
-  kessel_export KESSEL_PROJECT_SPEC="$TEMP"
+  export KESSEL_PROJECT_SPEC="$TEMP"
 fi
 
 if ! kessel env activate "$KESSEL_ENVIRONMENT"; then
@@ -91,9 +88,11 @@ if ! kessel env activate "$KESSEL_ENVIRONMENT"; then
   fi
 fi
 
-if [ -d "$source_dir/spack_repo/$project" ]; then
-  spack repo remove $project 2> /dev/null > /dev/null || true
-  spack repo add $source_dir/spack_repo/$project
+export KESSEL_PROJECT_NAME=$(spack-python -c "spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');print(spec.name)")
+
+if [ -d "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME" ]; then
+  spack repo remove "$KESSEL_PROJECT_NAME" 2> /dev/null > /dev/null || true
+  spack repo add "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME"
 fi
 
 PROJECT_PREFERRED_VERSION=$(spack-python -c "\
@@ -101,6 +100,6 @@ spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');\
 pkg_cls = spack.repo.PATH.get_pkg_class(spec.fullname);\
 preferred_version = spec.versions if (spack.version.ver(':') not in spec.versions) else spack.package_base.preferred_version(pkg_cls(spec));\
 print(preferred_version)")
-PROJECT_NAME=$(spack-python -c "spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');print(spec.name)")
 
-spack develop -b "$KESSEL_BUILD_DIR" -p "$KESSEL_SOURCE_DIR" --no-clone "$PROJECT_NAME@$PROJECT_PREFERRED_VERSION"
+
+spack develop -b "$KESSEL_BUILD_DIR" -p "$KESSEL_SOURCE_DIR" --no-clone "$KESSEL_PROJECT_NAME@$PROJECT_PREFERRED_VERSION"

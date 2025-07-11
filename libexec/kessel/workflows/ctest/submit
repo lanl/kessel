@@ -1,6 +1,6 @@
 #!/bin/bash
 #KESSEL title: Submit
-source "$KESSEL_ROOT/share/kessel/setup-env.sh"
-
+(
 source "$KESSEL_BUILD_ENV"
 ctest -V -S $KESSEL_CTEST_DRIVER_SCRIPT,Submit
+)

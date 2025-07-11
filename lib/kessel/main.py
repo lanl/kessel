@@ -34,7 +34,7 @@ def main():
     pipeline_cmd.setup_command(subparsers.add_parser("pipeline"), ctx)
     run_cmd.setup_command(subparsers.add_parser("run"), ctx)
 
-    args = parser.parse_args()
+    args, extra = parser.parse_known_args()
     senv.debug = args.shell_debug
-    args.func(args, ctx, senv)
+    args.func(args, extra, ctx, senv)
     return 0

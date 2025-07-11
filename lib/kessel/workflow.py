@@ -1,4 +1,3 @@
-import os
 import re
 from pathlib import Path
 
@@ -57,7 +56,7 @@ def load_workflow_from_directory(path: Path):
     init_script = None
 
     for f in sorted(path.iterdir()):
-        if f.is_file() and os.access(f, os.X_OK) and step_pattern.fullmatch(f.name):
+        if f.is_file() and step_pattern.fullmatch(f.name):
             if init_pattern.fullmatch(f.name):
                 init_script = f
             else:
