@@ -1,0 +1,10 @@
+#!/bin/bash
+source "$KESSEL_ROOT/share/kessel/setup-env.sh"
+
+kessel_export KESSEL_SOURCE_DIR="${KESSEL_SOURCE_DIR:-$PWD}"
+kessel_export KESSEL_BUILD_DIR="${KESSEL_BUILD_DIR:-$PWD}/build"
+kessel_export KESSEL_SYSTEM="${KESSEL_SYSTEM:-local}"
+kessel_export KESSEL_ENVIRONMENT="format"
+kessel_export KESSEL_REQUIREMENTS="$KESSEL_SOURCE_DIR/.kessel/workflows/format/requirements.txt"
+
+kessel_ci_message "kessel" "$KESSEL_SYSTEM" "$KESSEL_INIT" "$KESSEL_WORKFLOW" $@

@@ -1,0 +1,68 @@
+#!/bin/bash
+#KESSEL title: Setup
+#KESSEL collapsed: true
+
+kessel_export KESSEL_SYSTEM="${KESSEL_SYSTEM:-local}"
+kessel_export KESSEL_WORKFLOW_DEPLOYMENT="${KESSEL_WORKFLOW_DEPLOYMENT:-${TMPDIR:-/tmp}/$USER-ci-envs}"
+
+TEMP=()
+while (( "$#" )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -D|--deployment)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         kessel_export KESSEL_WORKFLOW_DEPLOYMENT="$2"
+         shift 2
+      else
+         echo "ERROR: -I/--install-dir requires an argument." >&2
+         exit 1
+      fi
+      ;;
+    --deployment=*)
+      value="${1#*=}"
+      kessel_export KESSEL_WORKFLOW_DEPLOYMENT="$value"
+      shift
+      ;;
+    -s|--system)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         kessel_export KESSEL_SYSTEM="$2"
+         shift 2
+      else
+         echo "ERROR: -I/--install-dir requires an argument." >&2
+         exit 1
+      fi
+      ;;
+    --system=*)
+      value="${1#*=}"
+      kessel_export KESSEL_SYSTEM="$value"
+      shift
+      ;;
+    -*|--*)
+      echo "ERROR: invalid option $1" >&2
+      exit 1
+      ;;
+    *)
+      TEMP+=("$1")
+      shift
+      ;;
+  esac
+done
+
+umask 0007
+if [[ "$KESSEL_SYSTEM" == "local" ]]; then
+  if [[ -z "$SPACK_ROOT" ]]; then
+    echo "ERROR: No active Spack installation!" >&2
+    exit 1
+  else
+    echo "Using Spack install at $SPACK_ROOT"
+  fi
+else
+  if [ ! -d "$KESSEL_WORKFLOW_DEPLOYMENT" ]; then
+      unsquashfs -d "$KESSEL_WORKFLOW_DEPLOYMENT" "$KESSEL_DEPLOYMENT/.replicate.sqfs"
+      kessel_export KESSEL_PARENT_DEPLOYMENT="$KESSEL_DEPLOYMENT"
+      kessel_export KESSEL_DEPLOYMENT="$KESSEL_WORKFLOW_DEPLOYMENT"
+  fi
+fi

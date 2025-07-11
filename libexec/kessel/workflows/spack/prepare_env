@@ -1,0 +1,106 @@
+#!/bin/bash
+#KESSEL title: Prepare Environment
+#KESSEL collapsed: true
+
+source $KESSEL_ROOT/share/kessel/setup-env.sh
+
+set -e
+
+if [ -z "$KESSEL_SYSTEM" ] || [ -z "$KESSEL_PROJECT_SPEC" ]; then
+  echo "ERROR: Invalid state" >&2
+  exit 1
+fi
+
+kessel_export KESSEL_ENVIRONMENT="${KESSEL_ENVIRONMENT:-default}"
+kessel_export KESSEL_SOURCE_DIR="${KESSEL_INSTALL_DIR:-$PWD}"
+kessel_export KESSEL_BINARY_DIR="${KESSEL_INSTALL_DIR:-$KESSEL_SOURCE_DIR/build}"
+
+TEMP=""
+while (( "$#" )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -e|--env)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         kessel_export KESSEL_ENVIRONMENT="$2"
+         shift 2
+      else
+         echo "ERROR: -S/--source-dir requires an argument." >&2
+         exit 1
+      fi
+      ;;
+    --env=*)
+      value="${1#*=}"
+      kessel_export KESSEL_ENVIRONMENT="$value"
+      shift
+      ;;
+    -S|--source-dir)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         kessel_export KESSEL_SOURCE_DIR="$2"
+         shift 2
+      else
+         echo "ERROR: -S/--source-dir requires an argument." >&2
+         exit 1
+      fi
+      ;;
+    --source-dir=*)
+      value="${1#*=}"
+      kessel_export KESSEL_INSTALL_DIR="$value"
+      shift
+      ;;
+    -B|--build-dir)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         kessel_export KESSEL_BUILD_DIR="$2"
+         shift 2
+      else
+         echo "ERROR: -B/--build-dir requires an argument." >&2
+         exit 1
+      fi
+      ;;
+    --build-dir=*)
+      value="${1#*=}"
+      kessel_export KESSEL_BUILD_DIR="$value"
+      shift
+      ;;
+    -*|--*)
+      echo "ERROR: invalid option $1" >&2
+      exit 1
+      ;;
+    *)
+      TEMP="$TEMP $1"
+      shift
+      ;;
+  esac
+done
+
+if [ "$TEMP" ]; then
+  kessel_export KESSEL_PROJECT_SPEC="$TEMP"
+fi
+
+if ! kessel env activate "$KESSEL_ENVIRONMENT"; then
+  if [ "$KESSEL_SYSTEM" = "local" ]; then
+    spack env create "$KESSEL_ENVIRONMENT"
+    spack env activate "$KESSEL_ENVIRONMENT"
+    spack add "$KESSEL_PROJECT_SPEC"
+    kessel env activate "$KESSEL_ENVIRONMENT"
+  else
+    echo "ERROR: Can not activate or create environment $KESSEL_ENVIRONMENT!"
+    exit 1
+  fi
+fi
+
+if [ -d "$source_dir/spack_repo/$project" ]; then
+  spack repo remove $project 2> /dev/null > /dev/null || true
+  spack repo add $source_dir/spack_repo/$project
+fi
+
+PROJECT_PREFERRED_VERSION=$(spack-python -c "\
+spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');\
+pkg_cls = spack.repo.PATH.get_pkg_class(spec.fullname);\
+preferred_version = spec.versions if (spack.version.ver(':') not in spec.versions) else spack.package_base.preferred_version(pkg_cls(spec));\
+print(preferred_version)")
+PROJECT_NAME=$(spack-python -c "spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');print(spec.name)")
+
+spack develop -b "$KESSEL_BUILD_DIR" -p "$KESSEL_SOURCE_DIR" --no-clone "$PROJECT_NAME@$PROJECT_PREFERRED_VERSION"

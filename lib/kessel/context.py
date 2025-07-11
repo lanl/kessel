@@ -9,7 +9,7 @@ from pathlib import Path
 from kessel import KESSEL_VERSION
 from kessel.config import KesselConfig
 from kessel.util import create_squashfs, symbolic_to_octal
-from kessel.workflow import load_workflow_from_file, replace_variables
+from kessel.workflow import load_workflow_from_directory
 
 from ruamel.yaml import YAML
 
@@ -34,16 +34,11 @@ class Context(object):
             wd = d / "workflows"
             if wd.exists() and wd.is_dir():
                 for f in wd.iterdir():
-                    if f.suffix == ".yml":
-                        yield f.stem
+                    if f.is_dir():
+                        yield f.name
 
     def load_workflow(self, name):
-        workflow_file = self.kessel_dir / "workflows" / f"{name}.yml"
-        template_dirs = [
-            self.kessel_dir / "workflows" / "templates",
-            self.kessel_workflow_template_dir,
-        ]
-        return load_workflow_from_file(workflow_file, template_dirs)
+        return load_workflow_from_directory(self.kessel_dir / "workflows" / name)
 
     @property
     def workflow(self):
@@ -67,32 +62,6 @@ class Context(object):
             return None
 
     @property
-    def source_dir(self):
-        return Path(os.environ.get("KESSEL_PIPELINE_SOURCE_DIR", Path.cwd()))
-
-    @source_dir.setter
-    def source_dir(self, value):
-        self.senv.set_env_var("KESSEL_PIPELINE_SOURCE_DIR", Path(value).resolve())
-
-    @property
-    def build_dir(self):
-        return Path(os.environ.get("KESSEL_PIPELINE_BUILD_DIR", Path.cwd() / "build"))
-
-    @build_dir.setter
-    def build_dir(self, value):
-        self.senv.set_env_var("KESSEL_PIPELINE_BUILD_DIR", Path(value).resolve())
-
-    @property
-    def install_dir(self):
-        return Path(
-            os.environ.get("KESSEL_PIPELINE_INSTALL_DIR", self.build_dir / "install")
-        )
-
-    @install_dir.setter
-    def install_dir(self, value):
-        self.senv.set_env_var("KESSEL_PIPELINE_INSTALL_DIR", Path(value).resolve())
-
-    @property
     def build_env(self):
         return Path(os.environ.get("KESSEL_BUILD_ENV", self.build_dir / "build_env.sh"))
 
@@ -109,41 +78,6 @@ class Context(object):
         self.senv.set_env_var("KESSEL_PIPELINE_STATE", value)
 
     @property
-    def project_spec(self):
-        return os.environ.get("KESSEL_ENV_PROJECT_SPEC", None)
-
-    @project_spec.setter
-    def project_spec(self, value):
-        # TODO validate
-        if isinstance(value, list):
-            value = " ".join(value)
-        self.senv.set_env_var("KESSEL_ENV_PROJECT_SPEC", value.strip())
-        self.senv.set_env_var("KESSEL_ENV_PROJECT", self.project)
-
-    @property
-    def project(self):
-        # cases to cover
-        # foo@1.2.0 +bar
-        # foo@=1.2.0 ~bar
-        # foo@git.sha=1.2.0 ~bar
-        # foo+bar@1.2.0
-        # foo+bar@1.2.0 ^dep@1.2.3
-        # foo +bar @1.2.0
-        # foo +bar @1.2.0 ^dep@1.2.3
-        spec = self.project_spec
-        root_match = re.search(r"\b[a-zA-Z0-9_-]+\b", spec)
-        return root_match.group()
-
-    @property
-    def project_version(self):
-        spec = self.project_spec
-        cutoff_match = re.search(r"[\^%]", spec)
-        if cutoff_match:
-            spec = spec[: cutoff_match.start()]
-        version_match = re.search(r"@[^+\s~^%]+", spec)
-        return version_match.group() if version_match else ""
-
-    @property
     def kessel_root(self):
         return Path(os.environ["KESSEL_ROOT"])
 
@@ -155,19 +89,6 @@ class Context(object):
         if system:
             return self.kessel_config_dir / system / "templates"
         return self.kessel_config_dir / "templates"
-
-    @property
-    def kessel_workflow_template_dir(self):
-        return self.kessel_root / "share" / "kessel" / "workflows"
-
-    @property
-    def workflow_deployment_dir(self):
-        return Path(os.environ.get("KESSEL_WORKFLOW_DEPLOYMENT",
-                    default=f"{os.environ.get('TMPDIR', '/tmp')}/{os.environ['USER']}-ci-env"))
-
-    @workflow_deployment_dir.setter
-    def workflow_deployment_dir(self, value):
-        self.senv.set_env_var("KESSEL_WORKFLOW_DEPLOYMENT", Path(value).resolve())
 
     @property
     def deployment_dir(self):
@@ -243,33 +164,6 @@ class Context(object):
     @property
     def replicate_sqfs(self):
         return self.deployment_dir / ".replicate.sqfs" if self.deployment_dir else None
-
-    @property
-    def cwd(self):
-        return Path.cwd()
-
-    @property
-    def visible_variables(self):
-        return [
-            "system",
-            "environment",
-            "build_dir",
-            "build_env",
-            "source_dir",
-            "install_dir",
-            "build_env",
-            "project",
-            "project_spec",
-            "project_version",
-            "workflow_deployment_dir",
-            "replicate_sqfs",
-            "cwd",
-        ]
-
-    def evaluate(self, text, locals=[]):
-        if isinstance(text, str):
-            return replace_variables(text, locals + [self, os.environ])
-        return text
 
     def replicate(self, dest):
         print("Creating deployment copy...")

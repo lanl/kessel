@@ -1,0 +1,6 @@
+#!/bin/bash
+#KESSEL title: Build
+source "$KESSEL_ROOT/share/kessel/setup-env.sh"
+
+source "$KESSEL_BUILD_ENV"
+ctest -VV -S $KESSEL_CTEST_DRIVER_SCRIPT,Configure,Build,$report_errors

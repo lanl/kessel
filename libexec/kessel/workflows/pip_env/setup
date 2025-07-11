@@ -1,0 +1,92 @@
+#!/bin/bash
+#KESSEL title: Setup
+#KESSEL collapsed: true
+
+source $KESSEL_ROOT/share/kessel/setup-env.sh
+
+set -e
+
+kessel_export KESSEL_SOURCE_DIR="${KESSEL_SOURCE_DIR:-$PWD}"
+kessel_export KESSEL_BUILD_DIR="${KESSEL_BUILD_DIR:-$PWD/build}"
+kessel_export KESSEL_ENVIRONMENT="${KESSEL_ENVIRONMENT:-default}"
+kessel_export KESSEL_REQUIREMENTS="${KESSEL_REQUIREMENTS:-requirements.txt}"
+
+TEMP=()
+while (( "$#" )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -S|--source-dir)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         kessel_export KESSEL_SOURCE_DIR="$2"
+         shift 2
+      else
+         echo "ERROR: -S/--source-dir requires an argument." >&2
+         exit 1
+      fi
+      ;;
+    -B|--build-dir)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         kessel_export KESSEL_BUILD_DIR="$2"
+         shift 2
+      else
+         echo "ERROR: -B/--build-dir requires an argument." >&2
+         exit 1
+      fi
+      ;;
+    -e|--env)
+      if [ -n "$2" ] && [[ "$2" != -* ]]; then
+         kessel_export KESSEL_ENVIRONMENT="$2"
+         shift 2
+      else
+         echo "ERROR: -e/--env requires an argument." >&2
+         exit 1
+      fi
+      ;;
+    --source-dir=*)
+      value="${1#*=}"
+      kessel_export KESSEL_SOURCE_DIR="$value"
+      shift
+      ;;
+    --build-dir=*)
+      value="${1#*=}"
+      kessel_export KESSEL_BUILD_DIR="$value"
+      shift
+      ;;
+    --env=*)
+      value="${1#*=}"
+      kessel_export KESSEL_ENVIRONMENT="$value"
+      shift
+      ;;
+    -*|--*)
+      echo "ERROR: invalid option $1" >&2
+      exit 1
+      ;;
+    *)
+      TEMP+=("$1")
+      shift
+      ;;
+  esac
+done
+
+ENV_DIR="$KESSEL_BUILD_DIR/envs"
+ENV="$ENV_DIR/$KESSEL_ENVIRONMENT"
+mkdir -p "$ENV_DIR"
+
+if [[ ! -d "$ENV" ]]; then
+    "$KESSEL_PYTHON" -m venv "$ENV"
+fi
+
+source "$ENV/bin/activate"
+
+if [ ${?} -ne 0 ]; then
+    echo "Failed to activate environment"
+    exit 1
+fi
+
+python3 -m pip install -r "$KESSEL_REQUIREMENTS"
+deactivate
+
+kessel_export KESSEL_BUILD_ENV=${ENV}/bin/activate

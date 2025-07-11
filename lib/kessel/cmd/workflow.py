@@ -7,6 +7,7 @@ PROGRESS_STEP_PENDING = "○"
 PROGRESS_BAR_PENDING = "▭"
 PROGRESS_BAR_COMPLETE = "▬"
 
+COLOR_GREEN = "\033[1;32m"
 COLOR_BLUE = "\033[1;34m"
 COLOR_MAGENTA = "\033[1;35m"
 COLOR_CYAN = "\033[1;36m"
@@ -24,9 +25,9 @@ def step_lines(title):
 
 
 def status(ctx, step=None):
-    steps = ctx.workflow_config["steps"]
-    names = [s["name"] for s in steps]
-    captions = [step_lines(s["title"]) for s in steps]
+    steps = ctx.workflow_config.steps
+    names = [s.name for s in steps]
+    captions = [step_lines(s.title) for s in steps]
     lines = len(max(captions, key=len))
     widths = [len(c[0]) for c in captions] + [0]
     step_size = [0] + [
@@ -60,7 +61,10 @@ def status(ctx, step=None):
 
 def workflow_list(args, ctx, senv):
     for wf in ctx.workflows:
-        print(wf)
+        if wf == ctx.workflow:
+            print(f"{COLOR_GREEN}{wf}{COLOR_PLAIN}")
+        else:
+            print(wf)
 
 
 def workflow_activate(args, ctx, senv):

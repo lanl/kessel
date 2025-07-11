@@ -36,17 +36,8 @@ class ShellEnvironment(object):
     def target(self):
         return sys.stdout if self.debug else self.fd
 
-    def begin_subshell(self, env_script=None):
-        if env_script:
-            print(f"(source {env_script};", file=self.target, flush=True)
-        else:
-            print("(", flush=True)
-
-    def end_subshell(self):
-        print(")", flush=True, file=self.target)
-
     def eval(self, cmd, end="\n"):
-        print(cmd, file=self.target, flush=True, end=end)
+        print("[ $? -eq 0 ] && " + cmd, file=self.target, flush=True, end=end)
 
     def set_env_var(self, name, value):
         if value is None:
