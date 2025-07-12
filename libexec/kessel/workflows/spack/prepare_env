@@ -95,11 +95,4 @@ if [ -d "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME" ]; then
   spack repo add "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME"
 fi
 
-PROJECT_PREFERRED_VERSION=$(spack-python -c "\
-spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');\
-pkg_cls = spack.repo.PATH.get_pkg_class(spec.fullname);\
-preferred_version = spec.versions if (spack.version.ver(':') not in spec.versions) else spack.package_base.preferred_version(pkg_cls(spec));\
-print(preferred_version)")
-
-
-spack develop -b "$KESSEL_BUILD_DIR" -p "$KESSEL_SOURCE_DIR" --no-clone "$KESSEL_PROJECT_NAME@$PROJECT_PREFERRED_VERSION"
+spack develop -b "$KESSEL_BUILD_DIR" -p "$KESSEL_SOURCE_DIR" --no-clone "$KESSEL_PROJECT_NAME"
