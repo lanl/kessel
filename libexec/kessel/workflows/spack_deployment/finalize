@@ -1,0 +1,17 @@
+#!/bin/bash
+kessel deploy init ${KESSEL_DEPLOYMENT_CONFIG}
+
+for p in "${KESSEL_BUILD_EXCLUDE[@]}"
+do
+    spack uninstall -y --all --dependents {pkg} || true
+done
+
+spack clean -a
+
+echo "Setting permissions and group..."
+chown -R ":$KESSEL_GROUP" $DEPLOYMENT_DIR
+chmod -R "$KESSEL_PERMISSIONS" $DEPLOYMENT_DIR
+
+chmod g+s "$DEPLOYMENT_DIR/spack/opt/spack/.spack-db"
+
+create_replicate_squashfs $DEPLOYMENT_DIR

@@ -7,6 +7,11 @@ class BuildConfig(object):
     def __init__(self, options={}):
         self.exclude = options.get("exclude", [])
 
+    def write_exclude_file(self, path):
+        with open(path, "w") as f:
+            for e in self.exclude:
+                print(e, file=f)
+
     def to_dict(self):
         return {"exclude": self.exclude}
 

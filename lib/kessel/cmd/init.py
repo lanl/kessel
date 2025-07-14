@@ -1,8 +1,4 @@
 from pathlib import Path
-import os
-import stat
-import glob
-import subprocess
 
 
 def init(args, extra, ctx, senv):

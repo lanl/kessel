@@ -1,0 +1,68 @@
+concretize_env_for_mirror() {
+    env_name="$1"
+    env_path="$2"
+    echo "Concretizing $env_name..."
+    rm -rf "$env_path/.spack-env"
+
+    mkdir -p "$env_path/.spack-env"
+    cp "$env_path/spack.yaml" "$env_path/spack.yaml.original"
+    spack env activate -d "$env_path"
+    spack config add view:false
+
+    spack concretize -f --fresh 2>&1 > "$env_path/.spack-env/concretization.txt" || touch "$env_path/.spack-env/failure" &
+    spack env deactivate
+}
+
+get_env_name() {
+    absolute_path=$(readlink -f "$1")
+    abs_root=$(readlink -f "$2")
+    realpath -s "$(dirname "$absolute_path")" | sed "s|^$abs_root||"
+}
+
+create_env_mirror() {
+    mirror_dir="$1"
+    mirror_exclude_file="$2"
+    env_name="$3"
+    env_path="$4"
+    failure_file="$env_path/.spack-env/failure"
+    if [ -f "$failure_file" ]; then
+        echo "ERROR: Concretization of $env_name failed!" >&2
+        false
+        return
+    else
+        echo "Creating mirror for {name}..."
+        spack env activate -d "$env_path"
+        spack spec
+        spack mirror create -d "$mirror_dir" --all --skip-unstable-version --exclude-file "$mirror_exclude_file"
+        rm -f "$env_path/spack.lock"
+        cp "$env_path/spack.yaml.original" "$env_path/spack.yaml"
+    fi
+}
+
+env_dir="$KESSEL_DEPLOYMENT/environments/$KESSEL_SYSTEM"
+envs=$(find $env_dir -name spack.yaml)
+#        if args.all:
+#            env_glob = (env_dir / "**" / "*.yaml").resolve()
+#            envs = sorted(glob.glob(str(env_glob), recursive=True))
+#        else:
+#            envs = [env_dir / args.env / "spack.yaml"]
+
+mirror_dir="$KESSEL_DEPLOYMENT/spack-mirror"
+env_dir="$KESSEL_DEPLOYMENT/environments/$KESSEL_SYSTEM"
+mirror_exclude_file="$KESSEL_DEPLOYMENT/config/mirror.exclude"
+
+for e in $envs
+do
+    env_path=$(dirname "$e")
+    env_name=$(get_env_name "$e" "$env_dir")
+    concretize_env_for_mirror "$env_name" "$env_path"
+done
+
+wait
+
+for e in $envs
+do
+    env_path=$(dirname "$e")
+    env_name=$(get_env_name "$e" "$env_dir")
+    create_env_mirror "$mirror_dir" "$mirror_exclude_file" "$env_name" "$env_path"
+done

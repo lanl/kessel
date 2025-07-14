@@ -1,9 +1,4 @@
-import os
 import sys
-import argparse
-import subprocess
-
-from kessel.cmd.workflow import COLOR_BLUE, COLOR_PLAIN
 
 
 def run(args, extra_args, ctx, senv):

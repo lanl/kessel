@@ -135,25 +135,6 @@ class Context(object):
         return KesselConfig(self.deployment_dir / ".kessel.yaml")
 
     @property
-    def file_permissions(self):
-        return symbolic_to_octal(
-            os.environ.get("KESSEL_PERMISSIONS", default="u=rwX,g=rX,o="),
-            directory=False,
-        )
-
-    @property
-    def directory_permissions(self):
-        return symbolic_to_octal(
-            os.environ.get("KESSEL_PERMISSIONS", default="u=rwX,g=rX,o="),
-            directory=True,
-        )
-
-    @property
-    def group(self):
-        grp_name = os.environ.get("KESSEL_GROUP", default=f"{os.environ['USER']}")
-        return grp.getgrnam(grp_name).gr_gid
-
-    @property
     def replicate_sqfs(self):
         return self.deployment_dir / ".replicate.sqfs" if self.deployment_dir else None
 

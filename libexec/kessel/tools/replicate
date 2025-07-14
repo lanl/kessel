@@ -1,0 +1,44 @@
+#!/bin/bash
+echo "Creating deployment copy..."
+echo "  src: $DEPLOYMENT_DIR"
+echo "  dst: $DEST"
+
+rsync -a --no-p --no-g chmod=ugo=rwX --exclude='.env' --exclude='spack-mirror' \
+      --exclude='spack-bootstrap' --exclude='/spack' --exclude='*spack.lock' \
+      --exclude='*.spack-env*' \
+      "$DEPLOYMENT_DIR/" "$DEST"
+
+rsync -a --no-p --no-g --chmod=ugo=rwX --include='{*__pycache__* "*.pyc"}' \
+         --include='etc/spack/**' --include='lib/spack/**' \
+         --exclude-from="$DEPLOYMENT_DIR/spack/.gitignore" \
+        "$DEPLOYMENT_DIR/spack/" "$DEST/spack"
+
+#        replica_config = {
+#            "kessel": {
+#                "version": KESSEL_VERSION,
+#                "build": self.config.build.to_dict(),
+#                "mirror": self.config.mirror.to_dict(),
+#                "parent": str(self.deployment_dir),
+#            }
+#        }
+#
+#        replica_config_file = Path(dest) / ".kessel.yaml"
+#
+#        with open(replica_config_file, "w") as f:
+#            yaml = YAML(typ="safe")
+#            yaml.default_flow_style = False
+#            yaml.width = 256
+#            yaml.dump(replica_config, f)
+#    def create_replicate_squashfs(self, dest):
+#        with tempfile.TemporaryDirectory() as d:
+#            if Path(dest).exists():
+#                os.remove(dest)
+#            self.replicate(d)
+#            create_squashfs(d, dest)
+#
+#        try:
+#            os.chown(dest, -1, self.group)
+#            os.chmod(dest, self.file_permissions)
+#        except BaseException:
+#            pass
+#

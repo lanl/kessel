@@ -1,0 +1,5 @@
+#!/bin/bash
+spack bootstrap status || true
+spack bootstrap now
+spack bootstrap status
+spack bootstrap mirror --binary-packages "${KESSEL_DEPLOYMENT_DIR}/spack-bootstrap" || true
