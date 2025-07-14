@@ -3,32 +3,6 @@ import subprocess
 from ruamel.yaml import YAML
 
 
-class BuildConfig(object):
-    def __init__(self, options={}):
-        self.exclude = options.get("exclude", [])
-
-    def write_exclude_file(self, path):
-        with open(path, "w") as f:
-            for e in self.exclude:
-                print(e, file=f)
-
-    def to_dict(self):
-        return {"exclude": self.exclude}
-
-
-class MirrorConfig(object):
-    def __init__(self, options={}):
-        self.exclude = options.get("exclude", [])
-
-    def write_exclude_file(self, path):
-        with open(path, "w") as f:
-            for e in self.exclude:
-                print(e, file=f)
-
-    def to_dict(self):
-        return {"exclude": self.exclude}
-
-
 class KesselConfig(object):
     def __init__(self, config_file):
         self.config_file = config_file
@@ -37,8 +11,6 @@ class KesselConfig(object):
             yaml = YAML(typ="safe")
             config = yaml.load(f)["kessel"]
 
-        self.mirror = MirrorConfig(config.get("mirror", {}))
-        self.build = BuildConfig(config.get("build", {}))
         self.parent = config.get("parent", None)
 
 
@@ -97,9 +69,6 @@ class SourceConfig(object):
         with open(self.config_file, "r") as f:
             yaml = YAML(typ="safe")
             config = yaml.load(f)["kessel"]
-
-        self.mirror = MirrorConfig(config.get("mirror", {}))
-        self.build = BuildConfig(config.get("build", {}))
 
         self.spack = GitConfig(config["spack"]["git"], config["spack"]["commit"])
         self.spack_packages = GitConfig(

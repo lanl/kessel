@@ -139,47 +139,9 @@ class Context(object):
         return self.deployment_dir / ".replicate.sqfs" if self.deployment_dir else None
 
     def replicate(self, dest):
-        print("Creating deployment copy...")
-        print(f"  src: {self.deployment_dir}")
-        print(f"  dst: {dest}")
-        cmd = [
-            "rsync",
-            "-a",
-            "--no-p",
-            "--no-g",
-            "--chmod=ugo=rwX",
-            "--exclude='.env'",
-            "--exclude='spack-mirror'",
-            "--exclude='spack-bootstrap'",
-            "--exclude='/spack'",
-            "--exclude='*spack.lock'",
-            "--exclude='*.spack-env*'",
-            f"{self.deployment_dir}/",
-            dest,
-        ]
-        print(" ".join(cmd))
-        subprocess.run(" ".join(cmd), shell=True)
-        cmd2 = [
-            "rsync",
-            "-a",
-            "--no-p",
-            "--no-g",
-            "--chmod=ugo=rwX",
-            '--include={"*__pycache__*","*.pyc"}',
-            '--include="etc/spack/**"',
-            '--include="lib/spack/**"',
-            f"--exclude-from={self.deployment_dir}/spack/.gitignore",
-            f"{self.deployment_dir}/spack/",
-            f"{dest}/spack",
-        ]
-        print(" ".join(cmd2))
-        subprocess.run(" ".join(cmd2), shell=True)
-
         replica_config = {
             "kessel": {
                 "version": KESSEL_VERSION,
-                "build": self.config.build.to_dict(),
-                "mirror": self.config.mirror.to_dict(),
                 "parent": str(self.deployment_dir),
             }
         }

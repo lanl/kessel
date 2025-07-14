@@ -16,7 +16,7 @@ concretize_env_for_mirror() {
 get_env_name() {
     absolute_path=$(readlink -f "$1")
     abs_root=$(readlink -f "$2")
-    realpath -s "$(dirname "$absolute_path")" | sed "s|^$abs_root||"
+    realpath -s "$(dirname "$absolute_path")" | sed "s|^$abs_root/||"
 }
 
 create_env_mirror() {
@@ -50,6 +50,14 @@ envs=$(find $env_dir -name spack.yaml)
 mirror_dir="$KESSEL_DEPLOYMENT/spack-mirror"
 env_dir="$KESSEL_DEPLOYMENT/environments/$KESSEL_SYSTEM"
 mirror_exclude_file="$KESSEL_DEPLOYMENT/config/mirror.exclude"
+
+if [ -n "$KESSEL_MIRROR_EXCLUDE" ]; then
+    rm -rf $mirror_exclude_file
+    for p in "${KESSEL_MIRROR_EXCLUDE[@]}"
+    do
+        echo $p >> $mirror_exclude_file
+    done
+fi
 
 for e in $envs
 do

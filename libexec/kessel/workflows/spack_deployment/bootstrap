@@ -1,5 +1,8 @@
 #!/bin/bash
+kessel deploy activate "$KESSEL_DEPLOYMENT"
+kessel system activate "$KESSEL_SYSTEM"
+
 spack bootstrap status || true
 spack bootstrap now
 spack bootstrap status
-spack bootstrap mirror --binary-packages "${KESSEL_DEPLOYMENT_DIR}/spack-bootstrap" || true
+spack bootstrap mirror --binary-packages "${KESSEL_DEPLOYMENT}/spack-bootstrap" || true

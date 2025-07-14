@@ -1,10 +1,12 @@
 #!/bin/bash
 kessel deploy init ${KESSEL_DEPLOYMENT_CONFIG}
 
-for p in "${KESSEL_BUILD_EXCLUDE[@]}"
-do
-    spack uninstall -y --all --dependents {pkg} || true
-done
+if [ -n "$KESSEL_BUILD_EXCLUDE" ]; then
+    for p in "${KESSEL_BUILD_EXCLUDE[@]}"
+    do
+        spack uninstall -y --all --dependents {pkg} || true
+    done
+fi
 
 spack clean -a
 

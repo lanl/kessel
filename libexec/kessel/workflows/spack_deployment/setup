@@ -4,10 +4,16 @@ mkdir -p ${KESSEL_DEPLOYMENT}
 chgrp ${KESSEL_GROUP} ${KESSEL_DEPLOYMENT} || true
 chmod g+s ${KESSEL_DEPLOYMENT} || true
 
-rm -rf "${KESSEL_DEPLOYMENT_DIR}/kessel"
-git clone $KESSEL_ROOT/.git ${KESSEL_DEPLOYMENT_DIR}/kessel
+rm -rf "${KESSEL_DEPLOYMENT}/kessel"
+git clone $KESSEL_ROOT/.git ${KESSEL_DEPLOYMENT}/kessel
 
 source kessel/share/kessel/setup-env.sh
 
-kessel deploy init ${KESSEL_DEPLOYMENT_CONFIG}
-cp -R ${KESSEL_DEPLOYMENT_CONFIG}/.kessel ${KESSEL_DEPLOYMENT}/
+(
+    cd ${KESSEL_DEPLOYMENT}
+    kessel deploy init ${KESSEL_DEPLOYMENT_CONFIG}
+    cp -R ${KESSEL_DEPLOYMENT_CONFIG}/.kessel ${KESSEL_DEPLOYMENT}/
+)
+
+kessel deploy activate "$KESSEL_DEPLOYMENT"
+kessel system activate "$KESSEL_SYSTEM"

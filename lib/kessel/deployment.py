@@ -65,14 +65,6 @@ class Deployment(object):
         return self.deployment_dir / "environments"
 
     @property
-    def build_exclude_file(self):
-        return self.config_dir / "build.exclude"
-
-    @property
-    def mirror_exclude_file(self):
-        return self.config_dir / "mirror.exclude"
-
-    @property
     def spack_path(self):
         return self.deployment_dir / "spack"
 
@@ -103,9 +95,6 @@ class Deployment(object):
         # create spack and spack-packages checkouts
         source_config.spack.checkout(self.spack_path)
         source_config.spack_packages.checkout(self.spack_packages_path)
-
-        source_config.build.write_exclude_file(self.build_exclude_file)
-        source_config.mirror.write_exclude_file(self.mirror_exclude_file)
 
         env_glob = (source_config.env_dir / "**" / "*.yaml").resolve()
         env_templates = glob.glob(str(env_glob), recursive=True)

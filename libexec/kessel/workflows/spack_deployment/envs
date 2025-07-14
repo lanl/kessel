@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ -z "${ENVIRONMENTS}" ]; then
+    export ENVIRONMENTS="$(kessel env list)"
+fi
+
+for ENVIRONMENT in ${ENVIRONMENTS}
+do
+  echo "Building '${ENVIRONMENT}' environment"
+  kessel env activate ${ENV_DIR:-.}/${ENVIRONMENT}
+  # temporarily disable view, since we're building on multiple architectures
+  spack config add view:false
+  spack concretize -f --fresh
+  spack install --only dependencies --include-build-deps
+  if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
+    spack buildcache push --only dependencies --with-build-dependencies "${KESSEL_BUILD_CACHE_MIRROR}"
+  fi
+done
