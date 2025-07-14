@@ -76,8 +76,6 @@ class Deployment(object):
         deployment_config = {
             "kessel": {
                 "version": KESSEL_VERSION,
-                "build": source_config.build.to_dict(),
-                "mirror": source_config.mirror.to_dict(),
             }
         }
 
