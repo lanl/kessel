@@ -12,8 +12,9 @@ KESSEL_COLOR_PLAIN='\033[0m'
 PREFERRED_PYTHONS="python3.13 python3.12 python3.11 python3.8 python3 python"
 PREFERRED_PYTHONS=($(echo "$PREFERRED_PYTHONS"))
 for cmd in "${PREFERRED_PYTHONS[@]}"; do
-    if command -v > /dev/null "$cmd"; then
+    if command -v "$cmd"; then
         export KESSEL_PYTHON="$(command -v "$cmd")"
+        break
     fi
 done
 
