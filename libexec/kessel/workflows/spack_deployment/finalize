@@ -17,6 +17,6 @@ chmod -R "$KESSEL_PERMISSIONS" "$KESSEL_DEPLOYMENT"
 chmod g+s "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db"
 
 SQFS_FILE="$DEPLOYMENT_DIR/.replicate.sqfs"
-"$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/gen_replicate_sqfs" "$DEPLOYMENT_DIR" "$SQFS_FILE"
+"$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/gen_replicate_sqfs" "$KESSEL_DEPLOYMENT" "$SQFS_FILE"
 chown ":$KESSEL_GROUP" "$SQFS_FILE"
 chmod "$KESSEL_PERMISSIONS" "$SQFS_FILE"
