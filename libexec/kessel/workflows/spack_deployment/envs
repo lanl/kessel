@@ -10,7 +10,15 @@ do
   kessel env activate ${ENV_DIR:-.}/${ENVIRONMENT}
   # temporarily disable view, since we're building on multiple architectures
   spack config add view:false
-  spack concretize -f --fresh
+
+  # bail out if concretization takes too long
+  timeout -s SIGKILL 5m spack concretize -f --fresh
+
+  if [ $? -ne 0 ]; then
+    echo "Concretization took too long (>5 min)... SKIPPING." >& 2
+    continue
+  fi
+
   spack install --only dependencies --include-build-deps
   if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
     spack buildcache push --only dependencies --with-build-dependencies "${KESSEL_BUILD_CACHE_MIRROR}"
