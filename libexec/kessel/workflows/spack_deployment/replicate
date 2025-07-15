@@ -1,0 +1,21 @@
+#!/bin/bash
+DEPLOYMENT_DIR="$1"
+DEST="$2"
+echo "Creating deployment copy..."
+echo "  src: $DEPLOYMENT_DIR"
+echo "  dst: $DEST"
+
+umask u=rwx,g=rx,o=
+
+rsync -a --no-p --no-g chmod=ugo=rwX --exclude='.env' --exclude='spack-mirror' \
+      --exclude='spack-bootstrap' --exclude='/spack' --exclude='*spack.lock' \
+      --exclude='*.spack-env*' \
+      "$DEPLOYMENT_DIR/" "$DEST"
+
+rsync -a --no-p --no-g --chmod=ugo=rwX --include='{*__pycache__* "*.pyc"}' \
+         --include='etc/spack/**' --include='lib/spack/**' \
+         --exclude-from="$DEPLOYMENT_DIR/spack/.gitignore" \
+        "$DEPLOYMENT_DIR/spack/" "$DEST/spack"
+
+mkdir -p "$DEST/.kessel"
+echo "$DEPLOYMENT_DIR" > "$DEST/.kessel/parent"

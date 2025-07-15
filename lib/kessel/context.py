@@ -90,7 +90,7 @@ class Context(object):
     @deployment_dir.setter
     def deployment_dir(self, value):
         d = Path(value).resolve()
-        config = KesselConfig(d / ".kessel.yaml")
+        config = KesselConfig(d)
         if self.deployment_dir != d:
             self.senv.echo(f"Activating deployment at {d}")
         self.senv.set_env_var("SPACK_USER_CACHE_PATH", f"{d}/.spack")
@@ -132,37 +132,4 @@ class Context(object):
 
     @property
     def config(self):
-        return KesselConfig(self.deployment_dir / ".kessel.yaml")
-
-    @property
-    def replicate_sqfs(self):
-        return self.deployment_dir / ".replicate.sqfs" if self.deployment_dir else None
-
-    def replicate(self, dest):
-        replica_config = {
-            "kessel": {
-                "version": KESSEL_VERSION,
-                "parent": str(self.deployment_dir),
-            }
-        }
-
-        replica_config_file = Path(dest) / ".kessel.yaml"
-
-        with open(replica_config_file, "w") as f:
-            yaml = YAML(typ="safe")
-            yaml.default_flow_style = False
-            yaml.width = 256
-            yaml.dump(replica_config, f)
-
-    def create_replicate_squashfs(self, dest):
-        with tempfile.TemporaryDirectory() as d:
-            if Path(dest).exists():
-                os.remove(dest)
-            self.replicate(d)
-            create_squashfs(d, dest)
-
-        try:
-            os.chown(dest, -1, self.group)
-            os.chmod(dest, self.file_permissions)
-        except BaseException:
-            pass
+        return KesselConfig(self.deployment_dir)

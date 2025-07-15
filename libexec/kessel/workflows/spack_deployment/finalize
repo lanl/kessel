@@ -11,9 +11,12 @@ fi
 spack clean -a
 
 echo "Setting permissions and group..."
-chown -R ":$KESSEL_GROUP" $DEPLOYMENT_DIR
-chmod -R "$KESSEL_PERMISSIONS" $DEPLOYMENT_DIR
+chown -R ":$KESSEL_GROUP" "$KESSEL_DEPLOYMENT"
+chmod -R "$KESSEL_PERMISSIONS" "$KESSEL_DEPLOYMENT"
 
-chmod g+s "$DEPLOYMENT_DIR/spack/opt/spack/.spack-db"
+chmod g+s "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db"
 
-create_replicate_squashfs $DEPLOYMENT_DIR
+SQFS_FILE="$DEPLOYMENT_DIR/.replicate.sqfs"
+"$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/gen_replicate_sqfs" "$DEPLOYMENT_DIR" "$SQFS_FILE"
+chown ":$KESSEL_GROUP" "$SQFS_FILE"
+chmod "$KESSEL_PERMISSIONS" "$SQFS_FILE"

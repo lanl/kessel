@@ -6,9 +6,6 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 
-from kessel import KESSEL_VERSION
-
-
 def merge(envA, envB):
     a = envA["spack"]
     for k, b in envB["spack"].items():
@@ -53,10 +50,6 @@ class Deployment(object):
         self.deployment_dir = Path(deployment_dir)
 
     @property
-    def config_file(self):
-        return self.deployment_dir / ".kessel.yaml"
-
-    @property
     def config_dir(self):
         return self.deployment_dir / "config"
 
@@ -73,18 +66,6 @@ class Deployment(object):
         return self.deployment_dir / "spack-packages"
 
     def init(self, ctx, source_config):
-        deployment_config = {
-            "kessel": {
-                "version": KESSEL_VERSION,
-            }
-        }
-
-        with open(self.config_file, "w") as f:
-            yaml = YAML(typ="safe")
-            yaml.default_flow_style = False
-            yaml.width = 256
-            yaml.dump(deployment_config, f)
-
         # copy config folder from source_config
         if self.config_dir.exists():
             shutil.rmtree(self.config_dir)

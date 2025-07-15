@@ -1,0 +1,18 @@
+#!/bin/bash
+PARENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]:-$0}" )" >/dev/null 2>&1 && pwd )"
+
+DEPLOYMENT_DIR="$1"
+DEST="$2"
+
+rm -f "$DEST"
+
+umask u=rwx,g=rx,o=
+TMP_DEST_DIR=$(mktemp -d)
+"$PARENT_DIR/replicate" "$DEPLOYMENT_DIR" "$TMP_DEST_DIR"
+
+echo "Creating sqfs..."
+echo "  src: $TMP_DEST_DIR"
+echo "  dst: $DEST"
+
+mksquashfs "$TMP_DEST_DIR" "$DEST" -comp gzip
+rm -rf "$TMP_DEST_DIR"

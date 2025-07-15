@@ -4,14 +4,16 @@ from ruamel.yaml import YAML
 
 
 class KesselConfig(object):
-    def __init__(self, config_file):
-        self.config_file = config_file
+    def __init__(self, deployment_dir):
+        self.deployment_dir = Path(deployment_dir)
 
-        with open(self.config_file, "r") as f:
-            yaml = YAML(typ="safe")
-            config = yaml.load(f)["kessel"]
-
-        self.parent = config.get("parent", None)
+    @property
+    def parent(self):
+        parent_file = self.deployment_dir / ".kessel" / "parent"
+        if parent_file.exists():
+            with open(parent_file, "r") as f:
+                return f.read().decode().strip()
+        return None
 
 
 class GitConfig(object):

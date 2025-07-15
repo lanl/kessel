@@ -3,6 +3,7 @@ from pathlib import Path
 from kessel.config import SourceConfig
 from kessel.deployment import Deployment
 
+
 def init(args, extra, ctx, senv):
     source_config = SourceConfig(args.config_dir)
     deployment = Deployment()
