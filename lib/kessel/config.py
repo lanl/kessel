@@ -12,7 +12,7 @@ class KesselConfig(object):
         parent_file = self.deployment_dir / ".kessel" / "parent"
         if parent_file.exists():
             with open(parent_file, "r") as f:
-                return f.read().decode().strip()
+                return f.read().strip()
         return None
 
 
