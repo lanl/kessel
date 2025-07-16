@@ -4,7 +4,7 @@ kessel deploy init ${KESSEL_DEPLOYMENT_CONFIG}
 if [ -n "$KESSEL_BUILD_EXCLUDE" ]; then
     for p in "${KESSEL_BUILD_EXCLUDE[@]}"
     do
-        spack uninstall -y --all --dependents {pkg} || true
+        spack uninstall -y --all --dependents "$p" || true
     done
 fi
 
