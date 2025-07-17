@@ -62,12 +62,12 @@ class Context(object):
             return None
 
     @property
-    def pipeline_state(self):
-        return os.environ.get("KESSEL_PIPELINE_STATE", None)
+    def run_state(self):
+        return os.environ.get("KESSEL_RUN_STATE", None)
 
-    @pipeline_state.setter
-    def pipeline_state(self, value):
-        self.senv.set_env_var("KESSEL_PIPELINE_STATE", value)
+    @run_state.setter
+    def run_state(self, value):
+        self.senv.set_env_var("KESSEL_RUN_STATE", value)
 
     @property
     def kessel_root(self):

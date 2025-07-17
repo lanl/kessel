@@ -2,7 +2,7 @@ import sys
 
 
 def run(args, extra_args, ctx, senv):
-    ctx.pipeline_state = None
+    ctx.run_state = None
     workflow = ctx.workflow_config
 
     if workflow.init_script:
@@ -11,7 +11,7 @@ def run(args, extra_args, ctx, senv):
         senv.eval(f"source {workflow.init_script} " + " ".join([f"\"{a}\"" for a in extra_args]))
 
     for step in workflow.steps:
-        senv.eval(f"kessel pipeline {step.name}")
+        senv.eval(f"kessel step {step.name}")
         if args.until == step.name:
             break
 

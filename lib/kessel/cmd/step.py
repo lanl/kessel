@@ -17,7 +17,7 @@ def step(args, extra_args, ctx, senv):
 
     senv.section_end(st.name)
     senv.eval("test $ret -eq 0 && ", end="")
-    ctx.pipeline_state = st.name
+    ctx.run_state = st.name
 
 
 def setup_command(subparser, ctx):
@@ -28,5 +28,5 @@ def setup_command(subparser, ctx):
 
         for s in workflow.steps:
             name = s.name
-            pipeline_step_cmd = subparsers.add_parser(name)
-            pipeline_step_cmd.set_defaults(func=step, step=name)
+            step_cmd = subparsers.add_parser(name)
+            step_cmd.set_defaults(func=step, step=name)

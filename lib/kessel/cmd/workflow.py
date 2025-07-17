@@ -71,7 +71,7 @@ def workflow_activate(args, extra, ctx, senv):
 
 
 def workflow_status(args, extra, ctx, senv):
-    senv.echo(status(ctx, ctx.pipeline_state))
+    senv.echo(status(ctx, ctx.run_state))
 
 
 def workflow_edit(args, extra, ctx, senv):
