@@ -69,7 +69,8 @@ class Deployment(object):
         # copy config folder from source_config
         if self.config_dir.exists():
             shutil.rmtree(self.config_dir)
-        shutil.copytree(source_config.config_dir, self.config_dir)
+        if source_config.config_dir.exists():
+            shutil.copytree(source_config.config_dir, self.config_dir)
 
         # create spack and spack-packages checkouts
         source_config.spack.checkout(self.spack_path)
