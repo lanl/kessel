@@ -32,7 +32,11 @@ create_env_mirror() {
         echo "Creating mirror for {name}..."
         kessel env activate $env_name
         spack spec
-        spack mirror create -d "$mirror_dir" --all --skip-unstable-version --exclude-file "$mirror_exclude_file"
+        if [ -f "$mirror_exclude_file" ]; then
+            spack mirror create -d "$mirror_dir" --all --skip-unstable-version --exclude-file "$mirror_exclude_file"
+        else
+            spack mirror create -d "$mirror_dir" --all --skip-unstable-version
+        fi
         rm -f "$SPACK_ENV/spack.lock"
         cp "$SPACK_ENV/spack.yaml.original" "$SPACK_ENV/spack.yaml"
     fi
