@@ -58,12 +58,16 @@ if [ -n "$KESSEL_MIRROR_EXCLUDE" ]; then
     done
 fi
 
+set +m
+
 for e in $ENVIRONMENTS
 do
     concretize_env_for_mirror "$e"
 done
 
 wait
+
+set -m
 
 for e in $ENVIRONMENTS
 do
