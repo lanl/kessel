@@ -49,6 +49,14 @@ packages:
           compilers:
             c: /vast/projects/darwin_contrib/spack-builds/2024-10-16/rhel8/x86_64/llvm/17.0.6-gcc_13.2.0/bin/clang
             cxx: /vast/projects/darwin_contrib/spack-builds/2024-10-16/rhel8/x86_64/llvm/17.0.6-gcc_13.2.0/bin/clang++
+      - spec: llvm@19.1.7 +clang
+        modules:
+        - gcc/13.2.0
+        - clang/19.1.7-offload
+        extra_attributes:
+          compilers:
+            c: /vast/projects/darwin_contrib/spack-builds/2025-03-07/rhel8/x86_64/llvm/19.1.7-gcc_13.2.0/bin/clang
+            cxx: /vast/projects/darwin_contrib/spack-builds/2025-03-07/rhel8/x86_64/llvm/19.1.7-gcc_13.2.0/bin/clang++
   openmpi:
     require:
       - "fabrics=ucx schedulers=slurm %c,cxx,fortran=gcc"
