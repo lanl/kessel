@@ -47,8 +47,8 @@ packages:
         - clang/17.0.6
         extra_attributes:
           compilers:
-            c: clang
-            cxx: clang++
+            c: /vast/projects/darwin_contrib/spack-builds/2024-10-16/rhel8/x86_64/llvm/17.0.6-gcc_13.2.0/bin/clang
+            cxx: /vast/projects/darwin_contrib/spack-builds/2024-10-16/rhel8/x86_64/llvm/17.0.6-gcc_13.2.0/bin/clang++
   openmpi:
     require:
       - "fabrics=ucx schedulers=slurm %c,cxx,fortran=gcc"
