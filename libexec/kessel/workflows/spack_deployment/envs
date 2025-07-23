@@ -26,7 +26,7 @@ do
     continue
   fi
 
-  spack install $install_args
+  spack install $install_options
   if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
     spack buildcache push $buildcache_options "${KESSEL_BUILD_CACHE_MIRROR}"
   fi
