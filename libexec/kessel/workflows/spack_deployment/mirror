@@ -29,7 +29,7 @@ create_env_mirror() {
         false
         return
     else
-        echo "Creating mirror for {name}..."
+        echo "Creating mirror for $env_name..."
         kessel env activate $env_name
         spack spec
         if [ -f "$mirror_exclude_file" ]; then
