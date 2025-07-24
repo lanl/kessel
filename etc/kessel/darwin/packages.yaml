@@ -84,11 +84,6 @@ packages:
     - spec: curl@7.61.1
       prefix: /usr
     buildable: false
-  opengl:
-    externals:
-    - spec: opengl@4.5.0
-      prefix: /usr
-    buildable: false
   openssh:
     externals:
       - spec: openssh@8.0p1
