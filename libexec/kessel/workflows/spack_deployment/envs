@@ -20,8 +20,7 @@ do
     spack config add view:false
   fi
 
-  # bail out if concretization takes too long
-  timeout -s SIGKILL 5m spack concretize -f --fresh
+  spack concretize -f --fresh
 
   if [ $? -ne 0 ]; then
     echo "Concretization took too long (>5 min)... SKIPPING." >& 2
