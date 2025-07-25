@@ -59,12 +59,12 @@ packages:
             cxx: /vast/projects/darwin_contrib/spack-builds/2025-03-07/rhel8/x86_64/llvm/19.1.7-gcc_13.2.0/bin/clang++
   openmpi:
     require:
-      - "fabrics=ucx schedulers=slurm %c,cxx,fortran=gcc"
+      - "fabrics=ucx schedulers=slurm"
     conflict:
      - "^mpich"
   mpich:
     require:
-     - "+hydra +slurm +fortran device=ch4 netmod=ucx %c,cxx,fortran=gcc"
+     - "+hydra +slurm +fortran device=ch4 netmod=ucx"
     conflict:
      - "^openmpi"
   ucx:
