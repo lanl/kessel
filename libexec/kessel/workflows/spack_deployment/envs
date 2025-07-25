@@ -15,8 +15,10 @@ for ENVIRONMENT in ${ENVIRONMENTS}
 do
   echo "Building '${ENVIRONMENT}' environment"
   kessel env activate ${ENV_DIR:-.}/${ENVIRONMENT}
-  # temporarily disable view, since we're building on multiple architectures
-  spack config add view:false
+
+  if [ "${KESSEL_ENV_VIEWS}" != "true" ]; then
+    spack config add view:false
+  fi
 
   # bail out if concretization takes too long
   timeout -s SIGKILL 5m spack concretize -f --fresh
