@@ -96,3 +96,4 @@ if [ -d "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME" ]; then
 fi
 
 spack develop -b "$KESSEL_BUILD_DIR" -p "$KESSEL_SOURCE_DIR" --no-clone "$KESSEL_PROJECT_NAME"
+spack config add "packages:${KESSEL_PROJECT_NAME}:package_attributes:keep_werror:all"

@@ -8,6 +8,5 @@ if [ -z "$KESSEL_SYSTEM" ] || [ -z "$KESSEL_ENVIRONMENT" ]; then
   return
 fi
 
-#spack concretize -f 2> /dev/null > /dev/null || true
 spack concretize -f
 spack install --include-build-deps --only dependencies
