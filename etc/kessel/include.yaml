@@ -1,3 +1,5 @@
 include:
   - when: env['KESSEL_DEPLOYMENT'] != env['KESSEL_PARENT_DEPLOYMENT']
     path: parent.yaml
+  - when: env["KESSEL_REQUIRE_SYSTEM_MIRROR"] == "pe-serve"
+    path: lanl_pe_serve_mirror.yaml
