@@ -2,6 +2,7 @@ packages:
   gcc:
     externals:
       - spec: "gcc@12.3.0 languages='c,c++,fortran'"
+        prefix: /usr/projects/hpcsoft/tce/23.12/cos3-x86_64/compilers/gcc/12.3.0
         modules:
          - PrgEnv-gnu
          - gcc/12.3.0
