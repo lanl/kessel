@@ -13,6 +13,7 @@ packages:
   intel-oneapi-compilers:
     externals:
       - spec: intel-oneapi-compilers@2023.2.0
+        prefix: /usr/projects/hpcsoft/pe/installs/cos3-x86_64/oneapi/2023.2.0.49397
         modules:
          - PrgEnv-intel
          - intel/2023.2.0
