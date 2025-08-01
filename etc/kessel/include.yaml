@@ -3,3 +3,6 @@ include:
     path: parent.yaml
   - when: env.get("KESSEL_REQUIRE_SYSTEM_MIRROR", "none") == "pe-serve"
     path: lanl_pe_serve_mirror.yaml
+  - when: env.get("KESSEL_REQUIRE_GIT_MIRRORS", "false") == "true"
+    optional: true
+    path: $KESSEL_DEPLOYMENT/config/git_mirrors.yaml
