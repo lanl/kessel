@@ -57,11 +57,7 @@ env_dir="$KESSEL_DEPLOYMENT/environments/$KESSEL_SYSTEM"
 mirror_exclude_file="$KESSEL_DEPLOYMENT/config/mirror.exclude"
 
 if [ -n "$KESSEL_MIRROR_EXCLUDE" ]; then
-    rm -rf $mirror_exclude_file
-    for p in "${KESSEL_MIRROR_EXCLUDE[@]}"
-    do
-        echo $p >> $mirror_exclude_file
-    done
+    printf "%s\n" "$KESSEL_MIRROR_EXCLUDE" > "$mirror_exclude_file"
 fi
 
 set +m
