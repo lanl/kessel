@@ -25,12 +25,4 @@ Creating a deployment
 
 .. code-block:: console
 
-   $ kessel deploy bootstrap create
-
-.. code-block:: console
-
-   $ kessel deploy mirror create
-
-.. code-block:: console
-
    $ kessel env activate <name>
