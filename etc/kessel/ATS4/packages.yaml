@@ -1,0 +1,189 @@
+packages:
+  gcc:
+    externals:
+      - spec: "gcc@12.2.0 languages='c,c++,fortran'"
+        prefix: /opt/rh/gcc-toolset-12/root/usr
+        extra_attributes:
+          compilers:
+            c: /opt/rh/gcc-toolset-12/root/usr/bin/gcc
+            cxx: /opt/rh/gcc-toolset-12/root/usr/bin/g++
+            fortran: /opt/rh/gcc-toolset-12/root/usr/bin/gfortran
+          environment:
+            prepend_path:
+              LD_LIBRARY_PATH: /opt/cray/pe/lib64
+          extra_rpaths:
+           - /opt/cray/pe/lib64
+  cce:
+    buildable: False
+    externals:
+     - spec: cce@=19.0.0
+       prefix: /opt/cray/pe/cce/19.0.0
+       extra_attributes:
+         compilers:
+           cc: /opt/cray/pe/cce/19.0.0/bin/craycc
+           cxx: /opt/cray/pe/cce/19.0.0/bin/crayCC
+           fortran: /opt/cray/pe/cce/19.0.0/bin/crayftn 
+         environment:
+           set:
+             CRAYLIBS_X86_64: /opt/cray/pe/cce/19.0.0/cce/x86_64/lib
+           prepend_path:
+             LD_LIBRARY_PATH: /opt/cray/pe/lib64:/opt/cray/pe/cce/19.0.0/cce/x86_64/lib:/opt/cray/pe/cce/19.0.0/cce-clang/x86_64/lib
+         extra_rpaths:
+          - /opt/cray/pe/lib64
+          - /opt/cray/pe/cce/19.0.0/cce/x86_64/lib
+          - /opt/cray/pe/cce/19.0.0/cce-clang/x86_64/lib
+  cray-mpich:
+    externals:
+    - spec: "cray-mpich@8.1.32+wrappers %gcc"
+      prefix: /opt/cray/pe/mpich/8.1.32/ofi/gnu/11.2
+      modules:
+       - libfabric/2.1
+       - cray-pmi/6.1.15.6
+    - spec: "cray-mpich@8.1.32+wrappers %cce"
+      prefix: /opt/cray/pe/mpich/8.1.32/ofi/crayclang/18.0
+      modules:
+       - libfabric/2.1
+       - cray-pmi/6.1.15.6
+    buildable: False
+  cray-libsci:
+    externals:
+    - spec: "cray-libsci@25.03.0 +mpi+openmp %gcc"
+      prefix: /opt/cray/pe/libsci/25.03.0/GNU/12.2/x86_64
+    - spec: "cray-libsci@25.03.0 +mpi+openmp %cce"
+      prefix: /opt/cray/pe/libsci/25.03.0/CRAYCLANG/18.0/x86_64
+    buildable: False
+  m4:
+    externals:
+    - spec: m4@1.4.18
+      prefix: /usr
+  gettext:
+    externals:
+    - spec: gettext@0.19.8.1
+      prefix: /usr
+  doxygen:
+    externals:
+    - spec: doxygen@1.8.14+graphviz~mscgen
+      prefix: /usr
+  coreutils:
+    externals:
+    - spec: coreutils@8.30
+      prefix: /usr
+  libtool:
+    externals:
+    - spec: libtool@2.4.6
+      prefix: /usr
+  tar:
+    externals:
+    - spec: tar@1.30
+      prefix: /usr
+  automake:
+    externals:
+    - spec: automake@1.16.1
+      prefix: /usr
+  perl:
+    externals:
+    - spec: perl@5.26.3+cpanm+opcode+open+shared+threads
+      prefix: /usr
+  pkgconf:
+    externals:
+    - spec: pkgconf@1.4.2
+      prefix: /usr
+  git:
+    externals:
+    - spec: git@2.31.1+tcltk
+      prefix: /usr/tce/packages/git/git-2.31.1
+  openssl:
+    externals:
+    - spec: openssl@1.1.1k
+      prefix: /usr
+    buildable: False
+  binutils:
+    externals:
+    - spec: binutils@2.38
+      prefix: /opt/rh/gcc-toolset-12/root/usr
+  subversion:
+    externals:
+    - spec: subversion@1.10.2
+      prefix: /usr
+  ccache:
+    externals:
+    - spec: ccache@3.7.7
+      prefix: /usr
+  gmake:
+    externals:
+    - spec: gmake@4.2.1
+      prefix: /usr
+  bison:
+    externals:
+    - spec: bison@3.0.4
+      prefix: /usr
+  texinfo:
+    externals:
+    - spec: texinfo@6.5
+      prefix: /usr
+  curl:
+    externals:
+    - spec: curl@7.61.1+gssapi+ldap+nghttp2
+      prefix: /usr
+  swig:
+    externals:
+    - spec: swig@3.0.12
+      prefix: /usr
+  cmake:
+    externals:
+    - spec: cmake@3.29.2
+      prefix: /usr/tce/packages/cmake/cmake-3.29.2
+  diffutils:
+    externals:
+    - spec: diffutils@3.6
+      prefix: /usr
+  cvs:
+    externals:
+    - spec: cvs@1.11.23
+      prefix: /usr
+  openssh:
+    externals:
+    - spec: openssh@8.0p1
+      prefix: /usr
+  findutils:
+    externals:
+    - spec: findutils@4.6.0
+      prefix: /usr
+  flex:
+    externals:
+    - spec: flex@2.6.1+lex
+      prefix: /usr
+  groff:
+    externals:
+    - spec: groff@1.22.3
+      prefix: /usr
+  autoconf:
+    externals:
+    - spec: autoconf@2.69
+      prefix: /usr
+  gawk:
+    externals:
+    - spec: gawk@4.2.1
+      prefix: /usr
+  sed:
+    externals:
+    - spec: sed@4.5
+      prefix: /usr
+  unzip:
+    externals:
+    - spec: unzip@6.0.0
+      prefix: /usr
+  parallel-netcdf:
+    externals:
+     - spec: "parallel-netcdf@1.12.3.17+cxx+fortran %gcc"
+       prefix: /opt/cray/pe/parallel-netcdf/1.12.3.17/gnu/12.2
+     - spec: "parallel-netcdf@1.12.3.17+cxx+fortran %cce"
+       prefix: /opt/cray/pe/parallel-netcdf/1.12.3.17/crayclang/18.0
+    buildable: False
+  zlib-api:
+    require: zlib
+  zlib:
+    externals:
+     - spec: zlib@1.2.2
+       prefix: /usr
+    buildable: False
