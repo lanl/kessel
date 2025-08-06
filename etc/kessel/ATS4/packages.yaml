@@ -32,6 +32,11 @@ packages:
           - /opt/cray/pe/lib64
           - /opt/cray/pe/cce/19.0.0/cce/x86_64/lib
           - /opt/cray/pe/cce/19.0.0/cce-clang/x86_64/lib
+  libfabric:
+    externals:
+    - spec: "libfabric@2.1-system"
+      modules:
+       - libfabric/2.1
   cray-mpich:
     externals:
     - spec: "cray-mpich@8.1.32+wrappers %gcc"
