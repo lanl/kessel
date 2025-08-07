@@ -9,6 +9,8 @@ packages:
             cxx: /opt/rh/gcc-toolset-12/root/usr/bin/g++
             fortran: /opt/rh/gcc-toolset-12/root/usr/bin/gfortran
           environment:
+            set:
+              PE_ENV: "GNU"
             prepend_path:
               LD_LIBRARY_PATH: /opt/cray/pe/lib64
           extra_rpaths:
