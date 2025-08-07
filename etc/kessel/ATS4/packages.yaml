@@ -22,7 +22,7 @@ packages:
        prefix: /opt/cray/pe/cce/19.0.0
        extra_attributes:
          compilers:
-           cc: /opt/cray/pe/cce/19.0.0/bin/craycc
+           c: /opt/cray/pe/cce/19.0.0/bin/craycc
            cxx: /opt/cray/pe/cce/19.0.0/bin/crayCC
            fortran: /opt/cray/pe/cce/19.0.0/bin/crayftn 
          environment:
