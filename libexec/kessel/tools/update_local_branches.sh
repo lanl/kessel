@@ -18,7 +18,7 @@ for REMOTE_BRANCH in $REMOTE_BRANCHES; do
 
   if git show-ref --verify --quiet "refs/heads/$LOCAL_BRANCH"; then
     git checkout "$LOCAL_BRANCH"
-    git pull origin "$LOCAL_BRANCH"
+    git pull --ff-only origin "$LOCAL_BRANCH"
   else
     git checkout -b "$LOCAL_BRANCH" "$REMOTE_BRANCH"
   fi
