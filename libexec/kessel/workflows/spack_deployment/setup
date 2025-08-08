@@ -21,6 +21,7 @@ kessel system activate "$KESSEL_SYSTEM"
 clone_and_sync() {
     src_checkout="$1"
     src=$(git -C "$1" rev-parse --absolute-git-dir)
+    src_rev=$(git -C "$1" rev-parse HEAD)
     dest="$2"
     echo "$src -> $dest"
     $KESSEL_ROOT/libexec/kessel/tools/update_local_branches.sh "$src_checkout"
@@ -28,6 +29,7 @@ clone_and_sync() {
     rm -rf "$dest"
     git -c advice.detachedhead=false clone "$src" "$dest"
     $KESSEL_ROOT/libexec/kessel/tools/update_local_branches.sh "$dest"
+    git -c advice.detachedhead=false -C "$dest" checkout "$src_rev"
 }
 
 printf "%s\n" "$KESSEL_GIT_MIRRORS" | while IFS= read -r p
