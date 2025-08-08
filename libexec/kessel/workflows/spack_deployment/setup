@@ -32,7 +32,11 @@ clone_and_sync() {
     git -c advice.detachedhead=false -C "$dest" checkout "$src_rev"
 }
 
-printf "%s\n" "$KESSEL_GIT_MIRRORS" | while IFS= read -r p
-do
-  clone_and_sync "$KESSEL_DEPLOYMENT_CONFIG/$p" "$KESSEL_DEPLOYMENT/$p"
-done
+if [ -n "$KESSEL_GIT_MIRRORS" ]; then
+  printf "%s\n" "$KESSEL_GIT_MIRRORS" | while IFS= read -r p
+  do
+    if [ -n "$p" ]; then
+      clone_and_sync "$KESSEL_DEPLOYMENT_CONFIG/$p" "$KESSEL_DEPLOYMENT/$p"
+    fi
+  done
+fi
