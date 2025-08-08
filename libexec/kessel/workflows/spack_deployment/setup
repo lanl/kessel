@@ -25,6 +25,7 @@ clone_and_sync() {
     dest="$2"
     echo "$src -> $dest"
     $KESSEL_ROOT/libexec/kessel/tools/update_local_branches.sh "$src_checkout"
+    git -c advice.detachedhead=false -C "$src_checkout" checkout "$src_rev"
     mkdir -p $(dirname "$dest")
     rm -rf "$dest"
     git -c advice.detachedhead=false clone "$src" "$dest"
