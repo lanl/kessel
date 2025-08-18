@@ -15,6 +15,20 @@ packages:
               LD_LIBRARY_PATH: /opt/cray/pe/lib64
           extra_rpaths:
            - /opt/cray/pe/lib64
+      - spec: "gcc@13.3.0 languages='c,c++,fortran'"
+        prefix: /opt/rh/gcc-toolset-13/root/usr
+        extra_attributes:
+          compilers:
+            c: /opt/rh/gcc-toolset-13/root/usr/bin/gcc
+            cxx: /opt/rh/gcc-toolset-13/root/usr/bin/g++
+            fortran: /opt/rh/gcc-toolset-13/root/usr/bin/gfortran
+          environment:
+            set:
+              PE_ENV: "GNU"
+            prepend_path:
+              LD_LIBRARY_PATH: /opt/cray/pe/lib64
+          extra_rpaths:
+           - /opt/cray/pe/lib64
   cce:
     buildable: False
     externals:
@@ -51,6 +65,16 @@ packages:
       modules:
        - libfabric/2.1
        - cray-pmi/6.1.15.6
+    - spec: "cray-mpich@9.0.1+wrappers %gcc"
+      prefix: /opt/cray/pe/mpich/9.0.1/ofi/gnu/11.2
+      modules:
+       - libfabric/2.1
+       - cray-pmi/6.1.16
+    - spec: "cray-mpich@9.0.1+wrappers %cce"
+      prefix: /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0
+      modules:
+       - libfabric/2.1
+       - cray-pmi/6.1.16
     buildable: False
   cray-libsci:
     externals:
