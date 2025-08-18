@@ -1,0 +1,24 @@
+#!/bin/bash
+#KESSEL title: Create Source Mirror
+
+if [ -n "$PROJECT" ]; then
+  export ENVIRONMENTS="${ENVIRONMENTS:-$(kessel env list | grep "^$PROJECT/")}"
+else
+  export ENVIRONMENTS="${ENVIRONMENTS:-$(kessel env list)}"
+fi
+
+if [ "$KESSEL_SYSTEM" = "rocinante"  ] || [ "$KESSEL_SYSTEM" = "ATS3" ] || [ "$KESSEL_SYSTEM" = "rzadams"  ] || [ "$KESSEL_SYSTEM" = "rzvernal"  ] || [ "$KESSEL_SYSTEM" = "ATS4" ]; then
+    export KESSEL_REQUIRE_GIT_MIRRORS=true
+fi
+
+echo "Creating mirror for these environments:"
+echo "${ENVIRONMENTS}"
+echo
+
+# uncomment to add exclude certain specs from source mirror
+#export KESSEL_MIRROR_EXCLUDE=""
+
+# uncomment to add Git mirrors for Spack
+#export KESSEL_GIT_MIRRORS=""
+
+source "$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/mirror"

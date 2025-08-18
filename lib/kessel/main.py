@@ -1,5 +1,6 @@
 import argparse
 import kessel.cmd.init as init_cmd
+import kessel.cmd.config as config_cmd
 import kessel.cmd.deploy as deploy_cmd
 import kessel.cmd.system as system_cmd
 import kessel.cmd.env as env_cmd
@@ -26,6 +27,7 @@ def main():
     subparsers = parser.add_subparsers()
 
     init_cmd.setup_command(subparsers.add_parser("init"))
+    config_cmd.setup_command(subparsers.add_parser("config"))
     deploy_cmd.setup_command(subparsers.add_parser("deploy"))
     system_cmd.setup_command(subparsers.add_parser("system"))
     env_cmd.setup_command(subparsers.add_parser("env"))
