@@ -4,10 +4,13 @@ mkdir -p ${KESSEL_DEPLOYMENT}
 chgrp ${KESSEL_GROUP} ${KESSEL_DEPLOYMENT} || true
 chmod g+s ${KESSEL_DEPLOYMENT} || true
 
-rm -rf "${KESSEL_DEPLOYMENT}/kessel"
-git clone $KESSEL_ROOT/.git ${KESSEL_DEPLOYMENT}/kessel
+if [ -d "${KESSEL_DEPLOYMENT}/kessel" ]; then
+    git -C "${KESSEL_DEPLOYMENT}/kessel" pull
+else
+    git clone $KESSEL_ROOT/.git ${KESSEL_DEPLOYMENT}/kessel
+fi
 
-source kessel/share/kessel/setup-env.sh
+source ${KESSEL_DEPLOYMENT}/kessel/share/kessel/setup-env.sh
 
 (
     cd ${KESSEL_DEPLOYMENT}
