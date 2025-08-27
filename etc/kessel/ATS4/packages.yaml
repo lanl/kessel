@@ -38,7 +38,7 @@ packages:
          compilers:
            c: /opt/cray/pe/cce/19.0.0/bin/craycc
            cxx: /opt/cray/pe/cce/19.0.0/bin/crayCC
-           fortran: /opt/cray/pe/cce/19.0.0/bin/crayftn 
+           fortran: /opt/cray/pe/cce/19.0.0/bin/crayftn
          environment:
            set:
              CRAYLIBS_X86_64: /opt/cray/pe/cce/19.0.0/cce/x86_64/lib
@@ -48,6 +48,22 @@ packages:
           - /opt/cray/pe/lib64
           - /opt/cray/pe/cce/19.0.0/cce/x86_64/lib
           - /opt/cray/pe/cce/19.0.0/cce-clang/x86_64/lib
+     - spec: cce@=20.0.0
+       prefix: /opt/cray/pe/cce/20.0.0
+       extra_attributes:
+         compilers:
+           c: /opt/cray/pe/cce/20.0.0/bin/craycc
+           cxx: /opt/cray/pe/cce/20.0.0/bin/crayCC
+           fortran: /opt/cray/pe/cce/20.0.0/bin/crayftn
+         environment:
+           set:
+             CRAYLIBS_X86_64: /opt/cray/pe/cce/20.0.0/cce/x86_64/lib
+           prepend_path:
+             LD_LIBRARY_PATH: /opt/cray/pe/lib64:/opt/cray/pe/cce/20.0.0/cce/x86_64/lib:/opt/cray/pe/cce/20.0.0/cce-clang/x86_64/lib
+         extra_rpaths:
+          - /opt/cray/pe/lib64
+          - /opt/cray/pe/cce/20.0.0/cce/x86_64/lib
+          - /opt/cray/pe/cce/20.0.0/cce-clang/x86_64/lib
   libfabric:
     externals:
     - spec: "libfabric@2.1-system"
@@ -82,6 +98,8 @@ packages:
       prefix: /opt/cray/pe/libsci/25.03.0/GNU/12.2/x86_64
     - spec: "cray-libsci@25.03.0 +mpi+openmp %cce"
       prefix: /opt/cray/pe/libsci/25.03.0/CRAYCLANG/18.0/x86_64
+    - spec: "cray-libsci@25.09.0 +mpi+openmp %cce@20"
+      prefix: /opt/cray/pe/libsci/25.09.0/CRAYCLANG/20.0/x86_64
     buildable: False
   m4:
     externals:
