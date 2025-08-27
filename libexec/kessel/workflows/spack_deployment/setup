@@ -4,11 +4,11 @@ mkdir -p ${KESSEL_DEPLOYMENT}
 chgrp ${KESSEL_GROUP} ${KESSEL_DEPLOYMENT} || true
 chmod g+s ${KESSEL_DEPLOYMENT} || true
 
-if [ -d "${KESSEL_DEPLOYMENT}/kessel" ]; then
-    git -C "${KESSEL_DEPLOYMENT}/kessel" pull
-else
-    git clone $KESSEL_ROOT/.git ${KESSEL_DEPLOYMENT}/kessel
-fi
+# keep track of originl kessel checkout that initiated the workflow
+export KESSEL_INITIAL_ROOT="${KESSEL_INITIAL_ROOT:-${KESSEL_ROOT}}"
+
+rm -rf "${KESSEL_DEPLOYMENT}/kessel"
+git clone "$KESSEL_INITIAL_ROOT/.git" ${KESSEL_DEPLOYMENT}/kessel
 
 source ${KESSEL_DEPLOYMENT}/kessel/share/kessel/setup-env.sh
 
