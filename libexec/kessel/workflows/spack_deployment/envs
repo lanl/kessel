@@ -16,7 +16,7 @@ status=0
 printf "%s\n" "$ENVIRONMENTS" | while IFS= read -r ENVIRONMENT
 do
   echo "Building '${ENVIRONMENT}' environment"
-  spack env activate ${ENV_DIR:-.}/${ENVIRONMENT}
+  spack env activate ${ENV_DIR:+${ENV_DIR}/}${ENVIRONMENT}
 
   if [ "${KESSEL_ENV_VIEWS}" != "true" ]; then
     spack config add view:false
