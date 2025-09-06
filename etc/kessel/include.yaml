@@ -1,6 +1,8 @@
 include:
   - when: env['KESSEL_DEPLOYMENT'] != env['KESSEL_PARENT_DEPLOYMENT']
     path: parent.yaml
+  - when: env['KESSEL_SYSTEM'] != "local"
+    path: envs.yaml
   - when: env.get("KESSEL_REQUIRE_SYSTEM_MIRROR", "none") == "pe-serve"
     path: lanl_pe_serve_mirror.yaml
   - when: env.get("KESSEL_REQUIRE_GIT_MIRRORS", "false") == "true"

@@ -56,7 +56,7 @@ complete -c kessel -n "__fish_seen_subcommand_from env &&\
     not __fish_seen_subcommand_from $env_commands" -a $env_commands
 complete -c kessel -n "__fish_seen_subcommand_from env &&\
     __fish_seen_subcommand_from activate &&\
-    __total_numer_args 2" -a "$(kessel env list)"
+    __total_numer_args 2" -a "$(spack env list)"
 
 complete -c kessel -n "__fish_seen_subcommand_from bootstrap &&\
     not __fish_seen_subcommand_from $bootstrap_commands" -a $bootstrap_commands

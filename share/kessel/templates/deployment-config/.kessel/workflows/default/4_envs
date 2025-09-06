@@ -7,12 +7,13 @@ fi
 
 if [ -n "$PROJECT" ] && [ -n "$PROJECT_ENVIRONMENTS" ]; then
   ENVIRONMENTS=""
-  for e in $PROJECT_ENVIRONMENTS; do
-    ENVIRONMENTS="$ENVIRONMENTS $PROJECT/$e"
+  printf "%s\n" "$PROJECT_ENVIRONMENTS" | while IFS= read -r e
+  do
+    ENVIRONMENTS="$ENVIRONMENTS$PROJECT/$e"
   done
   export ENVIRONMENTS="${ENVIRONMENTS# }"
 else
-  export ENVIRONMENTS="${ENVIRONMENTS:-$(kessel env list)}"
+  export ENVIRONMENTS="${ENVIRONMENTS:-$(spack env list | tr -d ' ')}"
 fi
 
 echo "Building these environments:"

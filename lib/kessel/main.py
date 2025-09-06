@@ -3,7 +3,6 @@ import kessel.cmd.init as init_cmd
 import kessel.cmd.config as config_cmd
 import kessel.cmd.deploy as deploy_cmd
 import kessel.cmd.system as system_cmd
-import kessel.cmd.env as env_cmd
 import kessel.cmd.workflow as workflow_cmd
 import kessel.cmd.step as step_cmd
 import kessel.cmd.run as run_cmd
@@ -30,7 +29,6 @@ def main():
     config_cmd.setup_command(subparsers.add_parser("config"))
     deploy_cmd.setup_command(subparsers.add_parser("deploy"))
     system_cmd.setup_command(subparsers.add_parser("system"))
-    env_cmd.setup_command(subparsers.add_parser("env"))
     build_env_cmd.setup_command(subparsers.add_parser("build-env"))
     workflow_cmd.setup_command(subparsers.add_parser("workflow"))
     step_cmd.setup_command(subparsers.add_parser("step"), ctx)

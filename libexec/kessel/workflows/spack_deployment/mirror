@@ -33,7 +33,7 @@ EOF
 concretize_env_for_mirror() {
     env_name="$1"
     echo "Concretizing $env_name..."
-    kessel env activate $env_name
+    spack env activate $env_name
     rm -rf "$SPACK_ENV/.spack-env"
     mkdir -p "$SPACK_ENV/.spack-env"
     cp "$SPACK_ENV/spack.yaml" "$SPACK_ENV/spack.yaml.original"
@@ -61,7 +61,7 @@ create_env_mirror() {
         return
     else
         echo "Creating mirror for $env_name..."
-        kessel env activate $env_name
+        spack env activate $env_name
         spack spec
         if [ -f "$mirror_exclude_file" ]; then
             spack mirror create -d "$mirror_dir" --all --skip-unstable-version --exclude-file "$mirror_exclude_file"
@@ -74,7 +74,7 @@ create_env_mirror() {
 }
 
 if [ -z "${ENVIRONMENTS}" ]; then
-    export ENVIRONMENTS="$(kessel env list)"
+    export ENVIRONMENTS="$(spack env list | tr -d ' ')"
 fi
 
 mirror_dir="$KESSEL_DEPLOYMENT/spack-mirror"
@@ -91,7 +91,7 @@ fi
 
 set +m
 
-for e in $ENVIRONMENTS
+printf "%s\n" "$ENVIRONMENTS" | while IFS= read -r e
 do
     concretize_env_for_mirror "$e"
 done
@@ -100,7 +100,7 @@ wait
 
 set -m
 
-for e in $ENVIRONMENTS
+printf "%s\n" "$ENVIRONMENTS" | while IFS= read -r e
 do
     create_env_mirror "$mirror_dir" "$mirror_exclude_file" "$e"
 done

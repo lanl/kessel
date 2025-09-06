@@ -123,13 +123,5 @@ class Context(object):
         )
 
     @property
-    def environment(self):
-        return os.environ.get("KESSEL_ENVIRONMENT", default="default")
-
-    @environment.setter
-    def environment(self, value):
-        self.senv.set_env_var("KESSEL_ENVIRONMENT", value)
-
-    @property
     def config(self):
         return KesselConfig(self.deployment_dir)

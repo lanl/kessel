@@ -18,11 +18,3 @@ Creating a deployment
 .. code-block:: console
 
    $ kessel system activate <name>
-
-.. code-block:: console
-
-   $ kessel env list
-
-.. code-block:: console
-
-   $ kessel env activate <name>

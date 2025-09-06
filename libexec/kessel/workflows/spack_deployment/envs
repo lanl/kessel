@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "${ENVIRONMENTS}" ]; then
-    export ENVIRONMENTS="$(kessel env list)"
+    export ENVIRONMENTS="$(spack env list | tr -d ' ')"
 fi
 
 install_options="--include-build-deps"
@@ -13,10 +13,10 @@ fi
 
 status=0
 
-for ENVIRONMENT in ${ENVIRONMENTS}
+printf "%s\n" "$ENVIRONMENTS" | while IFS= read -r ENVIRONMENT
 do
   echo "Building '${ENVIRONMENT}' environment"
-  kessel env activate ${ENV_DIR:-.}/${ENVIRONMENT}
+  spack env activate ${ENV_DIR:-.}/${ENVIRONMENT}
 
   if [ "${KESSEL_ENV_VIEWS}" != "true" ]; then
     spack config add view:false

@@ -1,0 +1,2 @@
+config:
+  environments_root: $KESSEL_DEPLOYMENT/environments/$KESSEL_SYSTEM

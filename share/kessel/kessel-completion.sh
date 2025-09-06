@@ -103,7 +103,7 @@ _kessel() {
         env)
             case ${prev} in
             activate)
-                COMPREPLY=($(compgen -W "$(kessel env list)" -- ${cur}))
+                COMPREPLY=($(compgen -W "$(spack env list)" -- ${cur}))
                 ;;
             esac
             ;;

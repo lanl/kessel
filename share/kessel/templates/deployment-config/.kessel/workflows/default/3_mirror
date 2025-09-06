@@ -2,9 +2,9 @@
 #KESSEL title: Create Source Mirror
 
 if [ -n "$PROJECT" ]; then
-  export ENVIRONMENTS="${ENVIRONMENTS:-$(kessel env list | grep "^$PROJECT/")}"
+  export ENVIRONMENTS="${ENVIRONMENTS:-$(spack env list | tr -d ' ' | grep "^$PROJECT/")}"
 else
-  export ENVIRONMENTS="${ENVIRONMENTS:-$(kessel env list)}"
+  export ENVIRONMENTS="${ENVIRONMENTS:-$(spack env list | tr -d ' ')}"
 fi
 
 if [ "$KESSEL_SYSTEM" = "rocinante"  ] || [ "$KESSEL_SYSTEM" = "ATS3" ] || [ "$KESSEL_SYSTEM" = "rzadams"  ] || [ "$KESSEL_SYSTEM" = "rzvernal"  ] || [ "$KESSEL_SYSTEM" = "ATS4" ]; then
