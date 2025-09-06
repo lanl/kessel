@@ -15,23 +15,25 @@ status=0
 
 printf "%s\n" "$ENVIRONMENTS" | while IFS= read -r ENVIRONMENT
 do
-  echo "Building '${ENVIRONMENT}' environment"
-  spack env activate ${ENV_DIR:+${ENV_DIR}/}${ENVIRONMENT}
+  if [ -n "${ENVIRONMENT}" ]; then
+    echo "Building '${ENVIRONMENT}' environment"
+    spack env activate ${ENV_DIR:+${ENV_DIR}/}${ENVIRONMENT}
 
-  if [ "${KESSEL_ENV_VIEWS}" != "true" ]; then
-    spack config add view:false
-  fi
+    if [ "${KESSEL_ENV_VIEWS}" != "true" ]; then
+      spack config add view:false
+    fi
 
-  spack concretize -f --fresh
+    spack concretize -f --fresh
 
-  spack install $install_options
+    spack install $install_options
 
-  if [ $? -ne 0 ]; then
-    status=1
-  fi
+    if [ $? -ne 0 ]; then
+      status=1
+    fi
 
-  if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
-    spack buildcache push $buildcache_options "${KESSEL_BUILD_CACHE_MIRROR}"
+    if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
+      spack buildcache push $buildcache_options "${KESSEL_BUILD_CACHE_MIRROR}"
+    fi
   fi
 done
 

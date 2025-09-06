@@ -93,7 +93,9 @@ set +m
 
 printf "%s\n" "$ENVIRONMENTS" | while IFS= read -r e
 do
-    concretize_env_for_mirror "$e"
+    if [ -n "${e}" ]; then
+        concretize_env_for_mirror "$e"
+    fi
 done
 
 wait
@@ -102,7 +104,9 @@ set -m
 
 printf "%s\n" "$ENVIRONMENTS" | while IFS= read -r e
 do
-    create_env_mirror "$mirror_dir" "$mirror_exclude_file" "$e"
+    if [ -n "${e}" ]; then
+        create_env_mirror "$mirror_dir" "$mirror_exclude_file" "$e"
+    fi
 done
 
 unset KESSEL_REQUIRE_SYSTEM_MIRROR
