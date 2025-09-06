@@ -1,12 +1,18 @@
+COLOR_GREEN = "\033[1;32m"
+COLOR_PLAIN = "\033[0m"
+
 def system_list(args, extra, ctx, senv):
-    print("local")
+    systems = ["local"]
 
     if ctx.deployment_dir:
         environments_dir = ctx.deployment_dir / "environments"
+        systems += [c.name for c in environments_dir.iterdir() if c.is_dir()]
 
-        for d in [c.name for c in environments_dir.iterdir() if c.is_dir()]:
-            print(d)
-
+    for s in systems:
+        if ctx.system == s:
+            print(f"{COLOR_GREEN}{s}{COLOR_PLAIN}")
+        else:
+            print(s)
 
 def system_activate(args, extra, ctx, senv):
     ctx.system = args.system
