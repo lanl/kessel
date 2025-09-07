@@ -229,6 +229,12 @@ packages:
      - spec: "parallel-netcdf@1.12.3.17+cxx+fortran %cce"
        prefix: /opt/cray/pe/parallel-netcdf/1.12.3.17/crayclang/18.0
     buildable: False
+  xpmem:
+    buildable: False
+    externals:
+     - spec: "xpmem@2.6.5"
+       modules:
+        - xpmem/2.6.5
   zlib-api:
     require: zlib
   zlib:
