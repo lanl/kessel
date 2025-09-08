@@ -125,3 +125,7 @@ class Context(object):
     @property
     def config(self):
         return KesselConfig(self.deployment_dir)
+
+    @property
+    def replicate_script(self):
+        return self.deployment_dir / ".kessel" / "replicate"
