@@ -16,6 +16,7 @@ gen_git_mirrors_yaml() {
   do
       REPO_PATH=$(git -C "${KESSEL_DEPLOYMENT}/$p" rev-parse --absolute-git-dir)
       EXT_NAME=$(basename "$p")
+      echo "Creating Git Mirror for '${EXT_NAME}' pointing to file://${REPO_PATH}..."
       cat >> "$TMP_GIT_MIRRORS_YAML" <<EOF
   ${EXT_NAME}:
     package_attributes:
