@@ -65,9 +65,9 @@ class Deployment(object):
     def spack_packages_path(self):
         return self.deployment_dir / "spack-packages"
 
-    def init(self, ctx, source_config):
+    def init(self, ctx, source_config, preserve=False):
         # copy config folder from source_config
-        if self.config_dir.exists():
+        if not preserve and self.config_dir.exists():
             shutil.rmtree(self.config_dir)
         if source_config.config_dir.exists():
             shutil.copytree(source_config.config_dir, self.config_dir)

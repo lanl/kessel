@@ -8,7 +8,7 @@ from kessel.deployment import Deployment
 def init(args, extra, ctx, senv):
     source_config = SourceConfig(args.config_dir)
     deployment = Deployment()
-    deployment.init(ctx, source_config)
+    deployment.init(ctx, source_config, preserve=args.preserve)
 
 
 def activate(args, extra, ctx, senv):
@@ -29,6 +29,7 @@ def replicate(args, extra, ctx, senv):
 def setup_command(subparser):
     subparsers = subparser.add_subparsers()
     init_cmd = subparsers.add_parser("init")
+    init_cmd.add_argument("--preserve", default=False, action="store_true", help="do not wipe entire folder structure")
     init_cmd.add_argument("config_dir")
     init_cmd.set_defaults(func=init)
 
