@@ -239,8 +239,7 @@ packages:
     buildable: False
     externals:
      - spec: "xpmem@2.6.5"
-       modules:
-        - xpmem/2.6.5
+       prefix: /usr
   zlib-api:
     require: zlib
   zlib:
