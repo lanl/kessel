@@ -69,6 +69,12 @@ packages:
     - spec: "libfabric@2.1-system"
       modules:
        - libfabric/2.1
+  cray-pmi:
+    buildable: False
+    externals:
+    - spec: "cray-pmi@6.1.15.6"
+      modules:
+       - cray-pmi/6.1.15.6
   cray-mpich:
     externals:
     - spec: "cray-mpich@8.1.32+wrappers %gcc"
