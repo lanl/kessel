@@ -7,15 +7,19 @@ echo "  dst: $DEST"
 
 umask u=rwx,g=rx,o=
 
-rsync -a --no-p --no-g --chmod=ugo=rwX --exclude='.env' --exclude='spack-mirror' \
-      --exclude='spack-bootstrap' --exclude='/spack' --exclude='*spack.lock' \
+rsync -a --no-p --no-g --chmod=ugo=rwX --exclude='.env' --exclude='/extern/*' --exclude='spack-mirror' \
+      --exclude='spack-bootstrap' --exclude='/.git/modules/extern/*' \
+      --exclude='/extern/*'  --exclude='/spack' --exclude='/spack-packages' --exclude='*spack.lock' \
       --exclude='*.spack-env*' \
       "$DEPLOYMENT_DIR/" "$DEST"
 
 rsync -a --no-p --no-g --chmod=ugo=rwX --include='{*__pycache__* "*.pyc"}' \
-         --include='etc/spack/**' --include='lib/spack/**' \
          --exclude-from="$DEPLOYMENT_DIR/spack/.gitignore" \
         "$DEPLOYMENT_DIR/spack/" "$DEST/spack"
+
+rsync -a --no-p --no-g --chmod=ugo=rwX --include='{*__pycache__* "*.pyc"}' \
+         --exclude-from="$DEPLOYMENT_DIR/spack-packages/.gitignore" \
+        "$DEPLOYMENT_DIR/spack-packages/" "$DEST/spack-packages"
 
 mkdir -p "$DEST/.kessel"
 echo "$DEPLOYMENT_DIR" > "$DEST/.kessel/parent"
