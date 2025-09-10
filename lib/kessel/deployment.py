@@ -6,6 +6,7 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 
+
 def merge(envA, envB):
     a = envA["spack"]
     for k, b in envB["spack"].items():

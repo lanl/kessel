@@ -1,6 +1,7 @@
 COLOR_GREEN = "\033[1;32m"
 COLOR_PLAIN = "\033[0m"
 
+
 def system_list(args, extra, ctx, senv):
     systems = ["local"]
 
@@ -13,6 +14,7 @@ def system_list(args, extra, ctx, senv):
             print(f"{COLOR_GREEN}{s}{COLOR_PLAIN}")
         else:
             print(s)
+
 
 def system_activate(args, extra, ctx, senv):
     ctx.system = args.system

@@ -1,6 +1,7 @@
 from pathlib import Path
 import shutil
 
+
 def init(args, extra, ctx, senv):
     kessel_dir = args.directory / ".kessel"
 
@@ -9,6 +10,7 @@ def init(args, extra, ctx, senv):
         print("Creating deployment configuration based on default template")
         template_dir = ctx.kessel_root / "share" / "kessel" / "templates" / "deployment-config"
         shutil.copytree(template_dir, args.directory, dirs_exist_ok=True)
+
 
 def setup_command(subparser):
     subparsers = subparser.add_subparsers()

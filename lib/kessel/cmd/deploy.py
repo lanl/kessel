@@ -23,7 +23,7 @@ def replicate(args, extra, ctx, senv):
     if ctx.replicate_script.exists():
         subprocess.call([ctx.replicate_script, args.dest])
     else:
-        raise Exception(f"Deployment doesn't provide replicate script!")
+        raise Exception("Deployment doesn't provide replicate script!")
 
 
 def setup_command(subparser):
