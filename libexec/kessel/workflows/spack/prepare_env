@@ -17,7 +17,8 @@ while (( "$#" )); do
   case "$1" in
     -h|--help)
       usage
-      exit 0
+      true
+      return
       ;;
     -e|--env)
       if [ -n "$2" ] && [[ "$2" != -* ]]; then
@@ -25,7 +26,8 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -S/--source-dir requires an argument." >&2
-         exit 1
+         false
+         return
       fi
       ;;
     --env=*)
@@ -39,7 +41,8 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -S/--source-dir requires an argument." >&2
-         exit 1
+         false
+         return
       fi
       ;;
     --source-dir=*)
@@ -53,7 +56,8 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -B/--build-dir requires an argument." >&2
-         exit 1
+         false
+         return
       fi
       ;;
     --build-dir=*)
@@ -63,7 +67,8 @@ while (( "$#" )); do
       ;;
     -*|--*)
       echo "ERROR: invalid option $1" >&2
-      exit 1
+      false
+      return
       ;;
     *)
       TEMP="$TEMP $1"
@@ -84,7 +89,8 @@ if ! spack env activate "$KESSEL_ENVIRONMENT"; then
     spack env activate "$KESSEL_ENVIRONMENT"
   else
     echo "ERROR: Can not activate or create environment $KESSEL_ENVIRONMENT!"
-    exit 1
+    false
+    return
   fi
 fi
 
