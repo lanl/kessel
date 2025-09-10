@@ -14,6 +14,7 @@ rsync -a --no-p --no-g --chmod=ugo=rwX --exclude='.env' --exclude='/extern/*' --
       "$DEPLOYMENT_DIR/" "$DEST"
 
 rsync -a --no-p --no-g --chmod=ugo=rwX --include='{*__pycache__* "*.pyc"}' \
+           --include="etc/spack/**" --include="lib/spack/**" \
          --exclude-from="$DEPLOYMENT_DIR/spack/.gitignore" \
         "$DEPLOYMENT_DIR/spack/" "$DEST/spack"
 
