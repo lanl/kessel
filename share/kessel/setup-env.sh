@@ -54,7 +54,7 @@ kessel_ci_message() {
             echo "$init"
         fi
     
-        if [[ "$workflow" != "default" ]]; then
+        if [ -n "$workflow" ] && [[ "$workflow" != "default" ]]; then
             echo "kessel workflow activate $workflow"
         fi
     
