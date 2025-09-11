@@ -115,4 +115,5 @@ class Deployment(object):
         for s, target in sys_links.items():
             target_system_dir = self.env_dir / s
             print(f"Creating {target_system_dir} -> {target}")
-            target_system_dir.symlink_to(target, target_is_directory=True)
+            if not target_system_dir.exists():
+                target_system_dir.symlink_to(target, target_is_directory=True)
