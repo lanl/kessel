@@ -110,6 +110,6 @@ if [ -n "$KESSEL_GIT_MIRRORS" ]; then
     REPO_PATH=$(git -C $KESSEL_SOURCE_DIR/$p rev-parse --absolute-git-dir)
     EXT_NAME=$(basename "$p")
     echo "Creating Git Mirror for '${EXT_NAME}' pointing to file://${REPO_PATH}..."
-    spack config add "packages:${EXT}:package_attributes:git:'file://${REPO_PATH}'"
+    spack config add "packages:${EXT_NAME}:package_attributes:git:'file://${REPO_PATH}'"
   done
 fi
