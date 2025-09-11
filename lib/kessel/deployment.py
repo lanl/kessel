@@ -70,6 +70,7 @@ class Deployment(object):
         # copy config folder from source_config
         if not preserve and self.config_dir.exists():
             shutil.rmtree(self.config_dir)
+            shutil.rmtree(self.env_dir)
         if source_config.config_dir.exists():
             shutil.copytree(source_config.config_dir, self.config_dir, dirs_exist_ok=True)
 
@@ -80,10 +81,19 @@ class Deployment(object):
         env_glob = (source_config.env_dir / "**" / "*.yaml").resolve()
         env_templates = glob.glob(str(env_glob), recursive=True)
 
+        sys_links = {}
+
         for tpl in env_templates:
             path = Path(tpl)
             relpath = Path(path.relative_to(source_config.env_dir.resolve()))
             system = relpath.parts[0]
+            source_system_dir = source_config.env_dir / system
+
+            if source_system_dir.is_symlink():
+                if system not in sys_links:
+                    sys_links[system] =  source_system_dir.readlink()
+                continue
+
             target = self.env_dir / relpath.parent / relpath.stem / "spack.yaml"
 
             template_dirs = [
@@ -101,3 +111,8 @@ class Deployment(object):
                 yaml.default_flow_style = False
                 yaml.width = 256
                 yaml.dump(env, f)
+
+        for s, target in sys_links.items():
+            target_system_dir = self.env_dir / s
+            print(f"Creating {target_system_dir} -> {target}")
+            target_system_dir.symlink_to(target, target_is_directory=True)
