@@ -71,7 +71,7 @@ class Deployment(object):
         if not preserve and self.config_dir.exists():
             shutil.rmtree(self.config_dir)
         if source_config.config_dir.exists():
-            shutil.copytree(source_config.config_dir, self.config_dir)
+            shutil.copytree(source_config.config_dir, self.config_dir, dirs_exist_ok=True)
 
         # create spack and spack-packages checkouts
         source_config.spack.checkout(self.spack_path)
