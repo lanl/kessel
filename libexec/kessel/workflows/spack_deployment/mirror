@@ -64,10 +64,14 @@ create_env_mirror() {
         echo "Creating mirror for $env_name..."
         spack env activate $env_name
         spack spec
-        if [ -f "$mirror_exclude_file" ]; then
-            spack mirror create -d "$mirror_dir" --all --skip-unstable-version --exclude-file "$mirror_exclude_file"
+        if [ -f "$SPACK_ENV/spack.lock" ]; then
+            if [ -f "$mirror_exclude_file" ]; then
+                spack mirror create -d "$mirror_dir" --all --skip-unstable-version --exclude-file "$mirror_exclude_file"
+            else
+                spack mirror create -d "$mirror_dir" --all --skip-unstable-version
+            fi
         else
-            spack mirror create -d "$mirror_dir" --all --skip-unstable-version
+            echo "SKIPPING $env_name due to missing concrete specs."
         fi
         rm -f "$SPACK_ENV/spack.lock"
         cp "$SPACK_ENV/spack.yaml.original" "$SPACK_ENV/spack.yaml"
