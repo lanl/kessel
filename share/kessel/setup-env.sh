@@ -1,4 +1,5 @@
 PARENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" &>/dev/null && pwd)"
+export KESSEL_SETUP_SCRIPT=$(realpath "${BASH_SOURCE[0]:-$0}")
 export KESSEL_ROOT="$(realpath $PARENT_DIR/../..)"
 export KESSEL_CONFIG_DIR="${KESSEL_ROOT}/etc/kessel"
 export KESSEL_PARENT_PROMPT="$PS1"

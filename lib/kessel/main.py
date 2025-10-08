@@ -6,6 +6,7 @@ import kessel.cmd.system as system_cmd
 import kessel.cmd.workflow as workflow_cmd
 import kessel.cmd.step as step_cmd
 import kessel.cmd.run as run_cmd
+import kessel.cmd.reset as reset_cmd
 import kessel.cmd.build_env as build_env_cmd
 
 from kessel.context import Context
@@ -33,6 +34,7 @@ def main():
     workflow_cmd.setup_command(subparsers.add_parser("workflow"))
     step_cmd.setup_command(subparsers.add_parser("step"), ctx)
     run_cmd.setup_command(subparsers.add_parser("run"), ctx)
+    reset_cmd.setup_command(subparsers.add_parser("reset"), ctx)
 
     args, extra = parser.parse_known_args()
     senv.debug = args.shell_debug
