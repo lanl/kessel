@@ -15,7 +15,11 @@ source ${KESSEL_DEPLOYMENT}/kessel/share/kessel/setup-env.sh
 (
     cd ${KESSEL_DEPLOYMENT}
     kessel deploy init ${KESSEL_DEPLOYMENT_CONFIG}
-    cp -R ${KESSEL_DEPLOYMENT_CONFIG}/.kessel ${KESSEL_DEPLOYMENT}/
+    rm -rf "${KESSEL_DEPLOYMENT}/.kessel"
+    mkdir "${KESSEL_DEPLOYMENT}/.kessel"
+    if [ -f "${KESSEL_DEPLOYMENT_CONFIG}/.kessel/replicate" ]; then
+        cp "${KESSEL_DEPLOYMENT_CONFIG}/.kessel/replicate" "${KESSEL_DEPLOYMENT}/.kessel/"
+    fi
 )
 
 kessel deploy activate "$KESSEL_DEPLOYMENT"
