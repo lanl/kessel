@@ -81,18 +81,20 @@ if [ "$TEMP" ]; then
   export KESSEL_PROJECT_SPEC="$TEMP"
 fi
 
-if ! spack env activate "$KESSEL_ENVIRONMENT"; then
+if ! spack env activate --without-view "$KESSEL_ENVIRONMENT"; then
   if [ "$KESSEL_SYSTEM" = "local" ]; then
-    spack env create "$KESSEL_ENVIRONMENT"
-    spack env activate "$KESSEL_ENVIRONMENT"
+    spack env create --without-view "$KESSEL_ENVIRONMENT"
+    spack env activate --without-view "$KESSEL_ENVIRONMENT"
     spack add "$KESSEL_PROJECT_SPEC"
-    spack env activate "$KESSEL_ENVIRONMENT"
   else
     echo "ERROR: Can not activate or create environment $KESSEL_ENVIRONMENT!"
     false
     return
   fi
 fi
+
+# always disable view for now, until we know there is a use case that we need it
+spack env view disable
 
 export KESSEL_PROJECT_NAME=$(spack-python -c "spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');print(spec.name)")
 
