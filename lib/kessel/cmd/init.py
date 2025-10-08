@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import shutil
 
 def init(args, extra, ctx, senv):
     kessel_dir = args.directory / ".kessel"
@@ -9,7 +9,9 @@ def init(args, extra, ctx, senv):
 
     if not kessel_dir.exists():
         workflow_dir.mkdir(parents=True)
-        # TODO copy template folder
+        print("Creating kessel configuration based on default template")
+        template_dir = ctx.kessel_root / "share" / "kessel" / "templates" / "spack-config"
+        shutil.copytree(template_dir, args.directory, dirs_exist_ok=True)
 
 
 def setup_command(subparser):
