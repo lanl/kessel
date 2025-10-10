@@ -25,6 +25,9 @@ do
 
     spack concretize -f --fresh
 
+    # keep lock file for this architecture
+    cp "$SPACK_ENV/spack.lock" "$SPACK_ENV/spack.lock.$(spack arch)"
+
     spack install $install_options
 
     if [ $? -ne 0 ]; then
