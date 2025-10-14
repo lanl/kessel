@@ -102,7 +102,7 @@ if [ -f "$existing_lockfile" ]; then
 fi
 
 # always disable view for now, until we know there is a use case that we need it
-spack env view disable
+spack config add view:false
 
 export KESSEL_PROJECT_NAME=$(spack-python -c "spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');print(spec.name)")
 
