@@ -58,8 +58,7 @@ create_env_mirror() {
     failure_file="$SPACK_ENV/.spack-env/failure"
     if [ -f "$failure_file" ]; then
         echo "ERROR: Concretization of $env_name failed!" >&2
-        false
-        return
+        return 1
     else
         echo "Creating mirror for $env_name..."
         spack env activate $env_name

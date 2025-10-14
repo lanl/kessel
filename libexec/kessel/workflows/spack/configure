@@ -4,8 +4,7 @@
 
 if [ -z "$KESSEL_ENVIRONMENT" ] || [ -z "$KESSEL_ENVIRONMENT" ] || [ -z "$KESSEL_BUILD_DIR" ]; then
   echo "ERROR: Invalid state" >&2
-  false
-  return
+  return 1
 fi
 
 export KESSEL_INSTALL_DIR="${KESSEL_INSTALL_DIR:-$KESSEL_BUILD_DIR/install}"
@@ -23,19 +22,16 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -I/--install-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --install-dir=*)
-      value="${1#*=}"
-      export KESSEL_INSTALL_DIR="$value"
+      export KESSEL_INSTALL_DIR=${1#*=}
       shift
       ;;
     -*|--*)
       echo "ERROR: invalid option $1" >&2
-      false
-      return
+      return 1
       ;;
     *)
       TEMP+=("$1")

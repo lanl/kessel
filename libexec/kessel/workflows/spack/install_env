@@ -4,8 +4,7 @@
 
 if [ -z "$KESSEL_SYSTEM" ] || [ -z "$KESSEL_ENVIRONMENT" ]; then
   echo "ERROR: Invalid state" >&2
-  false
-  return
+  return 1
 fi
 
 spack concretize -f

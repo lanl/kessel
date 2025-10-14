@@ -23,13 +23,11 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -D/--deployment requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --deployment=*)
-      value="${1#*=}"
-      export KESSEL_WORKFLOW_DEPLOYMENT="$value"
+      export KESSEL_WORKFLOW_DEPLOYMENT=${1#*=}
       shift
       ;;
     -s|--system)
@@ -38,13 +36,11 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -s/--system requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --system=*)
-      value="${1#*=}"
-      export KESSEL_SYSTEM="$value"
+      export KESSEL_SYSTEM=${1#*=}
       shift
       ;;
     -e|--env)
@@ -53,13 +49,11 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -e/--env requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --env=*)
-      value="${1#*=}"
-      export KESSEL_ENVIRONMENT="$value"
+      export KESSEL_ENVIRONMENT=${1#*=}
       shift
       ;;
     -S|--source-dir)
@@ -68,13 +62,11 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -S/--source-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --source-dir=*)
-      value="${1#*=}"
-      export KESSEL_INSTALL_DIR="$value"
+      export KESSEL_INSTALL_DIR=${1#*=}
       shift
       ;;
     -B|--build-dir)
@@ -83,13 +75,11 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -B/--build-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --build-dir=*)
-      value="${1#*=}"
-      export KESSEL_BUILD_DIR="$value"
+      export KESSEL_BUILD_DIR=${1#*=}
       shift
       ;;
     -I|--install-dir)
@@ -98,19 +88,16 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -I/--install-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --install-dir=*)
-      value="${1#*=}"
-      export KESSEL_INSTALL_DIR="$value"
+      export KESSEL_INSTALL_DIR=${1#*=}
       shift
       ;;
     -*|--*)
       echo "ERROR: invalid option $1" >&2
-      false
-      return
+      return 1
       ;;
     *)
       TEMP="$TEMP $1"

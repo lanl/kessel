@@ -4,8 +4,7 @@
 
 if [ -z "$KESSEL_SYSTEM" ] || [ -z "$KESSEL_PROJECT_SPEC" ]; then
   echo "ERROR: Invalid state '$KESSEL_SYSTEM' '$KESSEL_PROJECT_SPEC' " >&2
-  false
-  return
+  return 1
 fi
 
 export KESSEL_ENVIRONMENT="${KESSEL_ENVIRONMENT:-default}"
@@ -17,7 +16,6 @@ while (( "$#" )); do
   case "$1" in
     -h|--help)
       usage
-      true
       return
       ;;
     -e|--env)
@@ -26,13 +24,11 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -S/--source-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --env=*)
-      value="${1#*=}"
-      export KESSEL_ENVIRONMENT="$value"
+      export KESSEL_ENVIRONMENT=${1#*=}
       shift
       ;;
     -S|--source-dir)
@@ -41,13 +37,11 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -S/--source-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --source-dir=*)
-      value="${1#*=}"
-      export KESSEL_INSTALL_DIR="$value"
+      export KESSEL_INSTALL_DIR=${1#*=}
       shift
       ;;
     -B|--build-dir)
@@ -56,19 +50,16 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -B/--build-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --build-dir=*)
-      value="${1#*=}"
-      export KESSEL_BUILD_DIR="$value"
+      export KESSEL_BUILD_DIR=${1#*=}
       shift
       ;;
     -*|--*)
       echo "ERROR: invalid option $1" >&2
-      false
-      return
+      return 1
       ;;
     *)
       TEMP="$TEMP $1"
@@ -87,9 +78,8 @@ if ! spack env activate --without-view "$KESSEL_ENVIRONMENT"; then
     spack env activate --without-view "$KESSEL_ENVIRONMENT"
     spack add "$KESSEL_PROJECT_SPEC"
   else
-    echo "ERROR: Can not activate or create environment $KESSEL_ENVIRONMENT!"
-    false
-    return
+    echo "ERROR: Can not activate or create environment $KESSEL_ENVIRONMENT!" >&2
+    return 1
   fi
 fi
 

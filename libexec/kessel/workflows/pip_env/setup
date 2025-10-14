@@ -20,8 +20,7 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -S/--source-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     -B|--build-dir)
@@ -30,8 +29,7 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -B/--build-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     -e|--env)
@@ -40,29 +38,24 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -e/--env requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --source-dir=*)
-      value="${1#*=}"
-      export KESSEL_SOURCE_DIR="$value"
+      export KESSEL_SOURCE_DIR=${1#*=}
       shift
       ;;
     --build-dir=*)
-      value="${1#*=}"
-      export KESSEL_BUILD_DIR="$value"
+      export KESSEL_BUILD_DIR=${1#*=}
       shift
       ;;
     --env=*)
-      value="${1#*=}"
-      export KESSEL_ENVIRONMENT="$value"
+      export KESSEL_ENVIRONMENT=${1#*=}
       shift
       ;;
     -*|--*)
       echo "ERROR: invalid option $1" >&2
-      false
-      return
+      return 1
       ;;
     *)
       TEMP+=("$1")
@@ -82,9 +75,8 @@ fi
 source "$ENV/bin/activate"
 
 if [ $? -ne 0 ]; then
-    echo "Failed to activate environment"
-    false
-    return
+    echo "ERROR: Failed to activate environment" >&2
+    return 1
 fi
 
 python3 -m pip install -r "$KESSEL_REQUIREMENTS"

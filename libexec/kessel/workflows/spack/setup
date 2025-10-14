@@ -18,13 +18,11 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -I/--install-dir requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --deployment=*)
-      value="${1#*=}"
-      export KESSEL_WORKFLOW_DEPLOYMENT="$value"
+      export KESSEL_WORKFLOW_DEPLOYMENT=${1#*=}
       shift
       ;;
     -s|--system)
@@ -33,19 +31,16 @@ while (( "$#" )); do
          shift 2
       else
          echo "ERROR: -s/--system requires an argument." >&2
-         false
-         return
+         return 1
       fi
       ;;
     --system=*)
-      value="${1#*=}"
-      export KESSEL_SYSTEM="$value"
+      export KESSEL_SYSTEM=${1#*=}
       shift
       ;;
     -*|--*)
       echo "ERROR: invalid option $1" >&2
-      false
-      return
+      return 1
       ;;
     *)
       TEMP+=("$1")
@@ -58,14 +53,13 @@ umask 0007
 if [[ "$KESSEL_SYSTEM" == "local" ]]; then
   if [[ -z "$SPACK_ROOT" ]]; then
     echo "ERROR: No active Spack installation!" >&2
-    false
-    return
+    return 1
   else
     echo "Using Spack install at $SPACK_ROOT"
   fi
 else
   if [ ! -d "$KESSEL_WORKFLOW_DEPLOYMENT" ]; then
-      unsquashfs -d "$KESSEL_WORKFLOW_DEPLOYMENT" "$KESSEL_DEPLOYMENT/.replicate.sqfs"
+      kessel deploy replicate "$KESSEL_WORKFLOW_DEPLOYMENT"
       kessel deploy activate "$KESSEL_WORKFLOW_DEPLOYMENT"
       kessel system activate "$KESSEL_SYSTEM"
   fi
