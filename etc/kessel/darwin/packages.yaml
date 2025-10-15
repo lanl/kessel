@@ -83,11 +83,14 @@ packages:
     require:
      - spec: "fabrics=verbs,shm,sockets,tcp,udp %c=gcc"
   cuda:
-    version: [12.8.0]
+    version: [12.9.1]
     externals:
     - spec: cuda@12.8.0
       modules:
       - cuda/12.8.0
+    - spec: cuda@12.9.1
+      modules:
+      - cuda/12.9.1
   curl:
     externals:
     - spec: curl@7.61.1
