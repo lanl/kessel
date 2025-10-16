@@ -84,7 +84,7 @@ fi
 
 existing_lockfile="$SPACK_ENV/spack.lock.$(spack arch)"
 
-if [ -f "$existing_lockfile" ]; then
+if  [ ! -f "$SPACK_ENV/spack.lock" ] && [ -f "$existing_lockfile" ]; then
   cp "$existing_lockfile" "$SPACK_ENV/spack.lock"
   echo "Reusing existing lockfile for $(spack arch)"
   spack env activate --without-view "$KESSEL_ENVIRONMENT"
