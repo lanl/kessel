@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Setup
 #KESSEL collapsed: true
 

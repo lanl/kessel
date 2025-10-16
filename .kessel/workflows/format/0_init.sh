@@ -1,4 +1,3 @@
-#!/bin/bash
 export KESSEL_SOURCE_DIR="${KESSEL_SOURCE_DIR:-$PWD}"
 export KESSEL_BUILD_DIR="${KESSEL_BUILD_DIR:-$PWD/build}"
 export KESSEL_SYSTEM="${KESSEL_SYSTEM:-local}"

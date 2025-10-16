@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Linting
 (
 source "$KESSEL_BUILD_ENV"

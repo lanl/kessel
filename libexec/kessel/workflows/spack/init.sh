@@ -1,7 +1,5 @@
-#!/bin/bash
+umask 0007
 
-export KESSEL_WORKFLOW_DEPLOYMENT="${TMPDIR:-/tmp}/$USER-ci-envs"
-export KESSEL_SYSTEM="${KESSEL_SYSTEM:-local}"
 export KESSEL_ENVIRONMENT="${KESSEL_ENVIRONMENT:-default}"
 
 export KESSEL_SOURCE_DIR="$PWD"
@@ -16,32 +14,6 @@ while (( "$#" )); do
     -h|--help)
       usage
       return
-      ;;
-    -D|--deployment)
-      if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         export KESSEL_WORKFLOW_DEPLOYMENT="$2"
-         shift 2
-      else
-         echo "ERROR: -D/--deployment requires an argument." >&2
-         return 1
-      fi
-      ;;
-    --deployment=*)
-      export KESSEL_WORKFLOW_DEPLOYMENT=${1#*=}
-      shift
-      ;;
-    -s|--system)
-      if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         export KESSEL_SYSTEM="$2"
-         shift 2
-      else
-         echo "ERROR: -s/--system requires an argument." >&2
-         return 1
-      fi
-      ;;
-    --system=*)
-      export KESSEL_SYSTEM=${1#*=}
-      shift
       ;;
     -e|--env)
       if [ -n "$2" ] && [[ "$2" != -* ]]; then
@@ -108,6 +80,15 @@ done
 
 if [ -n "$TEMP" ]; then
   export KESSEL_PROJECT_SPEC="$TEMP"
+fi
+
+if [[ ! -d "$KESSEL_DEPLOYMENT" ]]; then
+  if [[ -z "$SPACK_ROOT" ]]; then
+    echo "ERROR: No active Spack installation!" >&2
+    return 1
+  else
+    echo "Using Spack install at $SPACK_ROOT"
+  fi
 fi
 
 export KESSEL_PROJECT_NAME=$(spack-python -c "spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');print(spec.name)")

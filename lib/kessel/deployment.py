@@ -91,7 +91,7 @@ class Deployment(object):
 
             if source_system_dir.is_symlink():
                 if system not in sys_links:
-                    sys_links[system] =  source_system_dir.readlink()
+                    sys_links[system] = source_system_dir.readlink()
                 continue
 
             target = self.env_dir / relpath.parent / relpath.stem / "spack.yaml"

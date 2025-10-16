@@ -1,6 +1,7 @@
 from pathlib import Path
 import shutil
 
+
 def init(args, extra, ctx, senv):
     kessel_dir = args.directory / ".kessel"
     workflow_dir = kessel_dir / "workflows" / "default"

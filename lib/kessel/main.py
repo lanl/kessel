@@ -28,7 +28,7 @@ def main():
 
     init_cmd.setup_command(subparsers.add_parser("init"))
     config_cmd.setup_command(subparsers.add_parser("config"))
-    deploy_cmd.setup_command(subparsers.add_parser("deploy"))
+    deploy_cmd.setup_command(subparsers.add_parser("deploy"), ctx)
     system_cmd.setup_command(subparsers.add_parser("system"))
     build_env_cmd.setup_command(subparsers.add_parser("build-env"))
     workflow_cmd.setup_command(subparsers.add_parser("workflow"))

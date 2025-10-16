@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Install Environment
 #KESSEL collapsed: true
 

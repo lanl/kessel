@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Prepare Environment
 #KESSEL collapsed: true
 

@@ -1,4 +1,3 @@
-#!/bin/bash
 kessel deploy activate "$KESSEL_DEPLOYMENT"
 kessel system activate "$KESSEL_SYSTEM"
 

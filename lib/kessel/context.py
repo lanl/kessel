@@ -108,6 +108,7 @@ class Context(object):
             "KESSEL_PARENT_DEPLOYMENT", config.parent if config.parent else d
         )
         self.senv.source("$KESSEL_DEPLOYMENT/spack/share/spack/setup-env.sh")
+        self.senv.source("$KESSEL_DEPLOYMENT/kessel/share/kessel/setup-env.sh")
 
     @property
     def system(self):

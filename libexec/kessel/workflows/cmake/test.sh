@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Test 
 (
 source "$KESSEL_BUILD_ENV"

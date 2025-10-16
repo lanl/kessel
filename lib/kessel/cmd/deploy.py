@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import subprocess
 
 from kessel.config import SourceConfig
@@ -20,13 +21,22 @@ def activate(args, extra, ctx, senv):
 
 
 def replicate(args, extra, ctx, senv):
+    if args.src is None:
+        raise Exception("No active deployment!")
+
+    deployment_dir = Path(args.src).resolve()
+    if not deployment_dir.exists():
+        raise Exception(f"Deployment at '{deployment_dir} does not exist!")
+
     if ctx.replicate_script.exists():
-        subprocess.call([ctx.replicate_script, args.dest])
+        renv = os.environ.copy()
+        renv["KESSEL_DEPLOYMENT"] = deployment_dir
+        subprocess.call([ctx.replicate_script, args.dest], env=renv)
     else:
         raise Exception("Deployment doesn't provide replicate script!")
 
 
-def setup_command(subparser):
+def setup_command(subparser, ctx):
     subparsers = subparser.add_subparsers()
     init_cmd = subparsers.add_parser("init")
     init_cmd.add_argument("--preserve", default=False, action="store_true", help="do not wipe entire folder structure")
@@ -38,5 +48,6 @@ def setup_command(subparser):
     activate_cmd.set_defaults(func=activate)
 
     replicate_cmd = subparsers.add_parser("replicate")
+    replicate_cmd.add_argument("src", nargs="?", default=ctx.deployment_dir, help="source deployment folder")
     replicate_cmd.add_argument("dest", default=Path.cwd(), help="destination folder")
     replicate_cmd.set_defaults(func=replicate)

@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Submit
 (
 source "$KESSEL_BUILD_ENV"

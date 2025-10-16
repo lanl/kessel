@@ -49,8 +49,8 @@ class WorkflowStep(object):
 
 
 def load_workflow_from_directory(path: Path):
-    init_pattern = re.compile(r'^[0]+_init$')
-    step_pattern = re.compile(r'^[0-9]+_[a-z0-9_-]+$')
+    init_pattern = re.compile(r'^[0]+_init.sh$')
+    step_pattern = re.compile(r'^[0-9]+_[a-z0-9_-]+.sh$')
 
     steps = []
     init_script = None

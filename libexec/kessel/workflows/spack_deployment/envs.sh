@@ -1,5 +1,3 @@
-#!/bin/bash
-
 if [ -z "${ENVIRONMENTS}" ]; then
     export ENVIRONMENTS="$(spack env list | tr -d ' ')"
 fi

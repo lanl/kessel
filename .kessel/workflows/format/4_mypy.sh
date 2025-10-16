@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Type checking
 (
 source "$KESSEL_BUILD_ENV"

@@ -55,7 +55,7 @@ default:
 .build_docs:
   stage: Checks
   script:
-    - source .kessel/init.sh
+    - source .gitlab/kessel.sh
     - kessel workflow activate docs
     - kessel run
     - rm -rf public
@@ -66,7 +66,7 @@ format:
   extends: [.ascgit_job, .darwin_job, .darwin_regular_job]
   needs: []
   script:
-    - source .kessel/init.sh
+    - source .gitlab/kessel.sh
     - kessel workflow activate format
     - kessel run
 
