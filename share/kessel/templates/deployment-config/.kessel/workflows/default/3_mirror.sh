@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Create Source Mirror
 
 if [ -n "$PROJECT" ]; then

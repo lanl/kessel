@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Prepare Environment
 #KESSEL collapsed: true
 source "$KESSEL_ROOT/libexec/kessel/workflows/spack/env"

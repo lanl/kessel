@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Setup
 
 # uncomment to add Git mirrors for Spack

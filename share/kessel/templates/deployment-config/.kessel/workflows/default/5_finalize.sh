@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Finalize
 
 # uncomment to add list of excluded builds

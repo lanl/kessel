@@ -1,4 +1,3 @@
-#!/bin/bash
 #KESSEL title: Build environments
 
 if [ "$KESSEL_SYSTEM" = "rocinante"  ] || [ "$KESSEL_SYSTEM" = "ATS3" ] || [ "$KESSEL_SYSTEM" = "rzadams"  ] || [ "$KESSEL_SYSTEM" = "rzvernal"  ] || [ "$KESSEL_SYSTEM" = "ATS4" ]; then

@@ -1,3 +1,2 @@
-#!/bin/bash
 #KESSEL title: Test
 source "$KESSEL_ROOT/libexec/kessel/workflows/cmake/test"
