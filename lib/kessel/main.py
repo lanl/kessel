@@ -36,5 +36,9 @@ def main():
 
     args, extra = parser.parse_known_args()
     senv.debug = args.shell_debug
-    args.func(args, extra, ctx, senv)
+    try:
+        args.func(args, extra, ctx, senv)
+    except Exception as e:
+        print("ERROR:", e)
+        return 1
     return 0
