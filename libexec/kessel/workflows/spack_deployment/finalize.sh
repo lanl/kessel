@@ -12,6 +12,10 @@ if [ -n "$KESSEL_BUILD_EXCLUDE" ]; then
     done
 fi
 
+if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
+  spack buildcache update-index "${KESSEL_BUILD_CACHE_MIRROR}"
+fi
+
 spack clean -a
 
 echo "Setting permissions and group..."

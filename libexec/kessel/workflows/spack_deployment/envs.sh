@@ -3,7 +3,7 @@ if [ -z "${ENVIRONMENTS}" ]; then
 fi
 
 install_options="--include-build-deps"
-buildcache_options="--with-build-dependencies"
+buildcache_options="--unsigned --with-build-dependencies"
 if [ "${KESSEL_BUILD_ROOTS}" != "true" ]; then
   install_options="--only dependencies $install_options"
   buildcache_options="--only dependencies $buildcache_options"
