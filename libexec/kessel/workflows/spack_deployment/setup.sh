@@ -49,3 +49,7 @@ if [ -n "$KESSEL_GIT_MIRRORS" ]; then
     fi
   done
 fi
+
+if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
+  mkdir -p "${KESSEL_BUILD_CACHE_MIRROR}"
+fi
