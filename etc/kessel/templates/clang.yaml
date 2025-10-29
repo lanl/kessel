@@ -7,10 +7,10 @@ spack:
   packages:
     c:
       prefer:
-       - clang
+       - llvm
     cxx:
       prefer:
-       - clang
+       - llvm
     fortran:
       prefer:
        - gcc
