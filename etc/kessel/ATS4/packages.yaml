@@ -77,22 +77,33 @@ packages:
        - cray-pmi/6.1.15.6
   cray-mpich:
     externals:
-    - spec: "cray-mpich@8.1.32+wrappers %gcc"
+    - spec: "cray-mpich@8.1.32+wrappers %gcc@12.2.0"
       prefix: /opt/cray/pe/mpich/8.1.32/ofi/gnu/11.2
       modules:
        - libfabric/2.1
        - cray-pmi/6.1.15.6
-    - spec: "cray-mpich@8.1.32+wrappers %cce"
+    externals:
+    - spec: "cray-mpich@8.1.32+wrappers %gcc@13.3.0"
+      prefix: /opt/cray/pe/mpich/8.1.32/ofi/gnu/11.2
+      modules:
+       - libfabric/2.1
+       - cray-pmi/6.1.15.6
+    - spec: "cray-mpich@8.1.32+wrappers %cce@19.0.0"
       prefix: /opt/cray/pe/mpich/8.1.32/ofi/crayclang/18.0
       modules:
        - libfabric/2.1
        - cray-pmi/6.1.15.6
-    - spec: "cray-mpich@9.0.1+wrappers %gcc"
+    - spec: "cray-mpich@9.0.1+wrappers %gcc@12.2.0"
       prefix: /opt/cray/pe/mpich/9.0.1/ofi/gnu/11.2
       modules:
        - libfabric/2.1
        - cray-pmi/6.1.16
-    - spec: "cray-mpich@9.0.1+wrappers %cce"
+    - spec: "cray-mpich@9.0.1+wrappers %gcc@13.3.0"
+      prefix: /opt/cray/pe/mpich/9.0.1/ofi/gnu/11.2
+      modules:
+       - libfabric/2.1
+       - cray-pmi/6.1.16
+    - spec: "cray-mpich@9.0.1+wrappers %cce@20.0.0"
       prefix: /opt/cray/pe/mpich/9.0.1/ofi/crayclang/20.0
       modules:
        - libfabric/2.1
@@ -100,11 +111,13 @@ packages:
     buildable: False
   cray-libsci:
     externals:
-    - spec: "cray-libsci@25.03.0 +mpi+openmp %gcc"
+    - spec: "cray-libsci@25.03.0 +mpi+openmp %gcc@12.2.0"
       prefix: /opt/cray/pe/libsci/25.03.0/GNU/12.2/x86_64
-    - spec: "cray-libsci@25.03.0 +mpi+openmp %cce"
+    - spec: "cray-libsci@25.03.0 +mpi+openmp %gcc@13.3.0"
+      prefix: /opt/cray/pe/libsci/25.03.0/GNU/12.2/x86_64
+    - spec: "cray-libsci@25.03.0 +mpi+openmp %cce@19.0.0"
       prefix: /opt/cray/pe/libsci/25.03.0/CRAYCLANG/18.0/x86_64
-    - spec: "cray-libsci@25.09.0 +mpi+openmp %cce@20"
+    - spec: "cray-libsci@25.09.0 +mpi+openmp %cce@20.0.0"
       prefix: /opt/cray/pe/libsci/25.09.0/CRAYCLANG/20.0/x86_64
     buildable: False
   m4:
@@ -230,9 +243,11 @@ packages:
       prefix: /usr
   parallel-netcdf:
     externals:
-     - spec: "parallel-netcdf@1.12.3.17+cxx+fortran %gcc"
+     - spec: "parallel-netcdf@1.12.3.17+cxx+fortran %gcc@12.2.0"
        prefix: /opt/cray/pe/parallel-netcdf/1.12.3.17/gnu/12.2
-     - spec: "parallel-netcdf@1.12.3.17+cxx+fortran %cce"
+     - spec: "parallel-netcdf@1.12.3.17+cxx+fortran %gcc@13.3.0"
+       prefix: /opt/cray/pe/parallel-netcdf/1.12.3.17/gnu/12.2
+     - spec: "parallel-netcdf@1.12.3.17+cxx+fortran %cce@19.0.0"
        prefix: /opt/cray/pe/parallel-netcdf/1.12.3.17/crayclang/18.0
     buildable: False
   xpmem:
