@@ -82,7 +82,6 @@ packages:
       modules:
        - libfabric/2.1
        - cray-pmi/6.1.15.6
-    externals:
     - spec: "cray-mpich@8.1.32+wrappers %gcc@13.3.0"
       prefix: /opt/cray/pe/mpich/8.1.32/ofi/gnu/11.2
       modules:
