@@ -112,3 +112,9 @@ if [ -n "$KESSEL_GIT_MIRRORS" ]; then
     spack config add "packages:${EXT_NAME}:package_attributes:git:'file://${REPO_PATH}'"
   done
 fi
+
+if [ -n "${KESSEL_USER_BUILD_CACHE}" ]; then
+  mkdir -p "${KESSEL_USER_BUILD_CACHE}"
+  spack mirror add --type binary --autopush --unsigned user-ci-mirror "${KESSEL_USER_BUILD_CACHE}"
+  spack buildcache update-index "${KESSEL_USER_BUILD_CACHE}" || true
+fi
