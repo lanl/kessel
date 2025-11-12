@@ -1,7 +1,18 @@
 include:
-  - when: env['KESSEL_DEPLOYMENT'] != env['KESSEL_PARENT_DEPLOYMENT']
+  - name: "kessel_system"
+    when: env.get("KESSEL_SYSTEM", "local") != "local"
+    path: $KESSEL_CONFIG_DIR/$KESSEL_SYSTEM
+    optional: true
+  - name: "deployment"
+    path: $KESSEL_DEPLOYMENT/config
+    optional: true
+  - name: "deployment_system"
+    when: env.get("KESSEL_DEPLOYMENT", "none") != "none"
+    path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM
+    optional: true
+  - when: env.get("KESSEL_DEPLOYMENT", "none") != "none" and env['KESSEL_DEPLOYMENT'] != env['KESSEL_PARENT_DEPLOYMENT']
     path: parent.yaml
-  - when: env['KESSEL_SYSTEM'] != "local"
+  - when: env.get("KESSEL_SYSTEM", "local") != "local"
     path: envs.yaml
   - when: env.get("KESSEL_REQUIRE_SYSTEM_MIRROR", "none") == "pe-serve"
     path: lanl_pe_serve_mirror.yaml

@@ -11,9 +11,6 @@ from kessel.config import KesselConfig
 from kessel.util import create_squashfs, symbolic_to_octal
 from kessel.workflow import load_workflow_from_directory
 
-from ruamel.yaml import YAML
-
-
 class Context(object):
     def __init__(self, senv):
         self.senv = senv
@@ -100,8 +97,6 @@ class Context(object):
         if self.deployment_dir != d:
             self.senv.echo(f"Activating deployment at {d}")
         self.senv.set_env_var("SPACK_USER_CACHE_PATH", f"{d}/.spack")
-        self.senv.unset_env_var("SPACK_DISABLE_LOCAL_CONFIG")
-        self.senv.set_env_var("SPACK_USER_CONFIG_PATH", "$KESSEL_CONFIG_DIR")
         self.senv.set_env_var("SPACK_SKIP_MODULES", "true")
         self.senv.set_env_var("KESSEL_DEPLOYMENT", d)
         self.senv.set_env_var(
@@ -125,9 +120,6 @@ class Context(object):
         if self.system != value:
             self.senv.echo(f"Activating {value} system")
         self.senv.set_env_var("KESSEL_SYSTEM", value)
-        self.senv.set_env_var(
-            "SPACK_SYSTEM_CONFIG_PATH", "$KESSEL_CONFIG_DIR/$KESSEL_SYSTEM"
-        )
 
     @property
     def config(self):
