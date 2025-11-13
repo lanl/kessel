@@ -163,7 +163,7 @@ packages:
     buildable: False
   cray-pmi:
     externals:
-     - spec: "cray-pmi@6.1.13 %gcc@12.3.0"
+     - spec: "cray-pmi@6.1.13"
        modules:
        - cray-pmi/6.1.13
     buildable: False
