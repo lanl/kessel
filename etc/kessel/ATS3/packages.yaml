@@ -150,12 +150,12 @@ packages:
     buildable: false
   cray-mpich:
     externals:
-    - spec: "cray-mpich@8.1.28+wrappers %gcc"
+    - spec: "cray-mpich@8.1.28+wrappers %gcc@12.3.0"
       prefix: /cpe/23.12/mpich/8.1.28/ofi/gnu/12.3
       modules:
        - libfabric/1.22.0
        - cray-pmi/6.1.13
-    - spec: "cray-mpich@8.1.28+wrappers %intel-oneapi-compilers"
+    - spec: "cray-mpich@8.1.28+wrappers %intel-oneapi-compilers@2023.2.0"
       prefix: /cpe/23.12/mpich/8.1.28/ofi/intel/2022.1
       modules:
        - libfabric/1.22.0
@@ -163,7 +163,7 @@ packages:
     buildable: False
   cray-pmi:
     externals:
-     - spec: cray-pmi@6.1.13
+     - spec: "cray-pmi@6.1.13 %gcc@12.3.0"
        modules:
        - cray-pmi/6.1.13
     buildable: False
