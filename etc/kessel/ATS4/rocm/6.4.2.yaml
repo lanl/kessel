@@ -3,7 +3,9 @@ packages:
     require:
     - "@6.4.2"
     externals:
-    - spec: "hip@6.4.2"
+    - spec: "hip@6.4.2 %gcc@13.3.0"
+      prefix: /opt/rocm-6.4.2
+    - spec: "hip@6.4.2 %gcc@12.2.0"
       prefix: /opt/rocm-6.4.2
     buildable: false
   hsa-rocr-dev:
