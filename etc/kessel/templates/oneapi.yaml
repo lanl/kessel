@@ -7,10 +7,10 @@ spack:
   packages:
     c:
       prefer:
-       - oneapi
+       - intel-oneapi-compilers
     cxx:
       prefer:
-       - oneapi
+       - intel-oneapi-compilers
     fortran:
       prefer:
-       - oneapi
+       - intel-oneapi-compilers
