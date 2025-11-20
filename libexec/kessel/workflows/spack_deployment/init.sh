@@ -6,3 +6,6 @@ export KESSEL_SYSTEM="${KESSEL_SYSTEM:-local}"
 export KESSEL_BUILD_ROOTS="${KESSEL_BUILD_ROOTS:-false}"
 export KESSEL_ENV_VIEWS="${KESSEL_BUILD_ROOTS:-false}"
 export KESSEL_REQUIRE_GIT_MIRRORS=${KESSEL_REQUIRE_GIT_MIRRORS:-false}
+
+export SPACK_CHECKOUT_URL="${SPACK_CHECKOUT_URL:-$(grep "git:" $KESSEL_DEPLOYMENT_CONFIG/.spack.yaml | cut -d: -f2- | tr -d ' ')}"
+export SPACK_CHECKOUT_REF="${SPACK_CHECKOUT_REF:-$(grep "ref:" $KESSEL_DEPLOYMENT_CONFIG/.spack.yaml | cut -d: -f2- | tr -d ' ')}"

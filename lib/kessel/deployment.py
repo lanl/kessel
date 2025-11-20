@@ -58,14 +58,6 @@ class Deployment(object):
     def env_dir(self):
         return self.deployment_dir / "environments"
 
-    @property
-    def spack_path(self):
-        return self.deployment_dir / "spack"
-
-    @property
-    def spack_packages_path(self):
-        return self.deployment_dir / "spack-packages"
-
     def init(self, ctx, source_config, preserve=False):
         # copy config folder from source_config
         if not preserve and self.config_dir.exists():
@@ -73,10 +65,6 @@ class Deployment(object):
             shutil.rmtree(self.env_dir)
         if source_config.config_dir.exists():
             shutil.copytree(source_config.config_dir, self.config_dir, dirs_exist_ok=True)
-
-        # create spack and spack-packages checkouts
-        source_config.spack.checkout(self.spack_path)
-        source_config.spack_packages.checkout(self.spack_packages_path)
 
         env_glob = (source_config.env_dir / "**" / "*.yaml").resolve()
         env_templates = glob.glob(str(env_glob), recursive=True)

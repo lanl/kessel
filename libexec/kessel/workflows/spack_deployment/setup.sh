@@ -9,6 +9,22 @@ export KESSEL_INITIAL_ROOT="${KESSEL_INITIAL_ROOT:-${KESSEL_ROOT}}"
 rm -rf "${KESSEL_DEPLOYMENT}/kessel"
 git clone "$KESSEL_INITIAL_ROOT/.git" ${KESSEL_DEPLOYMENT}/kessel
 
+SPACK_CHECKOUT="${KESSEL_DEPLOYMENT}/spack"
+
+if [ ! -d "${SPACK_CHECKOUT}" ]; then
+  git clone -c feature.manyFiles=true --depth=1 "${SPACK_CHECKOUT_URL}" ${SPACK_CHECKOUT}
+else
+  git -C "${SPACK_CHECKOUT}" remote set-url origin "${SPACK_CHECKOUT_URL}"
+fi
+
+SPACK_HEAD=$(git -C "${SPACK_CHECKOUT}" rev-parse HEAD)
+
+if [ "${SPACK_HEAD}" != "${SPACK_CHECKOUT_REF}" ]; then
+  git -C "${SPACK_CHECKOUT}" fetch --depth=1 origin "${SPACK_CHECKOUT_REF}"
+  git -C "${SPACK_CHECKOUT}" checkout FETCH_HEAD
+  git -C "${SPACK_CHECKOUT}" branch -q -D "@{-1}"
+fi
+
 source ${KESSEL_DEPLOYMENT}/kessel/share/kessel/setup-env.sh
 
 (
@@ -23,6 +39,8 @@ source ${KESSEL_DEPLOYMENT}/kessel/share/kessel/setup-env.sh
 
 kessel deploy activate "$KESSEL_DEPLOYMENT"
 kessel system activate "$KESSEL_SYSTEM"
+
+spack repo update builtin
 
 clone_and_sync() {
     src_checkout="$1"
