@@ -1,24 +1,15 @@
 include:
-  - name: "kessel_system"
-    when: env.get("KESSEL_SYSTEM", "local") != "local"
-    path: $KESSEL_CONFIG_DIR/$KESSEL_SYSTEM
-    optional: true
-  - name: "deployment"
-    path: $KESSEL_DEPLOYMENT/config
-    optional: true
   - name: "deployment_system"
     when: env.get("KESSEL_DEPLOYMENT", "none") != "none"
     path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM
     optional: true
-  - when: env.get("KESSEL_DEPLOYMENT", "none") != "none" and env['KESSEL_DEPLOYMENT'] != env['KESSEL_PARENT_DEPLOYMENT']
-    path: parent.yaml
-  - when: env.get("KESSEL_SYSTEM", "local") != "local"
-    path: envs.yaml
-  - when: env.get("KESSEL_REQUIRE_SYSTEM_MIRROR", "none") == "pe-serve"
-    path: lanl_pe_serve_mirror.yaml
-  - when: env.get("KESSEL_REQUIRE_GIT_MIRRORS", "false") == "true"
+  - name: "deployment"
+    path: $KESSEL_DEPLOYMENT/config
     optional: true
-    path: $KESSEL_DEPLOYMENT/config/git_mirrors.yaml
-  - when: env.get("KESSEL_BUILD_CACHE_MIRROR", "") != ""
+  - name: "kessel_system"
+    when: env.get("KESSEL_SYSTEM", "local") != "local"
+    path: $KESSEL_CONFIG_DIR/$KESSEL_SYSTEM
     optional: true
-    path: $KESSEL_DEPLOYMENT/config/buildcache.yaml
+  - name: "kessel_base"
+    path: $KESSEL_CONFIG_DIR/base
+    optional: true
