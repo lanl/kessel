@@ -1,5 +1,4 @@
-spack:
-  packages:
-    mpi:
-      require:
-       - "cray-mpich"
+packages:
+  mpi:
+    require:
+     - "cray-mpich"

@@ -1,8 +1,7 @@
-spack:
-  packages:
-    mpich:
-      require:
-       - "+cuda cuda_arch=70"
-    ucx:
-      require:
-       - "+cuda cuda_arch=70"
+packages:
+  mpich:
+    require:
+     - "+cuda cuda_arch=70"
+  ucx:
+    require:
+     - "+cuda cuda_arch=70"

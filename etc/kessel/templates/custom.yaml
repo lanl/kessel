@@ -1,8 +1,0 @@
-spack:
-  include::
-  - name: "kessel"
-    path: $KESSEL_CONFIG_DIR
-  specs: []
-  view: true
-  concretizer:
-    unify: true

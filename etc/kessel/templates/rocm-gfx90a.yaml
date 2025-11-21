@@ -1,5 +1,4 @@
-spack:
-  packages:
-    ucx:
-      require:
-       - "+rocm"
+packages:
+  ucx:
+    require:
+     - "+rocm"

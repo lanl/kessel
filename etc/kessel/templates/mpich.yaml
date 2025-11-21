@@ -1,5 +1,4 @@
-spack:
-  packages:
-    mpi:
-      require:
-       - "mpich"
+packages:
+  mpi:
+    require:
+     - "mpich"

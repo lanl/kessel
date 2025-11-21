@@ -1,16 +1,10 @@
-spack:
-  extends: custom
-  view:
-    default:
-      root: .spack-env/view
-      exclude: ['gcc-runtime']
-  packages:
-    c:
-      prefer:
-       - cce
-    cxx:
-      prefer:
-       - cce
-    fortran:
-      prefer:
-       - cce
+packages:
+  c:
+    prefer:
+     - cce
+  cxx:
+    prefer:
+     - cce
+  fortran:
+    prefer:
+     - cce
