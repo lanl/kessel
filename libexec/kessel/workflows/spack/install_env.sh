@@ -1,7 +1,7 @@
 #KESSEL title: Install Environment
 #KESSEL collapsed: true
 
-if [ -z "$KESSEL_SYSTEM" ] || [ -z "$KESSEL_ENVIRONMENT" ]; then
+if [ -z "$KESSEL_ENVIRONMENT" ]; then
   echo "ERROR: Invalid state" >&2
   return 1
 fi
