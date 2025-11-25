@@ -2,7 +2,6 @@ import itertools
 import os
 from pathlib import Path
 
-from kessel import KESSEL_VERSION
 from kessel.util import create_squashfs, symbolic_to_octal
 from kessel.workflow import load_workflow_from_directory
 

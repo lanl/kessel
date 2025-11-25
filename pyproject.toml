@@ -1,5 +1,6 @@
 [project]
 name="kessel"
+dynamic = ["version"]
 description="Continuous integration and developer workflows."
 requires-python=">=3.6"
 dependencies=[

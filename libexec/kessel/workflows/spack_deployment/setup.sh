@@ -57,6 +57,9 @@ cp ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/activate.sh.in ${KES
 sed -i 's/@KESSEL_PARENT_DEPLOYMENT@/\$KESSEL_DEPLOYMENT/g' ${KESSEL_DEPLOYMENT}/activate.sh
 sed -i "s/@KESSEL_SYSTEM@/$KESSEL_SYSTEM/g" ${KESSEL_DEPLOYMENT}/activate.sh
 
+# write kessel version used to generate this deployment
+kessel --version > ${KESSEL_DEPLOYMENT}/.kessel_version
+
 ################################################################################
 # activate deployment and setup git clones
 ################################################################################
