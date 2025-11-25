@@ -1,7 +1,6 @@
 import argparse
 import kessel.cmd.init as init_cmd
 import kessel.cmd.deploy as deploy_cmd
-import kessel.cmd.system as system_cmd
 import kessel.cmd.workflow as workflow_cmd
 import kessel.cmd.step as step_cmd
 import kessel.cmd.run as run_cmd
@@ -27,7 +26,6 @@ def main():
 
     init_cmd.setup_command(subparsers.add_parser("init"), ctx)
     deploy_cmd.setup_command(subparsers.add_parser("deploy"), ctx)
-    system_cmd.setup_command(subparsers.add_parser("system"))
     build_env_cmd.setup_command(subparsers.add_parser("build-env"))
     workflow_cmd.setup_command(subparsers.add_parser("workflow"))
     step_cmd.setup_command(subparsers.add_parser("step"), ctx)
