@@ -1,19 +1,8 @@
 [project]
 name="kessel"
-description="Spack deployments for continuous integration and developer workflows."
+dynamic = ["version"]
+description="Continuous integration and developer workflows."
 requires-python=">=3.6"
 dependencies=[
   "setuptools",
 ]
-
-[tool.vendoring]
-destination = "lib/kessel/external/_vendoring"
-requirements = "lib/kessel/external/vendor.txt"
-namespace = ""
-
-[tool.pytest.ini_options]
-pythonpath = "lib lib/kessel/external/_vendoring"
-
-[[tool.mypy.overrides]]
-module = ["ruamel.*"]
-ignore_missing_imports = true

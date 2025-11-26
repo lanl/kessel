@@ -24,6 +24,9 @@ def step_lines(title):
 
 
 def status(ctx, step=None):
+    if ctx.workflow_config is None:
+        raise Exception(f"{ctx.workflow} workflow can not be found!")
+
     steps = ctx.workflow_config.steps
     names = [s.name for s in steps]
     captions = [step_lines(s.title) for s in steps]

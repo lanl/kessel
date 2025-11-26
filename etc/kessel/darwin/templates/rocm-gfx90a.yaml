@@ -1,7 +1,2 @@
-spack:
-  include:
-   - $KESSEL_CONFIG_DIR/darwin/rocm/6.4.3.yaml
-  packages:
-    ucx:
-      require:
-       - "+rocm"
+include:
+ - $KESSEL_CONFIG_DIR/darwin/rocm/6.4.3.yaml

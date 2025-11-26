@@ -1,8 +1,8 @@
 #KESSEL title: Prepare Environment
 #KESSEL collapsed: true
 
-if [ -z "$KESSEL_SYSTEM" ] || [ -z "$KESSEL_PROJECT_SPEC" ]; then
-  echo "ERROR: Invalid state '$KESSEL_SYSTEM' '$KESSEL_PROJECT_SPEC' " >&2
+if [ -z "$KESSEL_PROJECT_SPEC" ]; then
+  echo "ERROR: Invalid state '$KESSEL_PROJECT_SPEC' " >&2
   return 1
 fi
 
@@ -72,14 +72,9 @@ if [ "$TEMP" ]; then
 fi
 
 if ! spack env activate --without-view "$KESSEL_ENVIRONMENT"; then
-  if [ "$KESSEL_SYSTEM" = "local" ]; then
-    spack env create --without-view "$KESSEL_ENVIRONMENT"
-    spack env activate --without-view "$KESSEL_ENVIRONMENT"
-    spack add "$KESSEL_PROJECT_SPEC"
-  else
-    echo "ERROR: Can not activate or create environment $KESSEL_ENVIRONMENT!" >&2
-    return 1
-  fi
+  spack env create --without-view "$KESSEL_ENVIRONMENT"
+  spack env activate --without-view "$KESSEL_ENVIRONMENT"
+  spack add "$KESSEL_PROJECT_SPEC"
 fi
 
 existing_lockfile="$SPACK_ENV/spack.lock.$(spack arch)"

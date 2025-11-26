@@ -1,0 +1,6 @@
+export KESSEL_DEPLOYMENT="$( cd "$( dirname "${BASH_SOURCE[0]:-$0}" )" >/dev/null 2>&1 && pwd )"
+export KESSEL_PARENT_DEPLOYMENT="@KESSEL_PARENT_DEPLOYMENT@"
+export KESSEL_SYSTEM="@KESSEL_SYSTEM@"
+
+source "$KESSEL_DEPLOYMENT/kessel/share/kessel/setup-env.sh"
+source "$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/activate.sh"

@@ -9,11 +9,8 @@ _kessel() {
     fi
 
     # Autocomplete variables
-    opts="-h init activate snapshot system env bootstrap mirror clean finalize workflow pipeline"
-    pipeline_opts="status"
-    system_opts="list activate"
-    env_opts="list activate"
-    snapshot_opts="create restore"
+    opts="-h init deploy workflow run step"
+    deploy_opts="activate replicate"
     workflow_opts="list activate status get"
 
     # Create empty COMPREPLY
@@ -50,30 +47,8 @@ _kessel() {
                 COMPREPLY=()
             fi
             ;;
-        activate)
-            COMPREPLY=($(compgen -W "$(ls)" -- ${cur}))
-            if [[ $is_bash ]]; then
-                compopt -o default
-                COMPREPLY=()
-            fi
-            ;;
-        snapshot)
-            COMPREPLY=($(compgen -W "${snapshot_opts}" -- ${cur}))
-            ;;
-        system)
-            COMPREPLY=($(compgen -W "${system_opts}" -- ${cur}))
-            ;;
-        env)
-            COMPREPLY=($(compgen -W "${env_opts}" -- ${cur}))
-            ;;
-        bootstrap)
-            COMPREPLY=($(compgen -W "create" -- ${cur}))
-            ;;
-        mirror)
-            COMPREPLY=($(compgen -W "create" -- ${cur}))
-            ;;
-        pipeline)
-            COMPREPLY=($(compgen -W "${pipeline_opts}" -- ${cur}))
+        deploy)
+            COMPREPLY=($(compgen -W "${deploy_opts}" -- ${cur}))
             ;;
         workflow)
             COMPREPLY=($(compgen -W "${workflow_opts}" -- ${cur}))
@@ -86,27 +61,6 @@ _kessel() {
         second=${COMP_WORDS[1]}
 
         case ${second} in
-        snapshot)
-            COMPREPLY=($(compgen -W "$(ls)" -- ${cur}))
-            if [[ $is_bash ]]; then
-                compopt -o default
-                COMPREPLY=()
-            fi
-            ;;
-        system)
-            case ${prev} in
-            activate)
-                COMPREPLY=($(compgen -W "$(kessel system list)" -- ${cur}))
-                ;;
-            esac
-            ;;
-        env)
-            case ${prev} in
-            activate)
-                COMPREPLY=($(compgen -W "$(spack env list)" -- ${cur}))
-                ;;
-            esac
-            ;;
         workflow)
             case ${prev} in
             activate)
@@ -122,9 +76,9 @@ _kessel() {
         third=${COMP_WORDS[2]}
 
         case ${second} in
-        snapshot)
+        deploy)
             case ${third} in
-            create)
+            activate)
                 COMPREPLY=($(compgen -W "$(ls)" -- ${cur}))
                 if [[ $is_bash ]]; then
                     compopt -o default

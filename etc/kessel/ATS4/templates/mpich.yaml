@@ -1,13 +1,12 @@
-spack:
-  packages:
-    mpi:
-      require: "mpich"
-    mpich:
-      require:
-       - "device=ch4 netmod=ofi pmi=pmix +xpmem"
-    libfabric:
-      require:
-       - "@2.1.0: fabrics=cxi,lnx,xpmem,shm,sockets,tcp,udp"
-    curl:
-      require:
-       - "~nghttp2"
+packages:
+  mpi:
+    require: "mpich"
+  mpich:
+    require:
+     - "device=ch4 netmod=ofi pmi=pmix +xpmem"
+  libfabric:
+    require:
+     - "@2.1.0: fabrics=cxi,lnx,xpmem,shm,sockets,tcp,udp"
+  curl:
+    require:
+     - "~nghttp2"

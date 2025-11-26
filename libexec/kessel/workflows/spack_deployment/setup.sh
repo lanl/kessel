@@ -1,28 +1,72 @@
+################################################################################
+# Spack Deployment: Setup
+################################################################################
+source ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/common.sh
+
 umask 0007
 mkdir -p ${KESSEL_DEPLOYMENT}
 chgrp ${KESSEL_GROUP} ${KESSEL_DEPLOYMENT} || true
 chmod g+s ${KESSEL_DEPLOYMENT} || true
 
+################################################################################
+# clone Kessel into deployment
+################################################################################
 # keep track of originl kessel checkout that initiated the workflow
 export KESSEL_INITIAL_ROOT="${KESSEL_INITIAL_ROOT:-${KESSEL_ROOT}}"
 
 rm -rf "${KESSEL_DEPLOYMENT}/kessel"
 git clone "$KESSEL_INITIAL_ROOT/.git" ${KESSEL_DEPLOYMENT}/kessel
-
 source ${KESSEL_DEPLOYMENT}/kessel/share/kessel/setup-env.sh
 
-(
-    cd ${KESSEL_DEPLOYMENT}
-    kessel deploy init ${KESSEL_DEPLOYMENT_CONFIG}
-    rm -rf "${KESSEL_DEPLOYMENT}/.kessel"
-    mkdir "${KESSEL_DEPLOYMENT}/.kessel"
-    if [ -f "${KESSEL_DEPLOYMENT_CONFIG}/.kessel/replicate" ]; then
-        cp "${KESSEL_DEPLOYMENT_CONFIG}/.kessel/replicate" "${KESSEL_DEPLOYMENT}/.kessel/"
-    fi
-)
+################################################################################
+# clone Spack into deployment
+################################################################################
+SPACK_CHECKOUT="${KESSEL_DEPLOYMENT}/spack"
 
+if [ ! -d "${SPACK_CHECKOUT}" ]; then
+  git clone -c feature.manyFiles=true --depth=1 "${SPACK_CHECKOUT_URL}" ${SPACK_CHECKOUT}
+else
+  git -C "${SPACK_CHECKOUT}" remote set-url origin "${SPACK_CHECKOUT_URL}"
+fi
+
+SPACK_HEAD=$(git -C "${SPACK_CHECKOUT}" rev-parse HEAD)
+
+if [ "${SPACK_HEAD}" != "${SPACK_CHECKOUT_REF}" ]; then
+  git -C "${SPACK_CHECKOUT}" fetch --depth=1 origin "${SPACK_CHECKOUT_REF}"
+  git -C "${SPACK_CHECKOUT}" checkout FETCH_HEAD
+  git -C "${SPACK_CHECKOUT}" branch -q -D "@{-1}"
+fi
+
+################################################################################
+# write deployment configuration and environments
+################################################################################
+
+rm -rf "$KESSEL_DEPLOYMENT/config"
+rm -rf "$KESSEL_DEPLOYMENT/environments"
+
+copy_configuration
+generate_environments
+
+# link replicate tool
+rm -rf "${KESSEL_DEPLOYMENT}/bin"
+mkdir -p "${KESSEL_DEPLOYMENT}/bin"
+ln -s ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/replicate_from_sqfs ${KESSEL_DEPLOYMENT}/bin/replicate
+
+# generate activate.sh script for deployment
+cp ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/activate.sh.in ${KESSEL_DEPLOYMENT}/activate.sh
+sed -i 's/@KESSEL_PARENT_DEPLOYMENT@/\$KESSEL_DEPLOYMENT/g' ${KESSEL_DEPLOYMENT}/activate.sh
+sed -i "s/@KESSEL_SYSTEM@/$KESSEL_SYSTEM/g" ${KESSEL_DEPLOYMENT}/activate.sh
+
+# write kessel version used to generate this deployment
+kessel --version > ${KESSEL_DEPLOYMENT}/.kessel_version
+
+################################################################################
+# activate deployment and setup git clones
+################################################################################
 kessel deploy activate "$KESSEL_DEPLOYMENT"
-kessel system activate "$KESSEL_SYSTEM"
+
+# clone spack/spack-packages
+spack repo update builtin
 
 clone_and_sync() {
     src_checkout="$1"

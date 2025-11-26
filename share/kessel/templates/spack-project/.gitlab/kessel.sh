@@ -39,4 +39,3 @@ if [ -d "${KESSEL_DEPLOYMENT}" ] && [ ! -d "${KESSEL_WORKFLOW_DEPLOYMENT}" ]; th
 fi
 
 kessel deploy activate "${KESSEL_WORKFLOW_DEPLOYMENT}"
-kessel system activate "${SYSTEM_NAME}"

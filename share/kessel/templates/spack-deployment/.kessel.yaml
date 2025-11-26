@@ -1,8 +1,0 @@
-kessel:
-  version: 0.0.3
-  spack:
-    git: https://github.com/spack/spack.git
-    commit: 17d34285729c1bb39dfbdef09c5b78d88bb9e3f9
-  spack-packages:
-    git: https://github.com/spack/spack-packages.git
-    commit: 7824c234433be81ed598eab9d70909f9b05a8ebe

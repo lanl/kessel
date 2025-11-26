@@ -1,5 +1,5 @@
 #KESSEL title: Type checking
 (
 source "$KESSEL_BUILD_ENV"
-python3 -m mypy --exclude _vendoring "$KESSEL_SOURCE_DIR/lib"
+python3 -m mypy "$KESSEL_SOURCE_DIR/lib"
 )

@@ -1,5 +1,4 @@
-spack:
-  packages:
-    mpi:
-      require:
-       - "openmpi"
+packages:
+  mpi:
+    require:
+     - "openmpi"

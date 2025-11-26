@@ -1,9 +1,8 @@
+source ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/common.sh
 export KESSEL_DEPLOYMENT_CONFIG=${KESSEL_DEPLOYMENT_CONFIG:-$PWD}
 
-(
-    cd "${KESSEL_DEPLOYMENT}"
-    kessel deploy init --preserve "${KESSEL_DEPLOYMENT_CONFIG}"
-)
+copy_configuration
+generate_environments
 
 if [ -n "$KESSEL_BUILD_EXCLUDE" ]; then
     for p in "${KESSEL_BUILD_EXCLUDE[@]}"

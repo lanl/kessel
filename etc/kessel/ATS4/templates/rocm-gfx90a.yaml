@@ -1,3 +1,2 @@
-spack:
-  include:
-   - $KESSEL_CONFIG_DIR/ATS4/rocm/6.4.2.yaml
+include:
+ - $KESSEL_CONFIG_DIR/ATS4/rocm/6.4.2.yaml

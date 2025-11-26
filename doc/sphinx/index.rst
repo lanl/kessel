@@ -3,8 +3,8 @@ Kessel documentation
 
 Kessel is a tool that helps bring together various components that make up the
 build and testing pipeline of a code project. It was primarily developed with
-Spack-based workflows in mind, but eventually evolved into a more generic
-utility.
+Spack-based and CMake-based workflows in mind, but eventually evolved into a
+more generic utility.
 
 Its main goal is to bridge the gap between what happens in continuous
 integration pipelines and what happens locally yon a developer workstation or
@@ -25,16 +25,16 @@ whose name is prefixed with a sequeunce number.
    .kessel
    └── workflows
        └── default
-           ├── 0_init
-           ├── 1_setup
-           ├── 2_env
-           ├── 3_configure
-           ├── 4_build
-           ├── 5_test
-           └── 6_install
+           ├── 0_init.sh
+           ├── 1_setup.sh
+           ├── 2_env.sh
+           ├── 3_configure.sh
+           ├── 4_build.sh
+           ├── 5_test.sh
+           └── 6_install.sh
 
 The above defines a ``default`` workflow with 6 steps. The 0th script is a
-special initialization script that sets up the environment context for the
+optional initialization script that sets up the environment context for the
 workflow, such as default settings for the subsequence steps. With the
 following command:
 
