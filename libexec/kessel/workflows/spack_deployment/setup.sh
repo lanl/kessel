@@ -34,7 +34,7 @@ SPACK_HEAD=$(git -C "${SPACK_CHECKOUT}" rev-parse HEAD)
 if [ "${SPACK_HEAD}" != "${SPACK_CHECKOUT_REF}" ]; then
   git -C "${SPACK_CHECKOUT}" fetch --depth=1 origin "${SPACK_CHECKOUT_REF}"
   git -C "${SPACK_CHECKOUT}" checkout FETCH_HEAD
-  git -C "${SPACK_CHECKOUT}" branch -q -D "@{-1}"
+  git -C "${SPACK_CHECKOUT}" branch -q -D "@{-1}" || true
 fi
 
 ################################################################################
