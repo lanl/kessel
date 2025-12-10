@@ -2,25 +2,21 @@ import sys
 from kessel.cmd.workflow import status
 
 
-def step(args, extra_args, ctx, senv):
+def step(args, ctx, senv):
     workflow = ctx.workflow_config
-    st = next(s for s in workflow.steps if s.name == args.step)
+    step_func = getattr(workflow, args.step)
+    title = workflow.get_step_title(args.step)
+    collapsed = workflow.is_step_collapsed(args.step)
 
-    is_help = "-h" in extra_args or "--help" in extra_args
-    if not is_help:
-        senv.section_start(
-            st.name, st.title, collapsed=st.collapsed
-        )
-        senv.echo(status(ctx, st.name))
-    ignored_args = len(sys.argv) - len(extra_args) - 1
-    senv.eval(f"shift {ignored_args}")
-    senv.eval(f"source {st.script} " + " ".join([f"\"{a}\"" for a in extra_args]))
+    senv.section_start(
+        args.step, title, collapsed=collapsed
+    )
+    senv.echo(status(ctx, args.step))
 
-    if not is_help:
-        senv.eval("ret=$?")
-        senv.section_end(st.name)
-        senv.eval("test $ret -eq 0 && ", end="")
-        ctx.run_state = st.name
+    step_func(args)
+
+    senv.section_end(args.step)
+    ctx.run_state = args.step
 
 
 def setup_command(subparser, ctx):
@@ -29,7 +25,9 @@ def setup_command(subparser, ctx):
     if ctx.kessel_dir and ctx.workflow_config:
         workflow = ctx.workflow_config
 
-        for s in workflow.steps:
-            name = s.name
-            step_cmd = subparsers.add_parser(name, add_help=False)
+        for name in workflow.steps:
+            step_cmd = subparsers.add_parser(name)
+            args_func = f"{name}_args"
+            if hasattr(workflow, args_func):
+                getattr(workflow, args_func)(step_cmd)
             step_cmd.set_defaults(func=step, step=name)

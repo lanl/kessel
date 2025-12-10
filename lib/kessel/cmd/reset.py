@@ -1,4 +1,4 @@
-def reset(args, extra_args, ctx, senv):
+def reset(args, ctx, senv):
     ctx.reset()
 
 

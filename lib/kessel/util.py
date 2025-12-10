@@ -37,7 +37,10 @@ class ShellEnvironment(object):
         return sys.stdout if self.debug else self.fd
 
     def eval(self, cmd, end="\n"):
-        print("[ $? -eq 0 ] && " + cmd, file=self.target, flush=True, end=end)
+        if os.getenv("IN_FISH") is not None:
+            print(f"{cmd}; or return", file=self.target, flush=True, end=end)
+        else:
+            print(f"{cmd} || return", file=self.target, flush=True, end=end)
 
     def set_env_var(self, name, value):
         if value is None:
@@ -48,6 +51,22 @@ class ShellEnvironment(object):
         else:
             self.eval(f"export {name}={value}")
         os.environ[name] = str(value)
+
+    def __contains__(self, key):
+        return key in os.environ
+
+    def __getitem__(self, key):
+        if key not in os.environ:
+            raise KeyError(f"Environment variable '{key}' is not defined.")
+        return os.environ[key]
+
+    def __setitem__(self, key, value):
+        self.set_env_var(key, value)
+
+    def get(self, key, default=None):
+        if key not in self:
+            return default
+        return self[key]
 
     def unset_env_var(self, name):
         if os.getenv("IN_FISH") is not None:

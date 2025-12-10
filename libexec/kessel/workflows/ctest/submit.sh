@@ -1,4 +1,3 @@
-#KESSEL title: Submit
 (
 source "$KESSEL_BUILD_ENV"
 ctest -V -S $KESSEL_CTEST_DRIVER_SCRIPT,Submit

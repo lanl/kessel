@@ -1,6 +1,3 @@
-#KESSEL title: Configure
-#KESSEL collapsed: true
-
 if [ -z "$KESSEL_ENVIRONMENT" ] || [ -z "$KESSEL_ENVIRONMENT" ] || [ -z "$KESSEL_BUILD_DIR" ]; then
   echo "ERROR: Invalid state" >&2
   return 1

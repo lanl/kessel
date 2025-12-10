@@ -1,6 +1,3 @@
-#KESSEL title: Prepare Environment
-#KESSEL collapsed: true
-
 if [ -z "$KESSEL_PROJECT_SPEC" ]; then
   echo "ERROR: Invalid state '$KESSEL_PROJECT_SPEC' " >&2
   return 1

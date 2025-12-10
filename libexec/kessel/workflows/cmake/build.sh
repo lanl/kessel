@@ -1,4 +1,3 @@
-#KESSEL title: Build
 (
 source "$KESSEL_BUILD_ENV"
 cmake "$KESSEL_BUILD_DIR"

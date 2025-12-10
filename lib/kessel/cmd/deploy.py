@@ -3,7 +3,7 @@ import os
 import subprocess
 
 
-def activate(args, extra, ctx, senv):
+def activate(args, ctx, senv):
     deployment_dir = Path(args.path).resolve()
     deployment_activate_script = deployment_dir / "activate.sh"
     if deployment_activate_script.exists():
@@ -12,7 +12,7 @@ def activate(args, extra, ctx, senv):
         raise Exception(f"Deployment at '{deployment_dir} does not exist!")
 
 
-def replicate(args, extra, ctx, senv):
+def replicate(args, ctx, senv):
     if args.src is None:
         raise Exception("No active deployment!")
 

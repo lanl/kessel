@@ -36,7 +36,9 @@ class Context(object):
                         yield f.name
 
     def load_workflow(self, name):
-        return load_workflow_from_directory(self.kessel_dir / "workflows" / name)
+        wf = load_workflow_from_directory(self.kessel_dir / "workflows" / name)
+        wf.shenv = self.senv
+        return wf
 
     @property
     def workflow(self):

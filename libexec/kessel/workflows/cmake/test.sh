@@ -1,4 +1,3 @@
-#KESSEL title: Test 
 (
 source "$KESSEL_BUILD_ENV"
 export CTEST_OUTPUT_ON_FAILURE=1

@@ -1,7 +1,0 @@
-export KESSEL_SOURCE_DIR="${KESSEL_SOURCE_DIR:-$PWD}"
-export KESSEL_BUILD_DIR="${KESSEL_BUILD_DIR:-$PWD/build}"
-export KESSEL_SYSTEM="${KESSEL_SYSTEM:-local}"
-export KESSEL_ENVIRONMENT="format"
-export KESSEL_REQUIREMENTS="$KESSEL_SOURCE_DIR/.kessel/workflows/format/requirements.txt"
-
-kessel_ci_message "kessel" "$KESSEL_SYSTEM" "$KESSEL_INIT" "$KESSEL_WORKFLOW" $@

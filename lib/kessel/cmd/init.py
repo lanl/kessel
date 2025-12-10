@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil
 
 
-def init(args, extra, ctx, senv):
+def init(args, ctx, senv):
     kessel_dir = args.directory / ".kessel"
 
     ctx.workflow = None
