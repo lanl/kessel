@@ -1,0 +1,12 @@
+spack:
+  include::
+   - $KESSEL_CONFIG_DIR/templates/apple-clang.yaml
+   - $KESSEL_CONFIG_DIR/templates/mpich.yaml
+   - name: kessel
+     path: $KESSEL_CONFIG_DIR
+  specs:
+   - lammps
+  packages:
+    lammps:
+      require:
+       - "+kokkos +openmp"

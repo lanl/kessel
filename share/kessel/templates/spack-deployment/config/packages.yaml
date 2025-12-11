@@ -1,0 +1,6 @@
+# this file is used to define project-wide defaults that apply to all
+# environments and all systems
+packages:
+  lammps:
+    require:
+      - "@20250722"
