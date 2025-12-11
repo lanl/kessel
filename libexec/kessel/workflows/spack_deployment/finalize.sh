@@ -4,13 +4,6 @@ export KESSEL_DEPLOYMENT_CONFIG=${KESSEL_DEPLOYMENT_CONFIG:-$PWD}
 copy_configuration
 generate_environments
 
-if [ -n "$KESSEL_BUILD_EXCLUDE" ]; then
-    for p in "${KESSEL_BUILD_EXCLUDE[@]}"
-    do
-        spack uninstall -y --all --dependents "$p" || true
-    done
-fi
-
 if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
   spack buildcache update-index "${KESSEL_BUILD_CACHE_MIRROR}"
 fi

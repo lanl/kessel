@@ -1,30 +1,34 @@
 from kessel.workflows import Workflow, state, collapsed
 from pathlib import Path
 import argparse
+import shlex
+import os
 
-
-class SpackWorkflow(Workflow):
+class BuildEnvironment(Workflow):
     steps = ["env", "configure"]
 
     state("environment", default="default")
     state("source_dir", default=Path.cwd())
     state("build_dir", default=Path.cwd() / "build")
     state("install_dir", default=Path.cwd() / "build" / "install")
-    state("project_name")
     state("project_spec")
 
-    def options(self, step_idx, step_name, parser, env):
-        parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.environment)
-        parser.add_argument("-S", "--source-dir", default=self.source_dir)
-        parser.add_argument("-B", "--build-dir", default=self.build_dir)
-        parser.add_argument("-I", "--install-dir", default=self.install_dir)
-        parser.add_argument("spec", nargs=argparse.REMAINDER, default=self.project_spec)
-
     def prepare_env(self, args):
+        print(args.spec)
+        self.environment = args.env
+        self.source_dir = args.source_dir
+        self.build_dir = args.build_dir
+        self.project_spec = args.spec
         self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack/prepare_env.sh")
 
     def install_env(self, args):
         self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack/install_env.sh")
+
+    def env_args(self, parser):
+        parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.environment)
+        parser.add_argument("-S", "--source-dir", default=self.source_dir)
+        parser.add_argument("-B", "--build-dir", default=self.build_dir)
+        parser.add_argument("spec", nargs=argparse.REMAINDER, default=self.project_spec)
 
     @collapsed
     def env(self, args):
@@ -32,5 +36,73 @@ class SpackWorkflow(Workflow):
         self.prepare_env(args)
         self.install_env(args)
 
+    def configure_args(self, parser):
+        parser.add_argument("-I", "--install-dir", default=self.install_dir)
+
     def configure(self, args):
+        self.install_dir = args.install_dir
         self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack/configure.sh")
+
+
+class Deployment(Workflow):
+    steps = ["setup", "bootstrap", "mirror", "envs", "finalize"]
+
+    state("deployment_config", default=Path.cwd())
+    state("deployment", default=Path.cwd() / "build")
+    state("permissions", default="u=rwX,g=rX,o=")
+    state("user", default=os.environ["USER"])
+    state("group", default=os.environ["USER"])
+    state("system", default="local")
+
+    spack_url = "https://github.com/spack/spack.git"
+    spack_ref = "develop"
+    build_roots = False
+    env_views = False
+    require_git_mirrors = False
+    mirror_exclude = []
+    build_exclude = []
+
+    def setup(self, args):
+        """Setup"""
+
+        with open(self.deployment_config / ".spack.yaml", "r") as f:
+            for line in f:
+                if line.startswith("git:"):
+                    self.spack_url = line[line.find(':')+1:].strip()
+                elif line.startswith("ref:"):
+                    self.spack_ref = line[line.find(':')+1:].strip()
+
+        self.shenv["SPACK_CHECKOUT_URL"] = self.spack_url
+        self.shenv["SPACK_CHECKOUT_REF"] = self.spack_ref
+
+        self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/setup.sh")
+
+    def bootstrap(self, args):
+        """Bootstrap"""
+        self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/bootstrap.sh")
+
+    def mirror(self, args):
+        """Create Source Mirror"""
+
+        mirror_exclude_file = self.deployment / "config" / "mirror.exclude"
+        self.shenv.eval(f'mirror_exclude_file="{mirror_exclude_file}"')
+
+        if self.mirror_exclude:
+            with open(mirror_exclude_file, "w") as f:
+                for pkg in self.mirror_exclude:
+                    print(pkg, file=f)
+        elif mirror_exclude_file.is_file():
+            mirror_exclude_file.unlink()
+
+        self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/mirror.sh")
+
+    def envs(self, args):
+        """Build Environments"""
+        self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/envs.sh")
+
+    def finalize(self, args):
+        """Finalize"""
+        for pkg in self.build_exclude:
+            self.shenv.eval(f"spack uninstall -y --all --dependents {shlex.quote(pkg)} || true")
+
+        self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/finalize.sh")

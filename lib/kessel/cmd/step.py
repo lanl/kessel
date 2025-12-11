@@ -4,6 +4,7 @@ from kessel.cmd.workflow import status
 
 def step(args, ctx, senv):
     workflow = ctx.workflow_config
+    workflow.init()
     step_func = getattr(workflow, args.step)
     title = workflow.get_step_title(args.step)
     collapsed = workflow.is_step_collapsed(args.step)

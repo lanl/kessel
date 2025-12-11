@@ -6,6 +6,7 @@ from kessel.cmd.step import step
 def run(args, ctx, senv):
     ctx.run_state = None
     workflow = ctx.workflow_config
+    workflow.init()
 
     if workflow is None:
         raise Exception(f"{ctx.workflow} workflow can not be found!")

@@ -81,11 +81,6 @@ fi
 
 mirror_dir="$KESSEL_DEPLOYMENT/spack-mirror"
 env_dir="$KESSEL_DEPLOYMENT/environments/$KESSEL_SYSTEM"
-mirror_exclude_file="$KESSEL_DEPLOYMENT/config/mirror.exclude"
-
-if [ -n "$KESSEL_MIRROR_EXCLUDE" ]; then
-    printf "%s\n" "$KESSEL_MIRROR_EXCLUDE" > "$mirror_exclude_file"
-fi
 
 if [ -n "$KESSEL_GIT_MIRRORS" ]; then
     gen_git_mirrors_yaml
