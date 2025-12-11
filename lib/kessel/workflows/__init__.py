@@ -1,3 +1,4 @@
+import inspect
 
 def state(name, default=None):
     env_var = f"KESSEL_{name.upper()}"
@@ -33,4 +34,4 @@ class Workflow(object):
         return hasattr(s, "collapsed") and s.collapsed
 
     def get_step_title(self, step):
-        return getattr(self, step).__doc__
+        return inspect.getdoc(getattr(self, step))
