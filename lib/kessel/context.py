@@ -12,7 +12,7 @@ class Context(object):
 
     def reset(self):
         setup_script = os.environ.get("KESSEL_SETUP_SCRIPT")
-        for v in [e for e in os.environ if e.startswith("KESSEL_")]:
+        for v in [e for e in os.environ if e.startswith("KESSEL_") and e not in ("KESSEL_DEPLOYMENT", "KESSEL_PARENT_DEPLOYMENT", "KESSEL_SYSTEM", "KESSEL_CURRENT_SYSTEM")]:
             self.senv.unset_env_var(v)
         self.senv.source(setup_script)
 

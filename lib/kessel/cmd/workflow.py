@@ -69,6 +69,7 @@ def workflow_list(args, ctx, senv):
 
 
 def workflow_activate(args, ctx, senv):
+    ctx.reset()
     ctx.workflow = args.name
 
 
