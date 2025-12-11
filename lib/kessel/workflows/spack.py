@@ -64,8 +64,12 @@ class Deployment(Workflow):
     mirror_exclude: list[str] = []
     build_exclude: list[str] = []
 
+    def setup_args(self, parser):
+        parser.add_argument("system", default=self.system)
+
     def setup(self, args):
         """Setup"""
+        self.system = args.system
 
         with open(self.deployment_config / ".spack.yaml", "r") as f:
             for line in f:
