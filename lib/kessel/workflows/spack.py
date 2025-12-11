@@ -4,6 +4,7 @@ import argparse
 import shlex
 import os
 
+
 class BuildEnvironment(Workflow):
     steps = ["env", "configure"]
 
@@ -59,8 +60,8 @@ class Deployment(Workflow):
     build_roots = False
     env_views = False
     require_git_mirrors = False
-    mirror_exclude = []
-    build_exclude = []
+    mirror_exclude: list[str] = []
+    build_exclude: list[str] = []
 
     def setup(self, args):
         """Setup"""
@@ -68,9 +69,9 @@ class Deployment(Workflow):
         with open(self.deployment_config / ".spack.yaml", "r") as f:
             for line in f:
                 if line.startswith("git:"):
-                    self.spack_url = line[line.find(':')+1:].strip()
+                    self.spack_url = line[line.find(':') + 1:].strip()
                 elif line.startswith("ref:"):
-                    self.spack_ref = line[line.find(':')+1:].strip()
+                    self.spack_ref = line[line.find(':') + 1:].strip()
 
         self.shenv["SPACK_CHECKOUT_URL"] = self.spack_url
         self.shenv["SPACK_CHECKOUT_REF"] = self.spack_ref
