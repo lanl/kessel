@@ -1,5 +1,5 @@
 (
 source "$KESSEL_BUILD_ENV"
-cmake "$KESSEL_BUILD_DIR"
+cmake "$@" "$KESSEL_BUILD_DIR"
 cmake --build "$KESSEL_BUILD_DIR" --parallel
 )

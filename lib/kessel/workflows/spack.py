@@ -15,11 +15,11 @@ class BuildEnvironment(Workflow):
     state("project_spec")
 
     def prepare_env(self, args):
-        print(args.spec)
         self.environment = args.env
         self.source_dir = args.source_dir
         self.build_dir = args.build_dir
-        self.project_spec = args.spec
+        if args.spec:
+            self.project_spec = args.spec
         self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack/prepare_env.sh")
 
     def install_env(self, args):
@@ -41,6 +41,7 @@ class BuildEnvironment(Workflow):
         parser.add_argument("-I", "--install-dir", default=self.install_dir)
 
     def configure(self, args):
+        """Configure"""
         self.install_dir = args.install_dir
         self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack/configure.sh")
 
