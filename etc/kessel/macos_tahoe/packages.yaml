@@ -1,0 +1,9 @@
+packages:
+  apple-clang:
+    externals:
+    - spec: apple-clang@17.0.0
+      prefix: /usr
+      extra_attributes:
+        compilers:
+          c: /usr/bin/clang
+          cxx: /usr/bin/clang++

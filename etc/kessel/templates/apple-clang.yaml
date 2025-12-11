@@ -1,0 +1,10 @@
+packages:
+  c:
+    prefer:
+     - apple-clang
+  cxx:
+    prefer:
+     - apple-clang
+  fortran:
+    prefer:
+     - gcc
