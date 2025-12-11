@@ -35,6 +35,7 @@ def collapsed(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
     wrapper.collapsed = True
+    wrapper.__doc__ = func.__doc__
     return wrapper
 
 
