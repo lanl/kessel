@@ -65,11 +65,16 @@ class Deployment(Workflow):
     build_exclude: list[str] = []
 
     def setup_args(self, parser):
+        parser.add_argument("-D", "--deployment", default=self.deployment)
         parser.add_argument("system", default=self.system)
 
     def setup(self, args):
         """Setup"""
+        self.deployment = args.deployment
         self.system = args.system
+
+        os.umask(0o007)
+        self.deployment.mkdir(parents=True, exist_ok=True)
 
         with open(self.deployment_config / ".spack.yaml", "r") as f:
             for line in f:
@@ -80,6 +85,15 @@ class Deployment(Workflow):
 
         self.shenv["SPACK_CHECKOUT_URL"] = self.spack_url
         self.shenv["SPACK_CHECKOUT_REF"] = self.spack_ref
+
+        # generate activate.sh for deployment
+        activate_template = Path(self.shenv["KESSEL_ROOT"]) / "libexec" / "kessel" / "workflows" / "spack_deployment" / "activate.sh.in"
+
+        with open(activate_template, "r") as src, open(self.deployment / "activate.sh", "w") as dst:
+            for line in src:
+                line = line.replace("@KESSEL_PARENT_DEPLOYMENT@", "$KESSEL_DEPLOYMENT")
+                line = line.replace("@KESSEL_SYSTEM@", self.system)
+                print(line, file=dst)
 
         self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/setup.sh")
 

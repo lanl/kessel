@@ -4,7 +4,6 @@
 source ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/common.sh
 
 umask 0007
-mkdir -p ${KESSEL_DEPLOYMENT}
 chgrp ${KESSEL_GROUP} ${KESSEL_DEPLOYMENT} || true
 chmod g+s ${KESSEL_DEPLOYMENT} || true
 
@@ -51,11 +50,6 @@ generate_environments
 rm -rf "${KESSEL_DEPLOYMENT}/bin"
 mkdir -p "${KESSEL_DEPLOYMENT}/bin"
 ln -s ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/replicate_from_sqfs ${KESSEL_DEPLOYMENT}/bin/replicate
-
-# generate activate.sh script for deployment
-cp ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/activate.sh.in ${KESSEL_DEPLOYMENT}/activate.sh
-sed -i 's/@KESSEL_PARENT_DEPLOYMENT@/\$KESSEL_DEPLOYMENT/g' ${KESSEL_DEPLOYMENT}/activate.sh
-sed -i "s/@KESSEL_SYSTEM@/$KESSEL_SYSTEM/g" ${KESSEL_DEPLOYMENT}/activate.sh
 
 # write kessel version used to generate this deployment
 kessel --version > ${KESSEL_DEPLOYMENT}/.kessel_version
