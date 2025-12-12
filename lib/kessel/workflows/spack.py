@@ -118,6 +118,8 @@ class Deployment(Workflow):
 
     def envs(self, args):
         """Build Environments"""
+        self.shenv["KESSEL_BUILD_ROOTS"] = "true" if self.build_roots else "false"
+        self.shenv["KESSEL_ENV_VIEWS"] = "true" if self.env_views else "false"
         self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/envs.sh")
 
     def finalize(self, args):
