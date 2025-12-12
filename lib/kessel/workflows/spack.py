@@ -76,7 +76,7 @@ class Deployment(Workflow):
         os.umask(0o007)
         self.deployment.mkdir(parents=True, exist_ok=True)
 
-        with open(self.deployment_config / ".spack.yaml", "r") as f:
+        with open(self.deployment_config / "spack.yaml", "r") as f:
             for line in f:
                 if line.startswith("git:"):
                     self.spack_url = line[line.find(':') + 1:].strip()
