@@ -102,7 +102,7 @@ class Deployment(Workflow):
             for line in src:
                 line = line.replace("@KESSEL_PARENT_DEPLOYMENT@", "$KESSEL_DEPLOYMENT")
                 line = line.replace("@KESSEL_SYSTEM@", self.system)
-                print(line, file=dst)
+                print(line.rstrip(), file=dst)
 
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack_deployment/setup.sh")
 
