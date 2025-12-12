@@ -5,9 +5,10 @@ class Docs(Pip):
     steps = ["setup", "html"]
 
     state("environment", default="docs")
+    state("system", default="local")
 
-    #def init():
-    #    kessel_ci_message "kessel" "$KESSEL_SYSTEM" "$KESSEL_INIT" "$KESSEL_WORKFLOW" $@
+    def ci_message(self):
+        self.shenv.eval("kessel_ci_message", "kessel", self.system, "", "docs")
 
     def setup(self, args):
         """Setup"""

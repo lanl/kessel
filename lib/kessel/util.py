@@ -1,5 +1,6 @@
 import os
 import subprocess
+import shlex
 import sys
 
 from kessel.cmd.workflow import COLOR_CYAN, COLOR_PLAIN
@@ -36,11 +37,12 @@ class ShellEnvironment(object):
     def target(self):
         return sys.stdout if self.debug else self.fd
 
-    def eval(self, cmd, end="\n"):
+    def eval(self, cmd, *args, end="\n"):
+        a = " ".join([shlex.quote(str(a)) for a in args])
         if os.getenv("IN_FISH") is not None:
-            print(f"{cmd}; or return", file=self.target, flush=True, end=end)
+            print(f"{cmd} {a}; or return", file=self.target, flush=True, end=end)
         else:
-            print(f"{cmd} || return", file=self.target, flush=True, end=end)
+            print(f"{cmd} {a} || return", file=self.target, flush=True, end=end)
 
     def set_env_var(self, name, value):
         if value is None:
@@ -76,12 +78,12 @@ class ShellEnvironment(object):
         if name in os.environ:
             del os.environ[name]
 
-    def source(self, path):
-        self.eval(f"source {path}")
+    def source(self, path, *args):
+        self.eval("source", path, *args)
 
     def echo(self, str=""):
         for line in str.splitlines():
-            self.eval(f"echo '{line}'")
+            self.eval("echo", line)
 
     def _section(self, marker, section, passthrough=False, msg=""):
         if "CI" in os.environ:

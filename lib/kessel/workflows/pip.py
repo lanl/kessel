@@ -19,4 +19,4 @@ class Pip(Workflow):
         self.source_dir = args.source_dir
         self.build_dir = args.build_dir
         self.environment = args.env
-        self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/pip_env/setup.sh")
+        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/pip_env/setup.sh")

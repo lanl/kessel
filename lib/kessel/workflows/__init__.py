@@ -1,4 +1,6 @@
 import inspect
+import os
+from pathlib import Path
 
 
 def state(name, default=None, var=None):
@@ -48,6 +50,10 @@ class Workflow(object):
         # initialize states to default values if not already set
         for s in self.states:
             getattr(self, s)
+
+    @property
+    def kessel_root(self):
+        return Path(os.environ["KESSEL_ROOT"])
 
     def is_step_collapsed(self, step):
         s = getattr(self, step)

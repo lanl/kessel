@@ -7,19 +7,18 @@ class CMake(Workflow):
 
     def build(self, env, cmake_args=[]):
         """Build"""
-        args = " ".join([shlex.quote(a) for a in cmake_args])
-        self.shenv.source(f"$KESSEL_ROOT/libexec/kessel/workflows/cmake/build.sh {args}")
+        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/build.sh", *cmake_args)
 
     def test(self, env):
         """Test"""
-        self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/cmake/test.sh")
+        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/test.sh")
 
     def install(self, env):
         """Install"""
-        self.shenv.source("$KESSEL_ROOT/libexec/kessel/workflows/cmake/install.sh")
+        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/install.sh")
 
     def define(self, arg, value):
         if isinstance(value, bool):
-          return f"-D{arg}={'ON' if value else 'OFF'}"
+            return f"-D{arg}={'ON' if value else 'OFF'}"
         else:
-          return f"-D{arg}={value}"
+            return f"-D{arg}={value}"

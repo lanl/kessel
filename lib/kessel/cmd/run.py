@@ -8,6 +8,9 @@ def run(args, ctx, senv):
     workflow = ctx.workflow_config
     workflow.init()
 
+    if "CI" in senv and hasattr(workflow, "ci_message"):
+        workflow.ci_message()
+
     if workflow is None:
         raise Exception(f"{ctx.workflow} workflow can not be found!")
 
