@@ -5,11 +5,14 @@ copy_configuration() {
             --include='/config/templates/' --include='/config/templates/**' \
             --exclude='*' "$KESSEL_DEPLOYMENT_CONFIG/" "$KESSEL_DEPLOYMENT/"
 
+  echo "$KESSEL_DEPLOYMENT_CONFIG/config/$KESSEL_SYSTEM"
+
   if [ -d "$KESSEL_DEPLOYMENT_CONFIG/config/$KESSEL_SYSTEM" ]; then
     # might be a symlink
     system_config_dir=$(basename $(realpath $KESSEL_DEPLOYMENT_CONFIG/config/$KESSEL_SYSTEM))
 
-    rsync -av --include="/config/$system_config_dir/" --include="/config/$system_config_dir/"'**' \
+    rsync -av --include="/config/" \
+              --include="/config/$system_config_dir/" --include="/config/$system_config_dir/"'**' \
               --exclude='*' "$KESSEL_DEPLOYMENT_CONFIG/" "$KESSEL_DEPLOYMENT/"
 
     # copy symlinks to share same configuration
