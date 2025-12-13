@@ -14,6 +14,7 @@ def step(args, ctx, senv):
     )
     senv.echo(status(ctx, args.step))
 
+    workflow.init_step(args)
     step_func(args)
 
     senv.section_end(args.step)

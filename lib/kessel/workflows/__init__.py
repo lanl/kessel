@@ -62,6 +62,11 @@ class Workflow(metaclass=Meta):
         for s in self.states:
             getattr(self, s)
 
+    def init_step(self, args):
+        for name, value in vars(args).items():
+            if hasattr(self, name) and value:
+                setattr(self, name, value)
+
     @property
     def kessel_root(self):
         return Path(os.environ["KESSEL_ROOT"])

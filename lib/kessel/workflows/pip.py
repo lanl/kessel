@@ -9,14 +9,11 @@ class Pip(Workflow):
     requirements = environment("requirements.txt")
 
     def setup_args(self, parser):
-        parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.pip_env)
+        parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.pip_env, dest="pip_env")
         parser.add_argument("-S", "--source-dir", default=self.source_dir)
         parser.add_argument("-B", "--build-dir", default=self.build_dir)
 
     @collapsed
     def setup(self, args):
         """Setup"""
-        self.source_dir = args.source_dir
-        self.build_dir = args.build_dir
-        self.pip_env = args.env
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/pip_env/setup.sh")

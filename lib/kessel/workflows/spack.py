@@ -25,21 +25,16 @@ class BuildEnvironment(Workflow):
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/ci_message.sh", *sys.argv)
 
     def prepare_env(self, args):
-        self.spack_env = args.env
-        self.source_dir = args.source_dir
-        self.build_dir = args.build_dir
-        if args.spec:
-            self.project_spec = args.spec
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/prepare_env.sh")
 
     def install_env(self, args):
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/install_env.sh")
 
     def env_args(self, parser):
-        parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.spack_env)
+        parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.spack_env, dest="spack_env")
         parser.add_argument("-S", "--source-dir", default=self.source_dir)
         parser.add_argument("-B", "--build-dir", default=self.build_dir)
-        parser.add_argument("spec", nargs=argparse.REMAINDER, default=self.project_spec)
+        parser.add_argument("spec", nargs=argparse.REMAINDER, default=self.project_spec, dest="project_spec")
 
     @collapsed
     def env(self, args):
@@ -52,7 +47,6 @@ class BuildEnvironment(Workflow):
 
     def configure(self, args):
         """Configure"""
-        self.install_dir = args.install_dir
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/configure.sh")
 
 
@@ -80,9 +74,6 @@ class Deployment(Workflow):
 
     def setup(self, args):
         """Setup"""
-        self.deployment = args.deployment
-        self.system = args.system
-
         os.umask(0o007)
         self.deployment.mkdir(parents=True, exist_ok=True)
 
