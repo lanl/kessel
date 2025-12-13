@@ -4,8 +4,8 @@ from kessel.workflows.pip import Pip
 class Docs(Pip):
     steps = ["setup", "html"]
 
-    state("environment", default="docs")
-    state("system", default="local")
+    env = environment("docs")
+    system = environment("local")
 
     def ci_message(self):
         self.shenv.eval("kessel_ci_message", "kessel", self.system, "", "docs")

@@ -1,5 +1,5 @@
 ENV_DIR="$KESSEL_BUILD_DIR/envs"
-ENV="$ENV_DIR/$KESSEL_ENVIRONMENT"
+ENV="$ENV_DIR/$KESSEL_PIP_ENV"
 mkdir -p "$ENV_DIR"
 
 if [ ! -d "$ENV" ]; then

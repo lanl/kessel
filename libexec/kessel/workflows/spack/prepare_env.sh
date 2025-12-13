@@ -3,9 +3,9 @@ if [ -z "$KESSEL_PROJECT_SPEC" ]; then
   return 1
 fi
 
-if ! spack env activate --without-view "$KESSEL_ENVIRONMENT"; then
-  spack env create --without-view "$KESSEL_ENVIRONMENT"
-  spack env activate --without-view "$KESSEL_ENVIRONMENT"
+if ! spack env activate --without-view "$KESSEL_SPACK_ENV"; then
+  spack env create --without-view "$KESSEL_SPACK_ENV"
+  spack env activate --without-view "$KESSEL_SPACK_ENV"
   spack add "$KESSEL_PROJECT_SPEC"
 fi
 
@@ -14,7 +14,7 @@ existing_lockfile="$SPACK_ENV/spack.lock.$(spack arch)"
 if  [ ! -f "$SPACK_ENV/spack.lock" ] && [ -f "$existing_lockfile" ]; then
   cp "$existing_lockfile" "$SPACK_ENV/spack.lock"
   echo "Reusing existing lockfile for $(spack arch)"
-  spack env activate --without-view "$KESSEL_ENVIRONMENT"
+  spack env activate --without-view "$KESSEL_SPACK_ENV"
 fi
 
 # always disable view for now, until we know there is a use case that we need it

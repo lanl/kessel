@@ -3,34 +3,48 @@ import os
 from pathlib import Path
 
 
-def state(name, default=None, var=None):
-    if var:
-        env_var = var
-    else:
-        env_var = f"KESSEL_{name.upper()}"
+class EnvState:
+    def __init__(self, default=None, variable=None):
+        self.default = default
+        self.variable = variable
+        self.type = type(default) if default else str
 
-    if default:
-        var_type = type(default)
-    else:
-        var_type = str
 
-    def getter(self):
-        if env_var not in self.shenv:
-            self.shenv[env_var] = default
-            if default is None:
-                return None
-        return var_type(self.shenv[env_var])
+class Meta(type):
+    def __new__(mcls, name, bases, namespace):
+        states = {
+            name: value
+            for name, value in namespace.items()
+            if isinstance(value, EnvState)
+        }
 
-    def setter(self, value):
-        self.shenv[env_var] = str(value)
+        def make_accessors(name, state):
+            if state.variable:
+                variable = state.variable
+            else:
+                variable = f"KESSEL_{name.upper()}"
 
-    frame = __import__("inspect").currentframe().f_back
-    cls_dict = frame.f_locals
-    cls_dict[name] = property(getter, setter)
-    if "states" not in cls_dict:
-        cls_dict["states"] = [name]
-    else:
-        cls_dict["states"].append(name)
+            def getter(self):
+                if variable not in self.shenv:
+                    self.shenv[variable] = state.default
+                    if state.default is None:
+                        return None
+                return state.type(self.shenv[variable])
+
+            def setter(self, value):
+                self.shenv[variable] = str(value)
+
+            return getter, setter
+
+        for name, state in states.items():
+            getter, setter = make_accessors(name, state)
+            namespace[name] = property(getter, setter)
+            namespace.setdefault("states", []).append(name)
+        return super().__new__(mcls, name, bases, namespace)
+
+
+def environment(default=None, variable=None):
+    return EnvState(default=default, variable=variable)
 
 
 def collapsed(func):
@@ -38,7 +52,7 @@ def collapsed(func):
     return func
 
 
-class Workflow(object):
+class Workflow(metaclass=Meta):
     def __init__(self):
         self.shenv = None
         self.workflow_dir = None

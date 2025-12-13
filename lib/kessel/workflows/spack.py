@@ -1,19 +1,21 @@
-from kessel.workflows import Workflow, state, collapsed
+from kessel.workflows import Workflow, collapsed, environment
 from pathlib import Path
 import argparse
 import shlex
 import sys
+import getpass
+import grp
 import os
 
 
 class BuildEnvironment(Workflow):
     steps = ["env", "configure"]
 
-    state("environment", default="default")
-    state("source_dir", default=Path.cwd())
-    state("build_dir", default=Path.cwd() / "build")
-    state("install_dir", default=Path.cwd() / "build" / "install")
-    state("project_spec")
+    spack_env = environment("default")
+    source_dir = environment(Path.cwd())
+    build_dir = environment(Path.cwd() / "build")
+    install_dir = environment(Path.cwd() / "build" / "install")
+    project_spec = environment()
 
     def init(self):
         super().init()
@@ -23,7 +25,7 @@ class BuildEnvironment(Workflow):
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/ci_message.sh", *sys.argv)
 
     def prepare_env(self, args):
-        self.environment = args.env
+        self.spack_env = args.env
         self.source_dir = args.source_dir
         self.build_dir = args.build_dir
         if args.spec:
@@ -34,7 +36,7 @@ class BuildEnvironment(Workflow):
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/install_env.sh")
 
     def env_args(self, parser):
-        parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.environment)
+        parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.spack_env)
         parser.add_argument("-S", "--source-dir", default=self.source_dir)
         parser.add_argument("-B", "--build-dir", default=self.build_dir)
         parser.add_argument("spec", nargs=argparse.REMAINDER, default=self.project_spec)
@@ -57,12 +59,12 @@ class BuildEnvironment(Workflow):
 class Deployment(Workflow):
     steps = ["setup", "bootstrap", "mirror", "envs", "finalize"]
 
-    state("deployment_config", default=Path.cwd())
-    state("deployment", default=Path.cwd() / "build")
-    state("permissions", default="u=rwX,g=rX,o=")
-    state("user", default=os.environ["USER"])
-    state("group", default=os.environ["USER"])
-    state("system", default="local")
+    deployment_config = environment(Path.cwd())
+    deployment = environment(Path.cwd() / "build")
+    permissions = environment("u=rwX,g=rX,o=")
+    user = environment(getpass.getuser())
+    group = environment(grp.getgrgid(os.getgid()).gr_name)
+    system = environment("local")
 
     spack_url = "https://github.com/spack/spack.git"
     spack_ref = "develop"
