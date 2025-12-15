@@ -136,10 +136,6 @@ packages:
     externals:
     - spec: autoconf@2.69
       prefix: /usr
-  gettext:
-    externals:
-    - spec: gettext@0.19.8.1
-      prefix: /usr
   binutils:
     externals:
     - spec: binutils@2.30.127~gold+headers
