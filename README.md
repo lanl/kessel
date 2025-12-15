@@ -23,3 +23,8 @@ As part of its adoption, Kessel-based deployment workflows have established a
 baseline depenency configuration for commonly used HPC systems, enabling
 a shared foundation for software deployment and development across multiple
 code teams.
+
+## Developers
+
+- Richard Berger, CAI-1 (rberger@lanl.gov)
+- Andres Yague Lopez, CAI-1 (ayaguelopez@lanl.gov)
