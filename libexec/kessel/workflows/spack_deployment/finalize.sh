@@ -11,17 +11,17 @@ fi
 spack clean -sdfmp
 
 echo "Setting permissions and group (excluding spack/opt/spack) ..."
-find "$KESSEL_DEPLOYMENT" -path "$KESSEL_DEPLOYMENT/spack/opt/spack" -prune -o -exec chown ":$KESSEL_GROUP" {} +
+find "$KESSEL_DEPLOYMENT" -path "$KESSEL_DEPLOYMENT/spack/opt/spack" -prune -o -exec chown -h ":$KESSEL_GROUP" {} +
 find "$KESSEL_DEPLOYMENT" -path "$KESSEL_DEPLOYMENT/spack/opt/spack" -prune -o -type d -exec chmod "$KESSEL_PERMISSIONS" {} +
 find "$KESSEL_DEPLOYMENT" -path "$KESSEL_DEPLOYMENT/spack/opt/spack" -prune -o -type f -exec chmod "$KESSEL_PERMISSIONS" {} +
 
-find "$KESSEL_DEPLOYMENT/spack/opt/spack/bin" -o -exec chown ":$KESSEL_GROUP" {} +
-find "$KESSEL_DEPLOYMENT/spack/opt/spack/bin" -o -type d -exec chmod "$KESSEL_PERMISSIONS" {} +
-find "$KESSEL_DEPLOYMENT/spack/opt/spack/bin" -o -type f -exec chmod "$KESSEL_PERMISSIONS" {} +
+find "$KESSEL_DEPLOYMENT/spack/opt/spack/bin" -exec chown -h ":$KESSEL_GROUP" {} +
+find "$KESSEL_DEPLOYMENT/spack/opt/spack/bin" -type d -exec chmod "$KESSEL_PERMISSIONS" {} +
+find "$KESSEL_DEPLOYMENT/spack/opt/spack/bin" -type f -exec chmod "$KESSEL_PERMISSIONS" {} +
 
-find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -o -exec chown ":$KESSEL_GROUP" {} +
-find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -o -type d -exec chmod "$KESSEL_PERMISSIONS" {} +
-find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -o -type f -exec chmod "$KESSEL_PERMISSIONS" {} +
+find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -exec chown -h ":$KESSEL_GROUP" {} +
+find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -type d -exec chmod "$KESSEL_PERMISSIONS" {} +
+find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -type f -exec chmod "$KESSEL_PERMISSIONS" {} +
 
 chmod g+s "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db"
 
