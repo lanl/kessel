@@ -8,7 +8,7 @@ if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
   spack buildcache update-index "${KESSEL_BUILD_CACHE_MIRROR}"
 fi
 
-spack clean -a
+spack clean -sdfmp
 
 echo "Setting permissions and group (excluding spack/opt/spack) ..."
 find "$KESSEL_DEPLOYMENT" -path "$KESSEL_DEPLOYMENT/spack/opt/spack" -prune -o -exec chown ":$KESSEL_GROUP" {} +
