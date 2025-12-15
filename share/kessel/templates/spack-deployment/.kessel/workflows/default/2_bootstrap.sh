@@ -1,2 +1,0 @@
-#KESSEL title: Bootstrap
-source "$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/bootstrap"
