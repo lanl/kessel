@@ -11,6 +11,10 @@ packages:
   cuda:
     prefer:
       - "@12.9.1"
+    externals:
+     - spec: "cuda@12.9.1"
+       modules:
+        - "cudatoolkit/12.9"
   openmpi:
     require:
      - "fabrics=ucx schedulers=slurm"
