@@ -13,8 +13,8 @@ packages:
       - "@12.9.1"
   openmpi:
     require:
-      - "fabrics=ucx schedulers=slurm"
-      - "+cuda cuda_arch=90"
+     - "fabrics=ucx schedulers=slurm"
+     - "+cuda cuda_arch=90"
   mpich:
     require:
      - "+hydra +slurm +fortran device=ch4 netmod=ucx"
@@ -26,6 +26,9 @@ packages:
   libfabric:
     require:
      - "fabrics=verbs,shm,sockets,tcp,udp %c=gcc"
+     - "+cuda cuda_arch=90"
+  hwloc:
+    require:
      - "+cuda cuda_arch=90"
   slurm:
     externals:
