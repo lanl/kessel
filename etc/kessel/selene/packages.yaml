@@ -34,6 +34,14 @@ packages:
   hwloc:
     require:
      - "+cuda cuda_arch=90"
+  pmix:
+    require:
+     - "@5 +munge"
+  munge:
+    buildable: false
+    externals:
+     - spec: munge@0.5.16
+       prefix: /usr
   slurm:
     externals:
     - spec: slurm@24-11-6-1
