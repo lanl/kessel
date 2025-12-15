@@ -34,7 +34,7 @@ class BuildEnvironment(Workflow):
         parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.spack_env, dest="spack_env")
         parser.add_argument("-S", "--source-dir", default=self.source_dir)
         parser.add_argument("-B", "--build-dir", default=self.build_dir)
-        parser.add_argument("spec", nargs=argparse.REMAINDER, default=self.project_spec, dest="project_spec")
+        parser.add_argument("project_spec", nargs=argparse.REMAINDER, default=self.project_spec)
 
     @collapsed
     def env(self, args):
