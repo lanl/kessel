@@ -32,9 +32,6 @@ packages:
     - spec: slurm@24-11-6-1
       prefix: /usr
     buildable: false
-  cuda:
-    prefer:
-    - '@12.9.1'
   gawk:
     externals:
     - spec: gawk@4.2.1
