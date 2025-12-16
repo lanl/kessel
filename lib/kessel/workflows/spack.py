@@ -22,7 +22,7 @@ class BuildEnvironment(Workflow):
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/init.sh")
 
     def ci_message(self):
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/ci_message.sh", *sys.argv)
+        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/ci_message.sh", *sys.argv[1:])
 
     def prepare_env(self, args):
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/prepare_env.sh")
