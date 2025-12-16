@@ -5,10 +5,9 @@ class Docs(Pip):
     steps = ["setup", "html"]
 
     env = environment("docs")
-    system = environment("local")
 
-    def ci_message(self):
-        self.shenv.eval("kessel_ci_message", "kessel", self.system, "", "docs")
+    def ci_message(self, args):
+        return default_ci_message("kessel", workflow="docs")
 
     def setup(self, args):
         """Setup"""

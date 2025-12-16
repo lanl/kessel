@@ -6,6 +6,7 @@ import sys
 import getpass
 import grp
 import os
+import shutil
 import subprocess
 
 
@@ -92,7 +93,8 @@ class Deployment(Workflow):
         parser.add_argument("system", default=self.system)
 
     def clone_and_sync(self, src_checkout, dest):
-        src = Path(subprocess.check_output(["git", "-C", src_checkout, "rev-parse", "--absolute-git-dir"], text=True).strip())
+        src = Path(subprocess.check_output(["git", "-C", src_checkout,
+                   "rev-parse", "--absolute-git-dir"], text=True).strip())
         dest = Path(dest)
         src_rev = subprocess.check_output(["git", "-C", src_checkout, "rev-parse", "HEAD"], text=True).strip()
         print(f"{src} -> {dest}")
@@ -140,7 +142,13 @@ class Deployment(Workflow):
 
     def bootstrap(self, args):
         """Bootstrap"""
-        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "bootstrap.sh"))
+        self.shenv.source(
+            self.kessel_root.joinpath(
+                "libexec",
+                "kessel",
+                "workflows",
+                "spack_deployment",
+                "bootstrap.sh"))
 
     def mirror(self, args):
         """Create Source Mirror"""
@@ -168,4 +176,10 @@ class Deployment(Workflow):
         for pkg in self.build_exclude:
             self.shenv.eval(f"spack uninstall -y --all --dependents {shlex.quote(pkg)} || true")
 
-        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "finalize.sh"))
+        self.shenv.source(
+            self.kessel_root.joinpath(
+                "libexec",
+                "kessel",
+                "workflows",
+                "spack_deployment",
+                "finalize.sh"))

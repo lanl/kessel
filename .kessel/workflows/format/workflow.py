@@ -5,10 +5,9 @@ class Format(Pip):
     steps = ["setup", "autopep8", "flake8", "mypy"]
 
     env = environment("format")
-    system = environment("local")
 
-    def ci_message(self):
-        self.shenv.eval("kessel_ci_message", "kessel", self.system, "", "docs")
+    def ci_message(self, args):
+        return default_ci_message("kessel", workflow="format")
 
     def setup(self, args):
         """Setup"""
