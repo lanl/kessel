@@ -59,7 +59,7 @@ kessel_ci_message() {
             echo "kessel workflow activate $workflow"
         fi
     
-        echo "kessel run $@"
+        echo "kessel $@"
         echo " "
         echo "######################################################################"
         echo -e "${KESSEL_COLOR_PLAIN} "
