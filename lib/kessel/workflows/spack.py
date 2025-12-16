@@ -83,12 +83,29 @@ class Deployment(Workflow):
     build_roots = False
     env_views = False
     require_git_mirrors = False
+    git_mirrors: list[str] = []
     mirror_exclude: list[str] = []
     build_exclude: list[str] = []
 
     def setup_args(self, parser):
         parser.add_argument("-D", "--deployment", default=self.deployment)
         parser.add_argument("system", default=self.system)
+
+    def clone_and_sync(self, src_checkout, dest):
+        src = Path(subprocess.check_output(["git", "-C", src_checkout, "rev-parse", "--absolute-git-dir"], text=True).strip())
+        dest = Path(dest)
+        src_rev = subprocess.check_output(["git", "-C", src_checkout, "rev-parse", "HEAD"], text=True).strip()
+        print(f"{src} -> {dest}")
+        update_local_branches = self.kessel_root.joinpath("libexex", "kessel", "tools", "update_local_branches")
+        subprocess.run([str(update_local_branches), src_checkout])
+        subprocess.run(["git", "-c", "advice.detachedhead=false", "-C", src_checkout, "checkout", src_rev])
+        subprocess.run(["git", "-C", src_checkout, "fetch", "--tags"])
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.rmtree(dest, ignore_errors=True)
+        subprocess.run(["git", "-c", "advice.detachedhead=false", "clone", src, dest])
+        subprocess.run(["git", "-C", dest, "fetch", "--tags"])
+        subprocess.run([str(update_local_branches), dest])
+        subprocess.run(["git", "-c", "advice.detachedhead=false", "-C", str(dest), "checkout", src_rev])
 
     def setup(self, args):
         """Setup"""
@@ -114,6 +131,10 @@ class Deployment(Workflow):
                 line = line.replace("@KESSEL_PARENT_DEPLOYMENT@", "$KESSEL_DEPLOYMENT")
                 line = line.replace("@KESSEL_SYSTEM@", self.system)
                 print(line.rstrip(), file=dst)
+
+        # clone git mirrors
+        for path in self.git_mirrors:
+            self.clone_and_sync(self.deployment_config / path, self.deployment / path)
 
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "setup.sh"))
 
