@@ -43,10 +43,10 @@ class BuildEnvironment(Workflow):
             post_alloc_init=post_alloc_init)
 
     def prepare_env(self, args):
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/prepare_env.sh")
+        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "prepare_env.sh"))
 
     def install_env(self, args):
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/install_env.sh")
+        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "install_env.sh"))
 
     def env_args(self, parser):
         parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.spack_env, dest="spack_env")
@@ -65,7 +65,7 @@ class BuildEnvironment(Workflow):
 
     def configure(self, args):
         """Configure"""
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/configure.sh")
+        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "configure.sh"))
 
 
 class Deployment(Workflow):
@@ -115,11 +115,11 @@ class Deployment(Workflow):
                 line = line.replace("@KESSEL_SYSTEM@", self.system)
                 print(line.rstrip(), file=dst)
 
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack_deployment/setup.sh")
+        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "setup.sh"))
 
     def bootstrap(self, args):
         """Bootstrap"""
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack_deployment/bootstrap.sh")
+        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "bootstrap.sh"))
 
     def mirror(self, args):
         """Create Source Mirror"""
@@ -134,17 +134,17 @@ class Deployment(Workflow):
         elif mirror_exclude_file.is_file():
             mirror_exclude_file.unlink()
 
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack_deployment/mirror.sh")
+        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "mirror.sh"))
 
     def envs(self, args):
         """Build Environments"""
         self.shenv["KESSEL_BUILD_ROOTS"] = "true" if self.build_roots else "false"
         self.shenv["KESSEL_ENV_VIEWS"] = "true" if self.env_views else "false"
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack_deployment/envs.sh")
+        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "envs.sh"))
 
     def finalize(self, args):
         """Finalize"""
         for pkg in self.build_exclude:
             self.shenv.eval(f"spack uninstall -y --all --dependents {shlex.quote(pkg)} || true")
 
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack_deployment/finalize.sh")
+        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "finalize.sh"))
