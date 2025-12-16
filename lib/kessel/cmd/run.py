@@ -13,7 +13,7 @@ def run(args, ctx, senv):
     workflow.init()
 
     if "CI" in senv and hasattr(workflow, "ci_message"):
-        workflow.ci_message()
+        print(workflow.ci_message(args), flush=True)
 
     for s in workflow.steps:
         args.step = s

@@ -3,6 +3,10 @@ if [ -z "$KESSEL_PROJECT_SPEC" ]; then
   return 1
 fi
 
+umask 0007
+
+echo "Using Spack installation at $SPACK_ROOT"
+
 if ! spack env activate --without-view "$KESSEL_SPACK_ENV"; then
   spack env create --without-view "$KESSEL_SPACK_ENV"
   spack env activate --without-view "$KESSEL_SPACK_ENV"

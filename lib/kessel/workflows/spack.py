@@ -1,4 +1,4 @@
-from kessel.workflows import Workflow, collapsed, environment
+from kessel.workflows import Workflow, collapsed, environment, default_ci_message
 from pathlib import Path
 import argparse
 import shlex
@@ -6,6 +6,12 @@ import sys
 import getpass
 import grp
 import os
+import subprocess
+
+
+def get_project_name_from_spec(spec):
+    return subprocess.check_output(
+        ["spack-python", "-c", f"spec = spack.spec.Spec('{spec}');print(spec.name)"]).decode('utf-8').strip()
 
 
 class BuildEnvironment(Workflow):
@@ -19,10 +25,22 @@ class BuildEnvironment(Workflow):
 
     def init(self):
         super().init()
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/init.sh")
+        if ("KESSEL_DEPLOYMENT" not in os.environ or not Path(
+                os.environ["KESSEL_DEPLOYMENT"]).exists()) and "SPACK_ROOT" not in os.environ:
+            raise Exception("No active Spack installation!")
 
-    def ci_message(self):
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/ci_message.sh", *sys.argv[1:])
+    def ci_message(self, parsed_args, pre_alloc_init="", post_alloc_init=""):
+        if parsed_args.project_spec:
+            project = get_project_name_from_spec(parsed_args.project_spec)
+        else:
+            project = get_project_name_from_spec(self.project_spec)
+        system = os.environ.get("KESSEL_SYSTEM", default="local")
+        return default_ci_message(
+            project=project,
+            system=system,
+            workflow=self.workflow,
+            pre_alloc_init=pre_alloc_init,
+            post_alloc_init=post_alloc_init)
 
     def prepare_env(self, args):
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/spack/prepare_env.sh")

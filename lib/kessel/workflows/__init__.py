@@ -1,6 +1,8 @@
 import inspect
 import os
+import sys
 from pathlib import Path
+from kessel.cmd.workflow import COLOR_BLUE, COLOR_PLAIN
 
 
 class EnvState:
@@ -52,6 +54,47 @@ def collapsed(func):
     return func
 
 
+def default_ci_message(project,
+                       system="local",
+                       workflow="default",
+                       args=sys.argv[1:],
+                       pre_alloc_init="",
+                       post_alloc_init=""):
+    system_change = ""
+    alloc = ""
+    workflow_change = ""
+    kessel_cmd = "kessel " + " ".join(args)
+
+    if system != "local":
+        system_change = f"ssh {system}\n"
+
+    if "LLNL_FLUX_SCHEDULER_PARAMETERS" in os.environ:
+        alloc = f"flux alloc {os.environ['LLNL_FLUX_SCHEDULER_PARAMETERS']}\n"
+    elif "SCHEDULER_PARAMETERS" in os.environ:
+        alloc = f"salloc {os.environ['SCHEDULER_PARAMETERS']}\n"
+
+    if workflow != "default":
+        workflow_change = f"kessel workflow activate {workflow}\n"
+
+    return (
+        f"{COLOR_BLUE} \n"
+        "######################################################################\n"
+        " \n"
+        "To recreate this CI run, follow these steps:\n"
+        " \n"
+        f"{system_change}"
+        f"cd /your/{project}/checkout\n"
+        f"{pre_alloc_init}"
+        f"{alloc}"
+        f"{post_alloc_init}"
+        f"{workflow_change}"
+        f"{kessel_cmd}\n"
+        " \n"
+        "######################################################################\n"
+        f"{COLOR_PLAIN} \n"
+    )
+
+
 class Workflow(metaclass=Meta):
     def __init__(self):
         self.shenv = None
@@ -66,6 +109,10 @@ class Workflow(metaclass=Meta):
         for name, value in vars(args).items():
             if hasattr(self, name) and value:
                 setattr(self, name, value)
+
+    @property
+    def workflow(self):
+        return self.__class__.__name__.lower()
 
     @property
     def kessel_root(self):
