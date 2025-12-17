@@ -9,9 +9,9 @@ class CMake(Workflow):
         """Build"""
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/build.sh", *cmake_args)
 
-    def test(self, env):
+    def test(self, env, ctest_args=[]):
         """Test"""
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/test.sh")
+        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/test.sh", *ctest_args)
 
     def install(self, env):
         """Install"""
