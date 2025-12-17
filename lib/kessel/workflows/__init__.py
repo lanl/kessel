@@ -68,6 +68,12 @@ def default_ci_message(project,
     if system != "local":
         system_change = f"ssh {system}\n"
 
+    if pre_alloc_init:
+        pre_alloc_init += "\n"
+
+    if post_alloc_init:
+        post_alloc_init += "\n"
+
     if "LLNL_FLUX_SCHEDULER_PARAMETERS" in os.environ:
         alloc = f"flux alloc {os.environ['LLNL_FLUX_SCHEDULER_PARAMETERS']}\n"
     elif "SCHEDULER_PARAMETERS" in os.environ:
