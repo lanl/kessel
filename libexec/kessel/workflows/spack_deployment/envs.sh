@@ -9,7 +9,7 @@ if [ "${KESSEL_BUILD_ROOTS}" != "true" ]; then
   buildcache_options="--only dependencies $buildcache_options"
 fi
 
-status=0
+rc=0
 
 printf "%s\n" "$ENVIRONMENTS" | while IFS= read -r ENVIRONMENT
 do
@@ -29,7 +29,7 @@ do
     spack install $install_options
 
     if [ $? -ne 0 ]; then
-      status=1
+      rc=1
     fi
 
     if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
@@ -38,4 +38,4 @@ do
   fi
 done
 
-test $status -eq 0
+test $rc -eq 0

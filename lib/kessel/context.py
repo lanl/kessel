@@ -9,10 +9,17 @@ from kessel.workflow import load_workflow_from_directory
 class Context(object):
     def __init__(self, senv):
         self.senv = senv
+        self._workflow_config = None
 
     def reset(self):
+        self.workflow = None
         setup_script = os.environ.get("KESSEL_SETUP_SCRIPT")
-        for v in [e for e in os.environ if e.startswith("KESSEL_")]:
+        for v in [
+            e for e in os.environ if e.startswith("KESSEL_") and e not in (
+                "KESSEL_DEPLOYMENT",
+                "KESSEL_PARENT_DEPLOYMENT",
+                "KESSEL_SYSTEM",
+                "KESSEL_CURRENT_SYSTEM")]:
             self.senv.unset_env_var(v)
         self.senv.source(setup_script)
 
@@ -36,7 +43,9 @@ class Context(object):
                         yield f.name
 
     def load_workflow(self, name):
-        return load_workflow_from_directory(self.kessel_dir / "workflows" / name)
+        wf = load_workflow_from_directory(self.kessel_dir / "workflows" / name)
+        wf.shenv = self.senv
+        return wf
 
     @property
     def workflow(self):
@@ -46,16 +55,20 @@ class Context(object):
     def workflow(self, value):
         if value is None:
             self.senv.unset_env_var("KESSEL_WORKFLOW")
+            self._workflow_config = None
             return
 
         if self.workflow != value:
             self.senv.echo(f"Activating {value} workflow")
             self.senv.set_env_var("KESSEL_WORKFLOW", value)
+            self._workflow_config = None
 
     @property
     def workflow_config(self):
         try:
-            return self.load_workflow(self.workflow)
+            if self._workflow_config is None:
+                self._workflow_config = self.load_workflow(self.workflow)
+            return self._workflow_config
         except FileNotFoundError:
             return None
 

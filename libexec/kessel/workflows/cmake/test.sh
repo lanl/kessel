@@ -1,6 +1,5 @@
-#KESSEL title: Test 
 (
 source "$KESSEL_BUILD_ENV"
 export CTEST_OUTPUT_ON_FAILURE=1
-ctest --timeout "${CTEST_TIMEOUT:-600}" --test-dir "$KESSEL_BUILD_DIR" --output-junit tests.xml
+ctest --timeout "${CTEST_TIMEOUT:-600}" --test-dir "$KESSEL_BUILD_DIR" --output-junit tests.xml "$@"
 )

@@ -1,2 +1,0 @@
-#KESSEL title: Setup
-source $KESSEL_ROOT/libexec/kessel/workflows/pip_env/setup.sh

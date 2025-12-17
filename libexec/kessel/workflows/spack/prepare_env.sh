@@ -1,79 +1,15 @@
-#KESSEL title: Prepare Environment
-#KESSEL collapsed: true
-
 if [ -z "$KESSEL_PROJECT_SPEC" ]; then
   echo "ERROR: Invalid state '$KESSEL_PROJECT_SPEC' " >&2
   return 1
 fi
 
-export KESSEL_ENVIRONMENT="${KESSEL_ENVIRONMENT:-default}"
-export KESSEL_SOURCE_DIR="${KESSEL_SOURCE_DIR:-$PWD}"
-export KESSEL_BUILD_DIR="${KESSEL_BUILD_DIR:-$KESSEL_SOURCE_DIR/build}"
+umask 0007
 
-TEMP=""
-while (( "$#" )); do
-  case "$1" in
-    -h|--help)
-      usage
-      return
-      ;;
-    -e|--env)
-      if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         export KESSEL_ENVIRONMENT="$2"
-         shift 2
-      else
-         echo "ERROR: -S/--source-dir requires an argument." >&2
-         return 1
-      fi
-      ;;
-    --env=*)
-      export KESSEL_ENVIRONMENT=${1#*=}
-      shift
-      ;;
-    -S|--source-dir)
-      if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         export KESSEL_SOURCE_DIR="$2"
-         shift 2
-      else
-         echo "ERROR: -S/--source-dir requires an argument." >&2
-         return 1
-      fi
-      ;;
-    --source-dir=*)
-      export KESSEL_INSTALL_DIR=${1#*=}
-      shift
-      ;;
-    -B|--build-dir)
-      if [ -n "$2" ] && [[ "$2" != -* ]]; then
-         export KESSEL_BUILD_DIR="$2"
-         shift 2
-      else
-         echo "ERROR: -B/--build-dir requires an argument." >&2
-         return 1
-      fi
-      ;;
-    --build-dir=*)
-      export KESSEL_BUILD_DIR=${1#*=}
-      shift
-      ;;
-    -*|--*)
-      echo "ERROR: invalid option $1" >&2
-      return 1
-      ;;
-    *)
-      TEMP="$TEMP $1"
-      shift
-      ;;
-  esac
-done
+echo "Using Spack installation at $SPACK_ROOT"
 
-if [ "$TEMP" ]; then
-  export KESSEL_PROJECT_SPEC="$TEMP"
-fi
-
-if ! spack env activate --without-view "$KESSEL_ENVIRONMENT"; then
-  spack env create --without-view "$KESSEL_ENVIRONMENT"
-  spack env activate --without-view "$KESSEL_ENVIRONMENT"
+if ! spack env activate --without-view "$KESSEL_SPACK_ENV"; then
+  spack env create --without-view "$KESSEL_SPACK_ENV"
+  spack env activate --without-view "$KESSEL_SPACK_ENV"
   spack add "$KESSEL_PROJECT_SPEC"
 fi
 
@@ -82,7 +18,7 @@ existing_lockfile="$SPACK_ENV/spack.lock.$(spack arch)"
 if  [ ! -f "$SPACK_ENV/spack.lock" ] && [ -f "$existing_lockfile" ]; then
   cp "$existing_lockfile" "$SPACK_ENV/spack.lock"
   echo "Reusing existing lockfile for $(spack arch)"
-  spack env activate --without-view "$KESSEL_ENVIRONMENT"
+  spack env activate --without-view "$KESSEL_SPACK_ENV"
 fi
 
 # always disable view for now, until we know there is a use case that we need it

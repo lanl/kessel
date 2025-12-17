@@ -28,8 +28,7 @@ def status(ctx, step=None):
         raise Exception(f"{ctx.workflow} workflow can not be found!")
 
     steps = ctx.workflow_config.steps
-    names = [s.name for s in steps]
-    captions = [step_lines(s.title) for s in steps]
+    captions = [step_lines(ctx.workflow_config.get_step_title(s)) for s in steps]
     lines = len(max(captions, key=len))
     widths = [len(c[0]) for c in captions] + [0]
     step_size = [0] + [
@@ -39,8 +38,8 @@ def status(ctx, step=None):
     s = " \n"
     s += "  "
     s += " " * (widths[0] // 2)
-    completed = names.index(step) if step in names else -1
-    for i, _ in enumerate(names):
+    completed = steps.index(step) if step in steps else -1
+    for i, _ in enumerate(steps):
         if i <= completed:
             s += PROGRESS_BAR_COMPLETE * step_size[i]
             s += PROGRESS_STEP_COMPLETE
@@ -61,7 +60,7 @@ def status(ctx, step=None):
     return s
 
 
-def workflow_list(args, extra, ctx, senv):
+def workflow_list(args, ctx, senv):
     for wf in ctx.workflows:
         if wf == ctx.workflow:
             print(f"{COLOR_GREEN}{wf}{COLOR_PLAIN}")
@@ -69,23 +68,18 @@ def workflow_list(args, extra, ctx, senv):
             print(wf)
 
 
-def workflow_activate(args, extra, ctx, senv):
+def workflow_activate(args, ctx, senv):
+    ctx.reset()
     ctx.workflow = args.name
 
 
-def workflow_status(args, extra, ctx, senv):
+def workflow_status(args, ctx, senv):
     senv.echo(status(ctx, ctx.run_state))
 
 
-def workflow_edit(args, extra, ctx, senv):
+def workflow_edit(args, ctx, senv):
     workflow = ctx.workflow_config
-
-    if args.step == "init":
-        senv.eval(f"${{EDITOR:-vim}} {workflow.init_script}")
-    else:
-        for s in workflow.steps:
-            if args.step == s.name:
-                senv.eval(f"${{EDITOR:-vim}} {s.script}")
+    senv.eval(f"${{EDITOR:-vim}} {workflow.workflow_dir / 'workflow.py'}")
 
 
 def setup_command(subparser):
@@ -102,5 +96,4 @@ def setup_command(subparser):
     status_cmd.set_defaults(func=workflow_status)
 
     edit_cmd = subparsers.add_parser("edit")
-    edit_cmd.add_argument("step")
     edit_cmd.set_defaults(func=workflow_edit)

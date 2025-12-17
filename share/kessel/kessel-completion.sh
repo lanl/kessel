@@ -92,4 +92,6 @@ _kessel() {
     esac
 }
 
-complete -F _kessel kessel
+if command -v complete > /dev/null 2>/dev/null; then
+  complete -F _kessel kessel
+fi

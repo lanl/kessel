@@ -1,0 +1,13 @@
+spack:
+  include::
+   - $KESSEL_CONFIG_DIR/templates/gcc.yaml
+   - $KESSEL_CONFIG_DIR/templates/mpich.yaml
+   - $KESSEL_CONFIG_DIR/templates/cuda-ampere.yaml
+   - name: kessel
+     path: $KESSEL_CONFIG_DIR
+  specs:
+   - lammps
+  packages:
+    lammps:
+      require:
+       - "+kokkos +cuda cuda_arch=80"

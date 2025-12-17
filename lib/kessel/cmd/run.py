@@ -1,28 +1,34 @@
 import sys
 
+from kessel.cmd.step import step
 
-def run(args, extra_args, ctx, senv):
+
+def run(args, ctx, senv):
     ctx.run_state = None
     workflow = ctx.workflow_config
 
     if workflow is None:
         raise Exception(f"{ctx.workflow} workflow can not be found!")
 
-    if workflow.init_script:
-        ignored_args = len(sys.argv) - len(extra_args) - 1
-        senv.eval(f"shift {ignored_args}")
-        senv.eval(f"source {workflow.init_script} " + " ".join([f"\"{a}\"" for a in extra_args]))
+    workflow.init()
 
-    for step in workflow.steps:
-        senv.eval(f"kessel step {step.name}")
-        if args.until == step.name:
+    if "CI" in senv and hasattr(workflow, "ci_message"):
+        print(workflow.ci_message(args), flush=True)
+
+    for s in workflow.steps:
+        args.step = s
+        step(args, ctx, senv)
+        if args.until == s:
             break
 
 
 def setup_command(subparser, ctx):
     if ctx.kessel_dir and ctx.workflow_config:
         workflow = ctx.workflow_config
-        names = [s.name for s in workflow.steps]
-        subparser.add_argument("-u", "--until", choices=names, default=names[-1])
+        subparser.add_argument("-u", "--until", choices=workflow.steps, default=workflow.steps[-1])
+        for s in workflow.steps:
+            args_func = f"{s}_args"
+            if hasattr(workflow, args_func):
+                getattr(workflow, args_func)(subparser)
 
     subparser.set_defaults(func=run)

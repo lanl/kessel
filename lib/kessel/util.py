@@ -1,5 +1,6 @@
 import os
 import subprocess
+import shlex
 import sys
 
 from kessel.cmd.workflow import COLOR_CYAN, COLOR_PLAIN
@@ -36,8 +37,12 @@ class ShellEnvironment(object):
     def target(self):
         return sys.stdout if self.debug else self.fd
 
-    def eval(self, cmd, end="\n"):
-        print("[ $? -eq 0 ] && " + cmd, file=self.target, flush=True, end=end)
+    def eval(self, cmd, *args, end="\n"):
+        a = " ".join([shlex.quote(str(a)) for a in args])
+        if os.getenv("IN_FISH") is not None:
+            print(f"{cmd} {a}; or return", file=self.target, flush=True, end=end)
+        else:
+            print(f"{cmd} {a} || return", file=self.target, flush=True, end=end)
 
     def set_env_var(self, name, value):
         if value is None:
@@ -49,6 +54,22 @@ class ShellEnvironment(object):
             self.eval(f"export {name}={value}")
         os.environ[name] = str(value)
 
+    def __contains__(self, key):
+        return key in os.environ
+
+    def __getitem__(self, key):
+        if key not in os.environ:
+            raise KeyError(f"Environment variable '{key}' is not defined.")
+        return os.environ[key]
+
+    def __setitem__(self, key, value):
+        self.set_env_var(key, value)
+
+    def get(self, key, default=None):
+        if key not in self:
+            return default
+        return self[key]
+
     def unset_env_var(self, name):
         if os.getenv("IN_FISH") is not None:
             self.eval(f"set -e {name}")
@@ -57,12 +78,12 @@ class ShellEnvironment(object):
         if name in os.environ:
             del os.environ[name]
 
-    def source(self, path):
-        self.eval(f"source {path}")
+    def source(self, path, *args):
+        self.eval("source", path, *args)
 
     def echo(self, str=""):
         for line in str.splitlines():
-            self.eval(f"echo '{line}'")
+            self.eval("echo", line)
 
     def _section(self, marker, section, passthrough=False, msg=""):
         if "CI" in os.environ:

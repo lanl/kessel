@@ -9,6 +9,8 @@ default:
   before_script:
    - unset CI_MERGE_REQUEST_DESCRIPTION
    - unset CI_MERGE_REQUEST_TITLE
+   - export KESSEL_SYSTEM=$CLUSTER
+   - source .gitlab/kessel.sh
 
 .ascgit_job:
   id_tokens:
@@ -55,7 +57,6 @@ default:
 .build_docs:
   stage: Checks
   script:
-    - source .gitlab/kessel.sh
     - kessel workflow activate docs
     - kessel run
     - rm -rf public
@@ -66,7 +67,6 @@ format:
   extends: [.ascgit_job, .darwin_job, .darwin_regular_job]
   needs: []
   script:
-    - source .gitlab/kessel.sh
     - kessel workflow activate format
     - kessel run
 

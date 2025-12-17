@@ -1,2 +1,0 @@
-#KESSEL title: Install
-source "$KESSEL_ROOT/libexec/kessel/workflows/cmake/install"

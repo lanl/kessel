@@ -39,15 +39,16 @@ def main():
     run_cmd.setup_command(subparsers.add_parser("run"), ctx)
     reset_cmd.setup_command(subparsers.add_parser("reset"), ctx)
 
-    args, extra = parser.parse_known_args()
+    args = parser.parse_args()
     senv.debug = args.shell_debug
+    senv.eval("set --") # makes sure sourced scripts don't see our args
 
     try:
-      if hasattr(args, "func"):
-        args.func(args, extra, ctx, senv)
-      else:
-        parser.print_help(sys.stderr)
-        return 1
+        if hasattr(args, "func"):
+            args.func(args, ctx, senv)
+        else:
+            parser.print_help(sys.stderr)
+            return 1
     except Exception as e:
         print("ERROR:", e)
         return 1
