@@ -64,6 +64,7 @@ class BuildEnvironment(Workflow):
     def configure_args(self, parser):
         parser.add_argument("-I", "--install-dir", default=self.install_dir)
 
+    @collapsed
     def configure(self, args):
         """Configure"""
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "configure.sh"))
