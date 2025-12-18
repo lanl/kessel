@@ -6,9 +6,9 @@ class Default(Workflow):
     @collapsed
     def configure(self, args):
         """Configure"""
-        self.shenv.eval("rm -rf build")
-        self.shenv.eval("cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug")
+        self.exec("rm -rf build")
+        self.exec("cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug")
 
     def build(self, args):
         """Build"""
-        self.shenv.eval("cmake --build build --parallel")
+        self.exec("cmake --build build --parallel")

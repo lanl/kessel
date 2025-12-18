@@ -478,7 +478,7 @@ Override the ``setup`` step to clone repositories:
            # Clone repositories before calling parent setup
            repo_path = self.deployment / "repos/my-repo"
            if not repo_path.exists():
-               self.shenv.eval(
+               self.exec(
                    f"git clone https://github.com/myorg/my-repo.git {repo_path}"
                )
            

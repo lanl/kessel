@@ -135,7 +135,7 @@ class Deployment(Workflow):
         """Create Source Mirror"""
 
         mirror_exclude_file = self.deployment / "config" / "mirror.exclude"
-        self.shenv.eval(f'mirror_exclude_file="{mirror_exclude_file}"')
+        self.exec(f'mirror_exclude_file="{mirror_exclude_file}"')
 
         if self.mirror_exclude:
             with open(mirror_exclude_file, "w") as f:
@@ -155,7 +155,7 @@ class Deployment(Workflow):
     def finalize(self, args):
         """Finalize"""
         for pkg in self.build_exclude:
-            self.shenv.eval(f"spack uninstall -y --all --dependents {shlex.quote(pkg)} || true")
+            self.exec(f"spack uninstall -y --all --dependents {shlex.quote(pkg)} || true")
 
         self.shenv.source(
             self.kessel_root.joinpath(

@@ -171,7 +171,7 @@ Workflows typically execute shell scripts using the ``shenv`` object:
            self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/build.sh")
            
            # Execute a shell command
-           self.shenv.eval("make -j$(nproc)")
+           self.exec("make -j$(nproc)")
            
            # Set environment variable
            self.shenv["MY_VAR"] = "value"
@@ -464,8 +464,8 @@ You can define multiple workflows for different purposes. Each workflow must be 
        
        def format(self, args):
            """Format Code"""
-           self.shenv.eval(f"clang-format -i {self.source_dir}/**/*.cpp")
-           self.shenv.eval(f"clang-format -i {self.source_dir}/**/*.hpp")
+           self.exec(f"clang-format -i {self.source_dir}/**/*.cpp")
+           self.exec(f"clang-format -i {self.source_dir}/**/*.hpp")
 
 Switch between workflows:
 
@@ -496,23 +496,23 @@ A workflow that integrates custom tools:
        
        def format(self, args):
            """Format Code"""
-           self.shenv.eval(f"clang-format -i {self.source_dir}/**/*.cpp")
+           self.exec(f"clang-format -i {self.source_dir}/**/*.cpp")
        
        def lint(self, args):
            """Run Linter"""
-           self.shenv.eval(f"clang-tidy {self.source_dir}/**/*.cpp")
+           self.exec(f"clang-tidy {self.source_dir}/**/*.cpp")
        
        def build(self, args):
            """Build Project"""
-           self.shenv.eval("cmake --build build")
+           self.exec("cmake --build build")
        
        def test(self, args):
            """Run Tests"""
-           self.shenv.eval("ctest --test-dir build")
+           self.exec("ctest --test-dir build")
        
        def docs(self, args):
            """Generate Documentation"""
-           self.shenv.eval("doxygen Doxyfile")
+           self.exec("doxygen Doxyfile")
 
 Advanced Topics
 ---------------
@@ -534,10 +534,10 @@ Workflows can conditionally execute steps based on runtime conditions:
            """Run Tests"""
            if os.environ.get("CI") == "true":
                # Run full test suite in CI
-               self.shenv.eval("ctest --output-on-failure")
+               self.exec("ctest --output-on-failure")
            else:
                # Run quick tests locally
-               self.shenv.eval("ctest -L quick")
+               self.exec("ctest -L quick")
 
 CI/CD Integration
 ~~~~~~~~~~~~~~~~~

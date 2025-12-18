@@ -138,3 +138,6 @@ class Workflow(metaclass=Meta):
 
     def get_step_title(self, step):
         return inspect.getdoc(getattr(self, step)).splitlines()[0]
+
+    def exec(self, *args):
+        return self.shenv.eval(*args)
