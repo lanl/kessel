@@ -41,7 +41,7 @@ class Meta(type):
         for name, state in states.items():
             getter, setter = make_accessors(name, state)
             namespace[name] = property(getter, setter)
-            namespace.setdefault("states", []).append(name)
+            namespace.setdefault("states", set()).add(name)
         return super().__new__(mcls, name, bases, namespace)
 
 
@@ -106,9 +106,17 @@ class Workflow(metaclass=Meta):
         self.shenv = None
         self.workflow_dir = None
 
+    @property
+    def merged_states(self):
+        merged = set()
+        for base in self.__class__.__mro__:
+            if hasattr(base, "states"):
+                merged |= base.states
+        return merged
+
     def init(self):
         # initialize states to default values if not already set
-        for s in self.states:
+        for s in self.merged_states:
             getattr(self, s)
 
     def init_step(self, args):
