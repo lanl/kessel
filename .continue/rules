@@ -1,0 +1,17 @@
+# Project Overview
+
+This is the Kessel project, which is a command-line utility for helping
+continuous integration and developer workflows. To use it, one first run the
+following command in a shell to make its command and shell wrappers available:
+
+```console
+$ source share/kessel/setup-env.sh
+```
+
+The components of this projects are:
+- the main binary for `kessel` in `bin`
+- the main tool source in `lib`
+- Spack system configurations in `etc`
+- reusable shell scripts and snippets in `libexec`
+- the Sphinx documentation in `doc`
+- and the shell integrations as well as templates for new projects in `share`
