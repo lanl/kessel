@@ -101,13 +101,6 @@ class Deployment(Workflow):
         os.umask(0o007)
         self.deployment.mkdir(parents=True, exist_ok=True)
 
-        with open(self.deployment_config / "spack.yaml", "r") as f:
-            for line in f:
-                if line.startswith("git:"):
-                    self.spack_url = line[line.find(':') + 1:].strip()
-                elif line.startswith("ref:"):
-                    self.spack_ref = line[line.find(':') + 1:].strip()
-
         self.shenv["SPACK_CHECKOUT_URL"] = self.spack_url
         self.shenv["SPACK_CHECKOUT_REF"] = self.spack_ref
 
