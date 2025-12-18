@@ -6,11 +6,12 @@ fi
 umask 0007
 
 echo "Using Spack installation at $SPACK_ROOT"
+fresh_env=false
 
 if ! spack env activate --without-view "$KESSEL_SPACK_ENV"; then
   spack env create --without-view "$KESSEL_SPACK_ENV"
   spack env activate --without-view "$KESSEL_SPACK_ENV"
-  spack add "$KESSEL_PROJECT_SPEC"
+  fresh_env=true
 fi
 
 existing_lockfile="$SPACK_ENV/spack.lock.$(spack arch)"
@@ -24,12 +25,20 @@ fi
 # always disable view for now, until we know there is a use case that we need it
 spack config add view:false
 
-export KESSEL_PROJECT_NAME=$(spack-python -c "spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');print(spec.name)")
+# chicken and egg problem: we need to figure out the project name before we can ask Spack
+export KESSEL_PROJECT_NAME=$(echo "$KESSEL_PROJECT_SPEC" | awk '{print $1}' | sed 's/[@+~^%-].*//')
 
 if [ -d "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME" ]; then
   spack repo remove "$KESSEL_PROJECT_NAME" 2> /dev/null > /dev/null || true
   spack repo add "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME"
 fi
+
+if "$fresh_env"; then
+  spack add "$KESSEL_PROJECT_SPEC"
+fi
+
+# now that Spack "should" know about it, we'll ask again (TODO: is this still necessary?)
+export KESSEL_PROJECT_NAME=$(spack-python -c "spec = spack.spec.Spec('$KESSEL_PROJECT_SPEC');print(spec.name)")
 
 spack develop -b "$KESSEL_BUILD_DIR" -p "$KESSEL_SOURCE_DIR" --no-clone "$KESSEL_PROJECT_NAME"
 spack config add "packages:${KESSEL_PROJECT_NAME}:package_attributes:keep_werror:all"
