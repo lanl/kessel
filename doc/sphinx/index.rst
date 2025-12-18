@@ -90,6 +90,12 @@ Getting Started
 
 New to Kessel? Start with the :doc:`quickstart` guide to get up and running quickly.
 
+Prefer hands-on learning? Follow our step-by-step tutorials:
+
+- :doc:`tutorial/cmake` - Add Kessel to a CMake project
+- :doc:`tutorial/spack` - Integrate Spack for dependency management
+- :doc:`tutorial/deployment` - Create and use Spack deployments
+
 Want to understand workflows? See :doc:`workflows` for detailed information on creating and using workflows.
 
 Need to create Spack deployments? Check out :doc:`deployments` for comprehensive deployment documentation.
@@ -107,3 +113,11 @@ Need to create Spack deployments? Check out :doc:`deployments` for comprehensive
    workflows
    deployments
    cli_reference
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tutorials:
+
+   tutorial/cmake
+   tutorial/spack
+   tutorial/deployment
