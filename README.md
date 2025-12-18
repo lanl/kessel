@@ -1,12 +1,52 @@
 # Kessel
 
-Kessel is a tool to **create and drive continuous integration (CI) and developer
-workflows** through a unified interface across multiple code projects and
+Kessel is a tool to create and drive continuous integration (CI) and developer
+workflows through a unified interface across multiple code projects and
 environments.
 
 It serves as a driver and integration layer for build systems and package
 managers, providing a flexible library of reusable components to build and
 execute complex workflows consistently.
+
+## Documentation
+
+📚 **[Full Documentation](https://rberger.re-pages.lanl.gov/kessel)**
+
+## Quick Start
+
+### Installation
+
+```bash
+git clone https://re-git.lanl.gov/rberger/kessel
+cd kessel
+source share/kessel/setup-env.sh
+```
+
+### Initialize a Project
+
+```bash
+cd your-project
+kessel init
+kessel run
+```
+
+### Create a Spack Deployment
+
+```bash
+mkdir my-deployment
+cd my-deployment
+kessel init --template spack-deployment
+kessel run ubuntu24.04
+```
+
+## Key Features
+
+- **Unified Workflows**: Define once, use in both development and CI
+- **Multi-System Support**: Works across HPC systems, workstations, and CI runners
+- **Spack Integration**: First-class support for Spack deployments and environments
+- **Flexible & Extensible**: Built-in workflows with easy customization
+
+## Overview
 
 Modern developer and CI pipelines often need to run multi-step processes, such
 as setting up environments, generating and configuring build systems, compiling
@@ -14,15 +54,24 @@ and testing software, or deploying dependencies. Kessel streamlines these
 workflows by defining them in a consistent, composable way that works for both
 **interactive development** and **automated pipelines**.
 
-A key goal of Kessel is to **bridge the gap between CI pipeline definitions and
-developer command-line workflows**. By offering a common abstraction for running
+A key goal of Kessel is to bridge the gap between CI pipeline definitions and
+developer command-line workflows. By offering a common abstraction for running
 sequences of steps, it reduces redundancy, simplifies maintenance, and ensures
 alignment between what developers do locally and what CI executes remotely.
 
 As part of its adoption, Kessel-based deployment workflows have established a
-baseline depenency configuration for commonly used HPC systems, enabling
-a shared foundation for software deployment and development across multiple
-code teams.
+baseline dependency configuration for commonly used HPC systems, enabling a
+shared foundation for software deployment and development across multiple code
+teams.
+
+## Learn More
+
+For detailed documentation, see:
+
+- [Quickstart Guide](https://rberger.re-pages.lanl.gov/kessel/quickstart.html)
+- [Workflows](https://rberger.re-pages.lanl.gov/kessel/workflows.html)
+- [Deployments](https://rberger.re-pages.lanl.gov/kessel/deployments.html)
+- [CLI Reference](https://rberger.re-pages.lanl.gov/kessel/cli_reference.html)
 
 ## Developers
 
