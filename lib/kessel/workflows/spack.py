@@ -91,6 +91,7 @@ class Deployment(Workflow):
 
     def setup_args(self, parser):
         parser.add_argument("-D", "--deployment", default=self.deployment)
+        parser.add_argument("-C", "--deployment_config", default=self.deployment_config)
         parser.add_argument("system", default=self.system)
 
     def clone_and_sync(self, src_checkout, dest):
