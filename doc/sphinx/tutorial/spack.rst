@@ -6,7 +6,7 @@ In this tutorial, you'll learn how to integrate Spack for dependency management.
 Prerequisites
 -------------
 
-- Completed :doc:`tutorial/cmake`
+- Completed :doc:`cmake`
 - Spack installed and available in your environment
 - Your ``myapp`` project from Part 1
 
@@ -258,4 +258,4 @@ In this tutorial, you:
 Next Steps
 ----------
 
-In :doc:`tutorial/deployment`, you'll learn how to create a Spack deployment that can be used across systems, with pre-built environments and offline build capability.
+In :doc:`deployment`, you'll learn how to create a Spack deployment that can be used to target multiple systems, with pre-built environments and offline build capability.

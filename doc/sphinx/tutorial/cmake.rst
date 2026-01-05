@@ -350,4 +350,4 @@ In this tutorial, you:
 Next Steps
 ----------
 
-In :doc:`tutorial/spack`, you'll learn how to integrate Spack for dependency management, allowing you to use external libraries like Boost in your project.
+In :doc:`spack`, you'll learn how to integrate Spack for dependency management, allowing you to use external libraries like Boost in your project.
