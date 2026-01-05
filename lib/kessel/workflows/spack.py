@@ -96,7 +96,15 @@ class Deployment(Workflow):
         parser.add_argument("system", default=self.system)
 
     def clone_and_sync(self, src_checkout, dest):
-        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "clone_and_sync.sh"), src_checkout, dest)
+        self.shenv.source(
+            self.kessel_root.joinpath(
+                "libexec",
+                "kessel",
+                "workflows",
+                "spack_deployment",
+                "clone_and_sync.sh"),
+            src_checkout,
+            dest)
 
     def setup(self, args):
         """Setup"""
@@ -135,7 +143,7 @@ class Deployment(Workflow):
                 "bootstrap.sh"))
         if self.bootstrap_mirror:
             self.shenv.eval('spack bootstrap mirror --binary-packages "${KESSEL_DEPLOYMENT}/spack-bootstrap" || true')
-        sef.shenv.unset_env_var("KESSEL_REQUIRE_SYSTEM_MIRROR")
+        self.shenv.unset_env_var("KESSEL_REQUIRE_SYSTEM_MIRROR")
 
     def mirror(self, args):
         """Create Source Mirror"""

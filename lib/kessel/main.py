@@ -41,7 +41,7 @@ def main():
 
     args = parser.parse_args()
     senv.debug = args.shell_debug
-    senv.eval("set --") # makes sure sourced scripts don't see our args
+    senv.eval("set --")  # makes sure sourced scripts don't see our args
 
     try:
         if hasattr(args, "func"):
