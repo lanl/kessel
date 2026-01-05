@@ -85,6 +85,7 @@ class Deployment(Workflow):
     build_roots = False
     env_views = False
     require_git_mirrors = False
+    bootstrap_mirror = False
     git_mirrors: list[str] = []
     mirror_exclude: list[str] = []
     build_exclude: list[str] = []
@@ -130,10 +131,12 @@ class Deployment(Workflow):
                 "workflows",
                 "spack_deployment",
                 "bootstrap.sh"))
+        if self.bootstrap_mirror:
+            self.shenv.eval('spack bootstrap mirror --binary-packages "${KESSEL_DEPLOYMENT}/spack-bootstrap" || true')
+        sef.shenv.unset_env_var("KESSEL_REQUIRE_SYSTEM_MIRROR")
 
     def mirror(self, args):
         """Create Source Mirror"""
-
         mirror_exclude_file = self.deployment / "config" / "mirror.exclude"
         self.exec(f'mirror_exclude_file="{mirror_exclude_file}"')
 

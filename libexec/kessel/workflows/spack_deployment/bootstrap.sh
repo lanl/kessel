@@ -5,9 +5,7 @@ if [ "$KESSEL_SYSTEM" = "rocinante"  ] || [ "$KESSEL_SYSTEM" = "ATS3" ] || [ "$K
     export KESSEL_REQUIRE_SYSTEM_MIRROR="pe-serve"
 fi
 
-spack bootstrap status || true
-spack bootstrap now
-spack bootstrap status
-spack bootstrap mirror --binary-packages "${KESSEL_DEPLOYMENT}/spack-bootstrap" || true
-
-unset KESSEL_REQUIRE_SYSTEM_MIRROR
+if ! spack bootstrap status; then
+    spack bootstrap now
+    spack bootstrap status
+fi
