@@ -118,7 +118,9 @@ class Deployment(Workflow):
 
         # clone git mirrors
         for path in self.git_mirrors:
-            self.clone_and_sync(self.deployment_config / path, self.deployment / path)
+            src = self.deployment_config / path
+            if src.exists():
+                self.clone_and_sync(src, self.deployment / path)
 
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "setup.sh"))
 
