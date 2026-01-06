@@ -27,10 +27,12 @@ copy_configuration() {
 }
 
 generate_environments() {
+  echo "Creating $KESSEL_DEPLOYMENT/environments"
   mkdir -p "$KESSEL_DEPLOYMENT/environments"
   for env in $(find "$KESSEL_DEPLOYMENT_CONFIG/environments/$KESSEL_SYSTEM" -iname '*.yaml'); do
     env_file=$(echo $env | sed -e "s%^$KESSEL_DEPLOYMENT_CONFIG/environments/$KESSEL_SYSTEM/%%")
     env_dir=${env_file%.*}
+    echo "Creating $KESSEL_DEPLOYMENT/environments/$env_dir"
     mkdir -p "${KESSEL_DEPLOYMENT}/environments/$env_dir"
     cp "$env" "${KESSEL_DEPLOYMENT}/environments/$env_dir/spack.yaml"
   done
