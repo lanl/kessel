@@ -3,32 +3,6 @@ if [ "$KESSEL_SYSTEM" = "rocinante"  ] || [ "$KESSEL_SYSTEM" = "ATS3" ] || [ "$K
     export KESSEL_REQUIRE_SYSTEM_MIRROR="pe-serve"
 fi
 
-# can be removed with static git_mirrors.yaml after https://github.com/spack/spack/pull/51098
-gen_git_mirrors_yaml() {
-  GIT_MIRRORS_YAML="$KESSEL_DEPLOYMENT/config/git_mirrors.yaml"
-  TMP_GIT_MIRRORS_YAML="$GIT_MIRRORS_YAML.$$"
-
-  echo "packages:" > "$TMP_GIT_MIRRORS_YAML"
-
-  printf "%s\n" "$KESSEL_GIT_MIRRORS" | while IFS= read -r p
-  do
-      REPO_PATH=$(git -C "${KESSEL_DEPLOYMENT}/$p" rev-parse --absolute-git-dir)
-      EXT_NAME=$(basename "$p")
-      echo "Creating Git Mirror for '${EXT_NAME}' pointing to file://${REPO_PATH}..."
-      cat >> "$TMP_GIT_MIRRORS_YAML" <<EOF
-  ${EXT_NAME}:
-    package_attributes:
-      git: 'file://${REPO_PATH}'
-EOF
-  done
-
-  if cmp -s $TMP_GIT_MIRRORS_YAML $GIT_MIRRORS_YAML; then
-    rm -f $TMP_GIT_MIRRORS_YAML
-  else
-    mv $TMP_GIT_MIRRORS_YAML $GIT_MIRRORS_YAML
-  fi
-}
-
 concretize_env_for_mirror() {
     env_name="$1"
     echo "Concretizing $env_name..."
@@ -81,10 +55,6 @@ fi
 
 mirror_dir="$KESSEL_DEPLOYMENT/spack-mirror"
 env_dir="$KESSEL_DEPLOYMENT/environments/$KESSEL_SYSTEM"
-
-if [ -n "$KESSEL_GIT_MIRRORS" ]; then
-    gen_git_mirrors_yaml
-fi
 
 set +m
 

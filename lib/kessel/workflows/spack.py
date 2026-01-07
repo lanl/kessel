@@ -23,6 +23,7 @@ class BuildEnvironment(Workflow):
     build_dir = environment(Path.cwd() / "build")
     install_dir = environment(Path.cwd() / "build" / "install")
     project_spec = environment()
+    git_mirrors: list[str] = []
 
     def init(self):
         super().init()
@@ -45,6 +46,13 @@ class BuildEnvironment(Workflow):
 
     def prepare_env(self, args):
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "prepare_env.sh"))
+        for p in self.git_mirrors:
+            wdir = self.source_dir / p
+            repo_path = Path(subprocess.check_output(
+                ["git", "-C", wdir, "rev-parse", "--absolute-git-dir"], text=True).strip())
+            ext_name = repo_path.name
+            self.shenv.echo(f"Creating Git Mirror for '{ext_name}' pointing to file://{repo_path}...")
+            self.exec(f"spack config add \"packages:{ext_name}:package_attributes:git:'file://{repo_path}'\"")
 
     def install_env(self, args):
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "install_env.sh"))
@@ -130,6 +138,17 @@ class Deployment(Workflow):
             if src.exists():
                 self.clone_and_sync(src, self.deployment / path)
 
+        if self.git_mirrors:
+            with open(self.deployment / "config" / "git_mirrors.yaml", "w") as dst:
+                print("packages:", file=dst)
+                for p in self.git_mirrors:
+                    wdir = self.deployment / p
+                    repo_path = Path(subprocess.check_output(
+                        ["git", "-C", wdir, "rev-parse", "--absolute-git-dir"], text=True).strip())
+                    ext_name = repo_path.name
+                    self.shenv.echo(f"Creating Git Mirror for '{ext_name}' pointing to file://{repo_path}...")
+                    print(f"  {ext_name}:\n    package_attributes:\n      git: 'file://{repo_path}'", file=dst)
+
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "setup.sh"))
 
     def bootstrap(self, args):
@@ -157,6 +176,7 @@ class Deployment(Workflow):
         elif mirror_exclude_file.is_file():
             mirror_exclude_file.unlink()
 
+        self.shenv["KESSEL_REQUIRE_GIT_MIRRORS"] = "true" if self.require_git_mirrors else "false"
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "mirror.sh"))
 
     def envs(self, args):

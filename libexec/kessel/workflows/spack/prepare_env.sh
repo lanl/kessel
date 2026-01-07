@@ -43,15 +43,6 @@ export KESSEL_PROJECT_NAME=$(spack-python -c "spec = spack.spec.Spec('$KESSEL_PR
 spack develop -b "$KESSEL_BUILD_DIR" -p "$KESSEL_SOURCE_DIR" --no-clone "$KESSEL_PROJECT_NAME"
 spack config add "packages:${KESSEL_PROJECT_NAME}:package_attributes:keep_werror:all"
 
-if [ -n "$KESSEL_GIT_MIRRORS" ]; then
-  printf "%s\n" "$KESSEL_GIT_MIRRORS" | while IFS= read -r p
-  do
-    REPO_PATH=$(git -C $KESSEL_SOURCE_DIR/$p rev-parse --absolute-git-dir)
-    EXT_NAME=$(basename "$p")
-    echo "Creating Git Mirror for '${EXT_NAME}' pointing to file://${REPO_PATH}..."
-    spack config add "packages:${EXT_NAME}:package_attributes:git:'file://${REPO_PATH}'"
-  done
-fi
 
 if [ -n "${KESSEL_USER_BUILD_CACHE}" ]; then
   mkdir -p "${KESSEL_USER_BUILD_CACHE}"
