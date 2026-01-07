@@ -49,10 +49,9 @@ class BuildEnvironment(Workflow):
         for p in self.git_mirrors:
             wdir = self.source_dir / p
             repo_path = Path(subprocess.check_output(
-                ["git", "-C", wdir, "rev-parse", "--absolute-git-dir"], text=True).strip())
-            ext_name = repo_path.name
-            self.shenv.echo(f"Creating Git Mirror for '{ext_name}' pointing to file://{repo_path}...")
-            self.exec(f"spack config add \"packages:{ext_name}:package_attributes:git:'file://{repo_path}'\"")
+                ["git", "-C", str(wdir), "rev-parse", "--absolute-git-dir"], text=True).strip())
+            self.shenv.echo(f"Creating Git Mirror for '{wdir.name}' pointing to file://{repo_path}...")
+            self.exec(f"spack config add \"packages:{wdir.name}:package_attributes:git:'file://{repo_path}'\"")
 
     def install_env(self, args):
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "install_env.sh"))
@@ -118,6 +117,14 @@ class Deployment(Workflow):
         """Setup"""
         os.umask(0o007)
         self.deployment.mkdir(parents=True, exist_ok=True)
+        config_dir = self.deployment / "config"
+        envs_dir = self.deployment / "environments"
+
+        # wipe any existing configuration and environments
+        shutil.rmtree(config_dir, ignore_errors=True)
+        shutil.rmtree(envs_dir, ignore_errors=True)
+        config_dir.mkdir(exist_ok=True)
+        envs_dir.mkdir(exist_ok=True)
 
         self.shenv["SPACK_CHECKOUT_URL"] = self.spack_url
         self.shenv["SPACK_CHECKOUT_REF"] = self.spack_ref
@@ -139,15 +146,14 @@ class Deployment(Workflow):
                 self.clone_and_sync(src, self.deployment / path)
 
         if self.git_mirrors:
-            with open(self.deployment / "config" / "git_mirrors.yaml", "w") as dst:
+            with open(config_dir / "git_mirrors.yaml", "w") as dst:
                 print("packages:", file=dst)
                 for p in self.git_mirrors:
                     wdir = self.deployment / p
                     repo_path = Path(subprocess.check_output(
-                        ["git", "-C", wdir, "rev-parse", "--absolute-git-dir"], text=True).strip())
-                    ext_name = repo_path.name
-                    self.shenv.echo(f"Creating Git Mirror for '{ext_name}' pointing to file://{repo_path}...")
-                    print(f"  {ext_name}:\n    package_attributes:\n      git: 'file://{repo_path}'", file=dst)
+                        ["git", "-C", str(wdir), "rev-parse", "--absolute-git-dir"], text=True).strip())
+                    self.shenv.echo(f"Creating Git Mirror for '{wdir.name}' pointing to file://{repo_path}...")
+                    print(f"  {wdir.name}:\n    package_attributes:\n      git: 'file://{repo_path}'", file=dst)
 
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "setup.sh"))
 

@@ -40,9 +40,6 @@ fi
 # write deployment configuration and environments
 ################################################################################
 
-rm -rf "$KESSEL_DEPLOYMENT/config"
-rm -rf "$KESSEL_DEPLOYMENT/environments"
-
 copy_configuration
 generate_environments
 
