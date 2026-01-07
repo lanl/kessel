@@ -189,6 +189,7 @@ class Deployment(Workflow):
         """Build Environments"""
         self.shenv["KESSEL_BUILD_ROOTS"] = "true" if self.build_roots else "false"
         self.shenv["KESSEL_ENV_VIEWS"] = "true" if self.env_views else "false"
+        self.shenv["KESSEL_REQUIRE_GIT_MIRRORS"] = "true" if self.require_git_mirrors else "false"
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "envs.sh"))
 
     def finalize(self, args):
