@@ -5,15 +5,15 @@ import shlex
 class CMake(Workflow):
     steps = ["build", "test", "install"]
 
-    def build(self, env, cmake_args=[]):
+    def build(self, args, cmake_args=[]):
         """Build"""
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/build.sh", *cmake_args)
 
-    def test(self, env, ctest_args=[]):
+    def test(self, args, ctest_args=[]):
         """Test"""
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/test.sh", *ctest_args)
 
-    def install(self, env):
+    def install(self, args):
         """Install"""
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/install.sh")
 
