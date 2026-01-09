@@ -108,7 +108,7 @@ class Deployment(Workflow):
             src_rev = git(["rev-parse", "HEAD"], cwd=src_checkout)
 
             self.shenv.echo(f"Syncing: {src_checkout} → {dest} (rev {src_rev[:8]})")
-            git(["fetch", "--all", "--tags", "--prune"], cwd=src_checkout)
+            git(["fetch", "--all", "--tags", "--prune", "--force"], cwd=src_checkout)
 
             dest = Path(dest)
             if dest.exists():
