@@ -15,6 +15,27 @@ def get_project_name_from_spec(spec):
         ["spack-python", "-c", f"spec = spack.spec.Spec('{spec}');print(spec.name)"]).decode('utf-8').strip()
 
 
+def run_git(cmd, cwd=None, check=True):
+    """Run git command and return output, suppressing normal output."""
+    env = os.environ.copy()
+    env["GIT_ADVICE_DETACHED_HEAD"] = "false"
+    try:
+        result = subprocess.run(
+            ["git"] + cmd,
+            cwd=cwd,
+            check=check,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        if check:
+            raise RuntimeError(f"Git command failed: {e.stderr}")
+        return None
+
+
 class BuildEnvironment(Workflow):
     steps = ["env", "configure"]
 
@@ -103,15 +124,53 @@ class Deployment(Workflow):
         parser.add_argument("system", default=self.system)
 
     def clone_and_sync(self, src_checkout, dest):
-        self.shenv.source(
-            self.kessel_root.joinpath(
-                "libexec",
-                "kessel",
-                "workflows",
-                "spack_deployment",
-                "clone_and_sync.sh"),
-            src_checkout,
-            dest)
+        """Clone and sync a git repository with efficient mirroring."""
+        try:
+            src = run_git(["-C", src_checkout, "rev-parse", "--absolute-git-dir"])
+            src_rev = run_git(["-C", src_checkout, "rev-parse", "HEAD"])
+
+            self.shenv.echo(f"Syncing: {src_checkout} → {dest} (rev {src_rev[:8]})")
+            run_git(["fetch", "--all", "--tags", "--prune"], cwd=src_checkout)
+
+            dest = Path(dest)
+            if dest.exists():
+                shutil.rmtree(dest)
+            else:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+
+            self.shenv.echo("  Creating mirror clone...")
+            run_git(["clone", "--mirror", src, f"{dest}/.git"])
+            run_git(["config", "--local", "--bool", "core.bare", "false"], cwd=f"{dest}/.git")
+
+            os.makedirs(dest, exist_ok=True)
+            run_git(["config", "--local", "core.worktree", ".."], cwd=f"{dest}/.git")
+            run_git(["checkout", "--force", "HEAD"], cwd=dest)
+
+            self.shenv.echo("  Setting up tracking for remote branches...")
+            remote_branches = run_git(["branch", "-r"], cwd=dest)
+            count = 0
+
+            for line in remote_branches.splitlines():
+                branch = line.strip()
+                if "->" in branch or not branch:
+                    continue
+
+                if branch.startswith("origin/"):
+                    local_branch = branch.replace("origin/", "", 1)
+                    if local_branch == "HEAD":
+                        continue
+
+                    # Create local branch tracking remote branch
+                    run_git(["branch", "--track", local_branch, branch], cwd=dest, check=False)
+                    count += 1
+
+            self.shenv.echo(f"  Set up {count} tracking branches")
+            run_git(["checkout", src_rev], cwd=dest)
+            self.shenv.echo(f"  Successfully created mirror at {dest} at revision {src_rev[:8]}")
+            return True
+        except Exception as e:
+            self.shenv.echo(f"Error: {str(e)}")
+            return False
 
     def setup(self, args):
         """Setup"""
