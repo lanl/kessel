@@ -26,7 +26,8 @@ _kessel_path_prepend() {
 }
 
 kessel() {
-    eval "$(command kessel "$@" 3>&1 >&4 4>&-)" 4>&-
+    eval "$(command kessel "$@" 3>&1 >&4 4>&- || echo _kessel_ret=$?)" 4>&-
+    return $_kessel_ret
 } 4>&1
 
 _kessel_path_prepend "${KESSEL_ROOT:+"${KESSEL_ROOT}/bin"}"
