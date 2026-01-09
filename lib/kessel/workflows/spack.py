@@ -1,4 +1,4 @@
-from kessel.workflows import Workflow, collapsed, environment, default_ci_message
+from kessel.workflows import Workflow, collapsed, environment, default_ci_message, git
 from pathlib import Path
 import argparse
 import shlex
@@ -13,27 +13,6 @@ import subprocess
 def get_project_name_from_spec(spec):
     return subprocess.check_output(
         ["spack-python", "-c", f"spec = spack.spec.Spec('{spec}');print(spec.name)"]).decode('utf-8').strip()
-
-
-def run_git(cmd, cwd=None, check=True):
-    """Run git command and return output, suppressing normal output."""
-    env = os.environ.copy()
-    env["GIT_ADVICE_DETACHED_HEAD"] = "false"
-    try:
-        result = subprocess.run(
-            ["git"] + cmd,
-            cwd=cwd,
-            check=check,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            env=env
-        )
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        if check:
-            raise RuntimeError(f"Git command failed: {e.stderr}")
-        return None
 
 
 class BuildEnvironment(Workflow):
@@ -69,8 +48,7 @@ class BuildEnvironment(Workflow):
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "prepare_env.sh"))
         for p in self.git_mirrors:
             wdir = self.source_dir / p
-            repo_path = Path(subprocess.check_output(
-                ["git", "-C", str(wdir), "rev-parse", "--absolute-git-dir"], text=True).strip())
+            repo_path = Path(git(["rev-parse", "--absolute-git-dir"], cwd=wdir))
             self.shenv.echo(f"Creating Git Mirror for '{wdir.name}' pointing to file://{repo_path}...")
             self.exec(f"spack config add \"packages:{wdir.name}:package_attributes:git:'file://{repo_path}'\"")
 
@@ -126,11 +104,11 @@ class Deployment(Workflow):
     def clone_and_sync(self, src_checkout, dest):
         """Clone and sync a git repository with efficient mirroring."""
         try:
-            src = run_git(["-C", src_checkout, "rev-parse", "--absolute-git-dir"])
-            src_rev = run_git(["-C", src_checkout, "rev-parse", "HEAD"])
+            src = git(["rev-parse", "--absolute-git-dir"], cwd=src_checkout)
+            src_rev = git(["rev-parse", "HEAD"], cwd=src_checkout)
 
             self.shenv.echo(f"Syncing: {src_checkout} → {dest} (rev {src_rev[:8]})")
-            run_git(["fetch", "--all", "--tags", "--prune"], cwd=src_checkout)
+            git(["fetch", "--all", "--tags", "--prune"], cwd=src_checkout)
 
             dest = Path(dest)
             if dest.exists():
@@ -139,15 +117,15 @@ class Deployment(Workflow):
                 dest.parent.mkdir(parents=True, exist_ok=True)
 
             self.shenv.echo("  Creating mirror clone...")
-            run_git(["clone", "--mirror", src, f"{dest}/.git"])
-            run_git(["config", "--local", "--bool", "core.bare", "false"], cwd=f"{dest}/.git")
+            git(["clone", "--mirror", src, f"{dest}/.git"])
+            git(["config", "--local", "--bool", "core.bare", "false"], cwd=f"{dest}/.git")
 
             os.makedirs(dest, exist_ok=True)
-            run_git(["config", "--local", "core.worktree", ".."], cwd=f"{dest}/.git")
-            run_git(["checkout", "--force", "HEAD"], cwd=dest)
+            git(["config", "--local", "core.worktree", ".."], cwd=f"{dest}/.git")
+            git(["checkout", "--force", "HEAD"], cwd=dest)
 
             self.shenv.echo("  Setting up tracking for remote branches...")
-            remote_branches = run_git(["branch", "-r"], cwd=dest)
+            remote_branches = git(["branch", "-r"], cwd=dest)
             count = 0
 
             for line in remote_branches.splitlines():
@@ -161,11 +139,11 @@ class Deployment(Workflow):
                         continue
 
                     # Create local branch tracking remote branch
-                    run_git(["branch", "--track", local_branch, branch], cwd=dest, check=False)
+                    git(["branch", "--track", local_branch, branch], cwd=dest, check=False)
                     count += 1
 
             self.shenv.echo(f"  Set up {count} tracking branches")
-            run_git(["checkout", src_rev], cwd=dest)
+            git(["checkout", src_rev], cwd=dest)
             self.shenv.echo(f"  Successfully created mirror at {dest} at revision {src_rev[:8]}")
             return True
         except Exception as e:
@@ -209,8 +187,7 @@ class Deployment(Workflow):
                 print("packages:", file=dst)
                 for p in self.git_mirrors:
                     wdir = self.deployment / p
-                    repo_path = Path(subprocess.check_output(
-                        ["git", "-C", str(wdir), "rev-parse", "--absolute-git-dir"], text=True).strip())
+                    repo_path = Path(git(["rev-parse", "--absolute-git-dir"], cwd=wdir))
                     self.shenv.echo(f"Creating Git Mirror for '{wdir.name}' pointing to file://{repo_path}...")
                     print(f"  {wdir.name}:\n    package_attributes:\n      git: 'file://{repo_path}'", file=dst)
 

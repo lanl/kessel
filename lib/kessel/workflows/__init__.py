@@ -1,6 +1,7 @@
 import inspect
 import os
 import sys
+import subprocess
 from pathlib import Path
 from kessel.cmd.workflow import COLOR_BLUE, COLOR_PLAIN
 
@@ -141,3 +142,24 @@ class Workflow(metaclass=Meta):
 
     def exec(self, *args):
         return self.shenv.eval(*args)
+
+
+def git(cmd, cwd=None, check=True):
+    """Run git command and return output, suppressing normal output."""
+    env = os.environ.copy()
+    env["GIT_ADVICE_DETACHED_HEAD"] = "false"
+    try:
+        result = subprocess.run(
+            ["git"] + cmd,
+            cwd=cwd,
+            check=check,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        if check:
+            raise RuntimeError(f"Git command failed: {e.stderr}")
+        return None
