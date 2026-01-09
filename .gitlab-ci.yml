@@ -70,6 +70,14 @@ format:
     - kessel workflow activate format
     - kessel run
 
+test:
+  stage: Checks
+  extends: [.ascgit_job, .darwin_job, .darwin_regular_job]
+  needs: []
+  script:
+    - kessel workflow activate test
+    - kessel run
+
 docs_check:
   extends: [.ascgit_job, .darwin_job, .darwin_regular_mr_only_job, .build_docs]
 
