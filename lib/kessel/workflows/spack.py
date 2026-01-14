@@ -38,7 +38,7 @@ class BuildEnvironment(Workflow):
             project = get_project_name_from_spec(self.project_spec)
         system = os.environ.get("KESSEL_SYSTEM", default="local")
         return default_ci_message(
-            project=project,
+            project,
             system=system,
             workflow=self.workflow,
             pre_alloc_init=pre_alloc_init,
