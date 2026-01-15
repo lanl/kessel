@@ -108,13 +108,13 @@ List all available workflows:
 
 .. code-block:: console
 
-   $ kessel workflow list
+   $ kessel list
 
 Activate a different workflow:
 
 .. code-block:: console
 
-   $ kessel workflow activate my-workflow
+   $ kessel activate my-workflow
 
 The active workflow is highlighted in the workflow list and persisted across sessions.
 
@@ -176,7 +176,7 @@ Check the current workflow status and progress:
 
 .. code-block:: console
 
-   $ kessel workflow status
+   $ kessel status
 
 This displays a visual progress indicator showing completed and pending steps.
 
@@ -224,11 +224,11 @@ Common Commands Reference
      - Run the complete active workflow
    * - ``kessel step <name>``
      - Execute a specific workflow step
-   * - ``kessel workflow list``
+   * - ``kessel list``
      - List all available workflows
-   * - ``kessel workflow activate <name>``
+   * - ``kessel activate <name>``
      - Switch to a different workflow
-   * - ``kessel workflow status``
+   * - ``kessel status``
      - Show workflow progress
    * - ``kessel reset``
      - Reset workflow state

@@ -1,85 +1,24 @@
-import textwrap
 import sys
-
-PROGRESS_STEP_COMPLETE = "●"
-PROGRESS_STEP_PENDING = "○"
-PROGRESS_BAR_PENDING = "▭"
-PROGRESS_BAR_COMPLETE = "▬"
-
-COLOR_GREEN = "\033[1;32m"
-COLOR_BLUE = "\033[1;34m"
-COLOR_MAGENTA = "\033[1;35m"
-COLOR_CYAN = "\033[1;36m"
-COLOR_PLAIN = "\033[0m"
-
-
-def step_lines(title):
-    min_width = len(max(title.split(), key=len)) + 2
-    return [
-        line.center(min_width)
-        for line in textwrap.wrap(
-            title, width=min_width, break_long_words=False, break_on_hyphens=False
-        )
-    ]
-
-
-def status(ctx, step=None):
-    if ctx.workflow_config is None:
-        raise Exception(f"{ctx.workflow} workflow can not be found!")
-
-    steps = ctx.workflow_config.steps
-    captions = [step_lines(ctx.workflow_config.get_step_title(s)) for s in steps]
-    lines = len(max(captions, key=len))
-    widths = [len(c[0]) for c in captions] + [0]
-    step_size = [0] + [
-        (widths[i] + widths[i + 1]) // 2 - widths[i] % 2 for i in range(len(widths) - 1)
-    ]
-
-    s = " \n"
-    s += "  "
-    s += " " * (widths[0] // 2)
-    completed = steps.index(step) if step in steps else -1
-    for i, _ in enumerate(steps):
-        if i <= completed:
-            s += PROGRESS_BAR_COMPLETE * step_size[i]
-            s += PROGRESS_STEP_COMPLETE
-        else:
-            s += PROGRESS_BAR_PENDING * step_size[i]
-            s += PROGRESS_STEP_PENDING
-    s += "\n \n"
-
-    for i in range(lines):
-        s += "  "
-        for c in captions:
-            if i < len(c):
-                s += c[i]
-            else:
-                s += " " * len(c[0])
-        s += "\n"
-    s += " \n"
-    return s
 
 
 def workflow_list(args, ctx, senv):
-    for wf in ctx.workflows:
-        if wf == ctx.workflow:
-            print(f"{COLOR_GREEN}{wf}{COLOR_PLAIN}")
-        else:
-            print(wf)
+    print("Warning: 'kessel workflow list' is deprecated. Use 'kessel list' instead.", file=sys.stderr)
+    senv.eval("kessel list")
 
 
 def workflow_activate(args, ctx, senv):
-    ctx.reset()
-    ctx.workflow = args.name
+    print("Warning: 'kessel workflow activate' is deprecated. Use 'kessel activate' instead.", file=sys.stderr)
+    senv.eval(f"kessel activate {args.name}")
 
 
 def workflow_status(args, ctx, senv):
-    senv.echo(status(ctx, ctx.run_state))
+    print("Warning: 'kessel workflow status' is deprecated. Use 'kessel status' instead.", file=sys.stderr)
+    senv.eval("kessel status")
 
 
 def workflow_edit(args, ctx, senv):
-    workflow = ctx.workflow_config
-    senv.eval(f"${{EDITOR:-vim}} {workflow.workflow_dir / 'workflow.py'}")
+    print("Warning: 'kessel workflow edit' is deprecated. Use 'kessel edit' instead.", file=sys.stderr)
+    senv.eval("kessel edit")
 
 
 def setup_command(subparser):

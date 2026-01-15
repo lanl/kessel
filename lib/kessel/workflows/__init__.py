@@ -3,7 +3,7 @@ import os
 import sys
 import subprocess
 from pathlib import Path
-from kessel.cmd.workflow import COLOR_BLUE, COLOR_PLAIN
+from kessel.colors import COLOR_BLUE, COLOR_PLAIN
 
 
 class EnvState:
@@ -81,7 +81,7 @@ def default_ci_message(project,
         alloc = f"salloc {os.environ['SCHEDULER_PARAMETERS']}\n"
 
     if workflow != "default":
-        workflow_change = f"kessel workflow activate {workflow}\n"
+        workflow_change = f"kessel activate {workflow}\n"
 
     return (
         f"{COLOR_BLUE} \n"

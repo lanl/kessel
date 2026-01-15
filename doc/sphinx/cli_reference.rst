@@ -79,20 +79,54 @@ Arguments:
 
 Options depend on the specific step and workflow configuration.
 
-kessel workflow
-~~~~~~~~~~~~~~~
+kessel list
+~~~~~~~~~~~
 
-Manage workflows.
+List available workflows.
 
 .. code-block:: console
 
-   $ kessel workflow <SUBCOMMAND>
+   $ kessel list
 
-Subcommands:
-  - ``list``: List available workflows
-  - ``activate <NAME>``: Activate a workflow
-  - ``status``: Show the status of the current workflow
-  - ``edit``: Edit the current workflow
+The active workflow is highlighted in green.
+
+kessel activate
+~~~~~~~~~~~~~~~
+
+Activate a workflow.
+
+.. code-block:: console
+
+   $ kessel activate <NAME>
+
+Arguments:
+  - ``NAME``: The name of the workflow to activate
+
+The active workflow is stored in the ``KESSEL_WORKFLOW`` environment variable.
+
+kessel status
+~~~~~~~~~~~~~
+
+Show the status of the current workflow.
+
+.. code-block:: console
+
+   $ kessel status
+
+Displays a visual progress bar showing completed and pending steps.
+
+kessel edit
+~~~~~~~~~~~
+
+Edit the current workflow.
+
+.. code-block:: console
+
+   $ kessel edit
+
+Opens the current workflow's Python file in your default editor (set by the $EDITOR environment variable).
+
+
 
 kessel deploy
 ~~~~~~~~~~~~~
@@ -202,8 +236,8 @@ Switch Between Workflows
 
 .. code-block:: console
 
-   $ kessel workflow list
-   $ kessel workflow activate release
+   $ kessel list
+   $ kessel activate release
    $ kessel run
 
 Debug Shell Commands

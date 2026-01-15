@@ -9,9 +9,8 @@ _kessel() {
     fi
 
     # Autocomplete variables
-    opts="-h init deploy workflow run step"
+    opts="-h --shell-debug --version init deploy build-env step run reset list activate status edit"
     deploy_opts="activate replicate"
-    workflow_opts="list activate status get"
 
     # Create empty COMPREPLY
     COMPREPLY=()
@@ -50,26 +49,12 @@ _kessel() {
         deploy)
             COMPREPLY=($(compgen -W "${deploy_opts}" -- ${cur}))
             ;;
-        workflow)
-            COMPREPLY=($(compgen -W "${workflow_opts}" -- ${cur}))
+        activate)
+            COMPREPLY=($(compgen -W "$(kessel list)" -- ${cur}))
             ;;
         esac
         ;;
-    # Compounded commands
-    3)
-        # Other words in command
-        second=${COMP_WORDS[1]}
 
-        case ${second} in
-        workflow)
-            case ${prev} in
-            activate)
-                COMPREPLY=($(compgen -W "$(kessel workflow list)" -- ${cur}))
-                ;;
-            esac
-            ;;
-        esac
-        ;;
     *)
         # Other words in command
         second=${COMP_WORDS[1]}

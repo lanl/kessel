@@ -307,7 +307,7 @@ List all available workflows in the current project:
 
 .. code-block:: console
 
-   $ kessel workflow list
+   $ kessel list
 
 The active workflow is highlighted.
 
@@ -318,7 +318,7 @@ Switch to a different workflow:
 
 .. code-block:: console
 
-   $ kessel workflow activate release
+   $ kessel activate release
 
 The active workflow is stored in the ``KESSEL_WORKFLOW`` environment variable and persists for the current shell session.
 
@@ -350,7 +350,7 @@ Display the workflow progress:
 
 .. code-block:: console
 
-   $ kessel workflow status
+   $ kessel status
 
 This shows a visual progress bar with completed and pending steps.
 
@@ -361,7 +361,7 @@ Open the active workflow in your editor:
 
 .. code-block:: console
 
-   $ kessel workflow edit
+   $ kessel edit
 
 This opens the ``workflow.py`` file using your ``$EDITOR``.
 
@@ -473,10 +473,10 @@ Switch between workflows:
 
    $ kessel run  # Uses default workflow
    
-   $ kessel workflow activate format
+   $ kessel activate format
    $ kessel run  # Runs clang-format
    
-   $ kessel workflow activate default
+   $ kessel activate default
    $ kessel run  # Back to building
 
 Custom Workflow with External Tools

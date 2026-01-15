@@ -210,7 +210,7 @@ At any time, check the workflow status:
 
 .. code-block:: console
 
-   $ kessel workflow status
+   $ kessel status
 
 This shows which steps have been completed.
 
@@ -237,14 +237,18 @@ You can edit the workflow file directly, or use the convenient command:
 
 .. code-block:: console
 
-   $ kessel workflow edit
+   $ kessel edit
 
 This opens the workflow in your default editor (``$EDITOR``).
+
+
 
 Custom Build Directory
 ~~~~~~~~~~~~~~~~~~~~~~
 
-First, let's make the build directory configurable. Edit ``.kessel/workflows/default/workflow.py`` (or run ``kessel workflow edit``):
+First, let's make the build directory configurable. Edit ``.kessel/workflows/default/workflow.py`` (or run ``kessel edit``):
+
+
 
 .. code-block:: python
 

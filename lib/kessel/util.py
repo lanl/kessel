@@ -3,7 +3,7 @@ import subprocess
 import shlex
 import sys
 
-from kessel.cmd.workflow import COLOR_CYAN, COLOR_PLAIN
+from kessel.colors import COLOR_CYAN, COLOR_PLAIN
 
 
 def create_squashfs(src, dest):

@@ -53,7 +53,7 @@ Run the workflow:
 
    $ kessel run              # Run all steps
    $ kessel step build       # Run a single step
-   $ kessel workflow status  # Check progress
+   $ kessel status           # Check progress
 
 Core Concepts
 -------------

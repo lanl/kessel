@@ -1,5 +1,5 @@
 import sys
-from kessel.cmd.workflow import status
+from kessel.cmd.status import format_status
 
 
 def step(args, ctx, senv):
@@ -12,7 +12,7 @@ def step(args, ctx, senv):
     senv.section_start(
         args.step, title, collapsed=collapsed
     )
-    senv.echo(status(ctx, args.step))
+    senv.echo(format_status(ctx, args.step))
 
     workflow.init_step(args)
     step_func(args)

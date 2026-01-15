@@ -57,7 +57,7 @@ default:
 .build_docs:
   stage: Checks
   script:
-    - kessel workflow activate docs
+    - kessel activate docs
     - kessel run
     - rm -rf public
     - mv doc/sphinx/_build/html public
@@ -67,7 +67,7 @@ format:
   extends: [.ascgit_job, .darwin_job, .darwin_regular_job]
   needs: []
   script:
-    - kessel workflow activate format
+    - kessel activate format
     - kessel run
 
 test:
@@ -76,7 +76,7 @@ test:
   needs: []
   script:
     - module load cmake
-    - kessel workflow activate test
+    - kessel activate test
     - kessel run
 
 docs_check:
