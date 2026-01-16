@@ -1,5 +1,7 @@
-from kessel.workflows import Workflow
+from kessel.workflows import Workflow, environment
 import shlex
+import os
+from pathlib import Path
 
 
 class CMake(Workflow):
@@ -26,6 +28,7 @@ class CMake(Workflow):
 
 class CTest(CMake):
     steps = ["build", "test", "install", "submit"]
+    ctest_driver_script = environment(Path(os.environ["KESSEL_ROOT"]) / "share/kessel/cmake/ctest_driver.cmake")
 
     def build(self, args):
         """Build"""
