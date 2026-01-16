@@ -29,13 +29,17 @@ class CMake(Workflow):
 class CTest(CMake):
     steps = ["build", "test", "install", "submit"]
     ctest_driver_script = environment(Path(os.environ["KESSEL_ROOT"]) / "share/kessel/cmake/ctest_driver.cmake")
+    ctest_mode = environment("Continuous", variable="CTEST_MODE")
+    submit_on_error = environment("true", variable="CTEST_SUBMIT_ON_ERROR")
 
     def build(self, args):
         """Build"""
+        self.shenv["REPORT_ERRORS"] = "ReportErrors" if self.submit_on_error == "true" else ""
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/ctest/build.sh")
 
     def test(self, args, ctest_args=[]):
         """Test"""
+        self.shenv["REPORT_ERRORS"] = "ReportErrors" if self.submit_on_error == "true" else ""
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/ctest/test.sh")
 
     def submit(self, args):

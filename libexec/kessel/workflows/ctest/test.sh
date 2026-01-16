@@ -1,5 +1,5 @@
 (
 source "$KESSEL_BUILD_ENV"
 export CTEST_OUTPUT_ON_FAILURE=1
-ctest -V -S $KESSEL_CTEST_DRIVER_SCRIPT,Test,$report_errors
+ctest -V -S $KESSEL_CTEST_DRIVER_SCRIPT,Test,$REPORT_ERRORS
 )
