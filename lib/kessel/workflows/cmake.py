@@ -22,3 +22,19 @@ class CMake(Workflow):
             return f"-D{arg}={'ON' if value else 'OFF'}"
         else:
             return f"-D{arg}={value}"
+
+
+class CTest(CMake):
+    steps = ["build", "test", "install", "submit"]
+
+    def build(self, args):
+        """Build"""
+        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/ctest/build.sh")
+
+    def test(self, args, ctest_args=[]):
+        """Test"""
+        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/ctest/test.sh")
+
+    def submit(self, args):
+        """Submit"""
+        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/ctest/submit.sh")
