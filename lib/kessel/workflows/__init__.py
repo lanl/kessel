@@ -14,7 +14,7 @@ class EnvState:
 
 
 class Meta(type):
-    def __new__(mcls, name, bases, namespace):
+    def __new__(mcls, cname, bases, namespace):
         states = {
             name: value
             for name, value in namespace.items()
@@ -43,7 +43,7 @@ class Meta(type):
             getter, setter = make_accessors(name, state)
             namespace[name] = property(getter, setter)
             namespace.setdefault("states", set()).add(name)
-        return super().__new__(mcls, name, bases, namespace)
+        return super().__new__(mcls, cname, bases, namespace)
 
 
 def environment(default=None, variable=None):
