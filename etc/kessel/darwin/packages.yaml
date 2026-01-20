@@ -42,22 +42,25 @@ packages:
             c: /projects/opt/centos8/x86_64/clang/13.0.0/bin/clang
             cxx: /projects/opt/centos8/x86_64/clang/13.0.0/bin/clang++
       - spec: llvm@17.0.6 +clang
+        prefix: /vast/projects/darwin_contrib/spack-builds/2025-01-30/rhel8/x86_64/llvm/17.0.6-gcc_13.2.0
         modules:
         - gcc/13.2.0
         - clang/17.0.6
         extra_attributes:
           compilers:
-            c: /vast/projects/darwin_contrib/spack-builds/2024-10-16/rhel8/x86_64/llvm/17.0.6-gcc_13.2.0/bin/clang
-            cxx: /vast/projects/darwin_contrib/spack-builds/2024-10-16/rhel8/x86_64/llvm/17.0.6-gcc_13.2.0/bin/clang++
+            c: /vast/projects/darwin_contrib/spack-builds/2025-01-30/rhel8/x86_64/llvm/17.0.6-gcc_13.2.0/bin/clang
+            cxx: /vast/projects/darwin_contrib/spack-builds/2025-01-30/rhel8/x86_64/llvm/17.0.6-gcc_13.2.0/bin/clang++
       - spec: llvm@18.1.8 +clang
+        prefix: /vast/projects/darwin_contrib/spack-builds/2025-01-30/rhel8/x86_64/llvm/18.1.8-gcc_13.2.0
         modules:
         - gcc/13.2.0
         - clang/18.1.8
         extra_attributes:
           compilers:
-            c: /vast/projects/darwin_contrib/spack-builds/2024-10-16/rhel8/x86_64/llvm/18.1.8-gcc_13.2.0/bin/clang
-            cxx: /vast/projects/darwin_contrib/spack-builds/2024-10-16/rhel8/x86_64/llvm/18.1.8-gcc_13.2.0/bin/clang++
+            c: /vast/projects/darwin_contrib/spack-builds/2025-01-30/rhel8/x86_64/llvm/18.1.8-gcc_13.2.0/bin/clang
+            cxx: /vast/projects/darwin_contrib/spack-builds/2025-01-30/rhel8/x86_64/llvm/18.1.8-gcc_13.2.0/bin/clang++
       - spec: llvm@19.1.7 +clang
+        prefix: /vast/projects/darwin_contrib/spack-builds/2025-03-07/rhel8/x86_64/llvm/19.1.7-gcc_13.2.0
         modules:
         - gcc/13.2.0
         - clang/19.1.7-offload
@@ -66,6 +69,7 @@ packages:
             c: /vast/projects/darwin_contrib/spack-builds/2025-03-07/rhel8/x86_64/llvm/19.1.7-gcc_13.2.0/bin/clang
             cxx: /vast/projects/darwin_contrib/spack-builds/2025-03-07/rhel8/x86_64/llvm/19.1.7-gcc_13.2.0/bin/clang++
       - spec: llvm@20.1.8 +clang
+        prefix: /vast/projects/darwin_contrib/spack-builds/2025-07-21/rhel8/x86_64/llvm/20.1.8-gcc_13.2.0
         modules:
         - gcc/13.2.0
         - clang/20.1.8-offload
@@ -94,9 +98,11 @@ packages:
     version: [12.9.1]
     externals:
     - spec: cuda@12.8.0
+      prefix: /projects/darwin-nv/rhel8/x86_64/packages/cuda/12.8.0
       modules:
       - cuda/12.8.0
     - spec: cuda@12.9.1
+      prefix: /projects/darwin-nv/rhel8/x86_64/packages/cuda/12.9.1
       modules:
       - cuda/12.9.1
   curl:
