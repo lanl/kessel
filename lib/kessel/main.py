@@ -1,5 +1,7 @@
 import sys
 import argparse
+import time
+import threading
 import kessel.cmd.init as init_cmd
 import kessel.cmd.deploy as deploy_cmd
 import kessel.cmd.workflow as workflow_cmd
@@ -14,6 +16,24 @@ import kessel.cmd.edit as edit_cmd
 from kessel.context import Context
 from kessel.util import ShellEnvironment
 from kessel import __version__
+
+
+def spinner(stop_event, message="Working"):
+    frames = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+    sys.stdout.write("\033[?25l")
+    sys.stdout.flush()
+    i = 0
+    while not stop_event.is_set():
+        if i > 20:
+            dots = "." * ((i // 4) % 4) + " " * (3 - (i // 4) % 4)
+            sys.stdout.write(f"\r \u001b[94m{frames[i % len(frames)]}\u001b[0m {message}{dots}")
+            sys.stdout.flush()
+        i += 1
+        time.sleep(0.1)
+    # Clear spinner line
+    sys.stdout.write("\r" + " " * (len(message) + 8) + "\r")
+    sys.stdout.write("\033[?25h")
+    sys.stdout.flush()
 
 
 def main():
@@ -32,7 +52,7 @@ def main():
         action="version",
         version=f"%(prog)s {__version__}"
     )
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest="command")
     init_cmd.setup_command(subparsers.add_parser("init"), ctx)
     deploy_cmd.setup_command(subparsers.add_parser("deploy"), ctx)
     build_env_cmd.setup_command(subparsers.add_parser("build-env"))
@@ -48,8 +68,14 @@ def main():
     args = parser.parse_args()
     senv.debug = args.shell_debug
     senv.eval("set --")  # makes sure sourced scripts don't see our args
+    interactive = sys.stdout.isatty() and args.command in ("run", "step")
     try:
         if hasattr(args, "func"):
+            if interactive:
+                stop_event = threading.Event()
+                t = threading.Thread(target=spinner, args=(stop_event,))
+                t.start()
+
             args.func(args, ctx, senv)
         else:
             parser.print_help(sys.stderr)
@@ -57,4 +83,8 @@ def main():
     except Exception as e:
         print("ERROR:", e)
         return 1
+    finally:
+        if interactive:
+            stop_event.set()
+            t.join()
     return 0
