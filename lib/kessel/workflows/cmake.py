@@ -31,6 +31,7 @@ class CTest(CMake):
     ctest_driver_script = environment(Path(os.environ["KESSEL_ROOT"]) / "share/kessel/cmake/ctest_driver.cmake")
     ctest_mode = environment("Continuous", variable="CTEST_MODE")
     submit_on_error = environment("true", variable="CTEST_SUBMIT_ON_ERROR")
+    build_name = environment("default", variable="CTEST_BUILD_NAME")
 
     def build(self, args):
         """Build"""
@@ -41,6 +42,9 @@ class CTest(CMake):
         """Test"""
         self.shenv["REPORT_ERRORS"] = "ReportErrors" if self.submit_on_error == "true" else ""
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/ctest/test.sh")
+
+    def submit_args(self, parser):
+        parser.add_argument("-n", "--build-name", default=self.build_name)
 
     def submit(self, args):
         """Submit"""
