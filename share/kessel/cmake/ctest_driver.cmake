@@ -16,8 +16,6 @@ set(CTEST_NIGHTLY_START_TIME "22:00:00 MDT")
 set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE 1024000)
 set(CTEST_CUSTOM_MAXIMUM_FAILED_TEST_OUTPUT_SIZE 1024000)
 
-set(CTEST_UPDATE_COMMAND "git")
-set(CTEST_GIT_UPDATE_CUSTOM "${CMAKE_COMMAND}" "-E" "echo" "Skipping git update (no-op).")
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 set(CTEST_BUILD_CONFIGURATION "RelWithDebInfo")
 
@@ -41,7 +39,6 @@ else()
 endif()
 
 if(${CTEST_SCRIPT_ARG} MATCHES Configure)
-  ctest_update(SOURCE "${CTEST_SOURCE_DIRECTORY}")
   ctest_configure(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE configure_error)
 
   if(configure_error)
