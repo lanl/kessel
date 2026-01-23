@@ -170,6 +170,9 @@ class Workflow(metaclass=Meta):
     def exec(self, *args):
         return self.shenv.eval(*args)
 
+    def print(self, *args):
+        return self.shenv.echo(*args)
+
 
 def git(cmd, cwd=None, check=True):
     """Run git command and return output, suppressing normal output."""

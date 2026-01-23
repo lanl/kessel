@@ -91,8 +91,8 @@ Workflows can define persistent environment variables using the ``environment()`
        def configure(self, args):
            """Configure Build"""
            # Access environment variables as properties
-           self.shenv.echo(f"Source: {self.source_dir}")
-           self.shenv.echo(f"Build: {self.build_dir}")
+           self.print(f"Source: {self.source_dir}")
+           self.print(f"Build: {self.build_dir}")
 
 Environment variables:
 
@@ -102,9 +102,9 @@ Environment variables:
 - Support type conversion (Path, str, int, etc.)
 
 .. note::
-   Use ``self.shenv.echo()`` instead of Python's ``print()`` for outputting
+   Use ``self.print()`` instead of Python's ``print()`` for outputting
    messages. Python's ``print()`` writes directly to stdout and appears
-   immediately, while ``shenv`` commands (including ``echo``) are queued and
+   immediately, while ``self.print`` commands are queued and
    executed in the parent shell after the Kessel command completes. This is
    achieved by writing commands to a pipe during execution and then evaluating
    the pipe's contents when the command finishes.
@@ -128,7 +128,7 @@ Steps can accept command-line arguments by defining an ``<step>_args`` method:
        def build(self, args):
            """Build Project"""
            # args contains parsed command-line arguments
-           self.shenv.echo(f"Building in {args.build_dir} with {args.jobs} jobs")
+           self.print(f"Building in {args.build_dir} with {args.jobs} jobs")
 
 Collapsed Steps
 ~~~~~~~~~~~~~~~
@@ -146,12 +146,12 @@ Steps can be marked with the ``@collapsed`` decorator to indicate that their out
        def env(self, args):
            """Setup Environment"""
            # This step's output will be collapsed in GitLab CI
-           self.shenv.echo("Setting up environment...")
+           self.print("Setting up environment...")
        
        def build(self, args):
            """Build Project"""
            # This step's output will be shown expanded by default
-           self.shenv.echo("Building project...")
+           self.print("Building project...")
 
 The ``@collapsed`` decorator only affects the presentation of step output in GitLab CI pipelines and does not change the step's behavior or execution.
 
@@ -583,7 +583,7 @@ Best Practices
 6. **Keep workflows simple**: Complex logic should go in shell scripts, not Python
 7. **Test workflows locally**: Use ``--shell-debug`` to verify commands before execution
 8. **Document custom workflows**: Add comments explaining non-obvious configuration
-9. **Use shenv.echo() for output**: Don't use ``print()`` - it bypasses the shell execution queue
+9. **Use self.print for output**: Don't use ``print()`` - it bypasses the shell execution queue
 
 Troubleshooting
 ---------------
