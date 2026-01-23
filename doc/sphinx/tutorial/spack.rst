@@ -155,9 +155,9 @@ On the first run, Kessel will:
 1. Create a new Spack environment named ``myapp-dev`` (if it doesn't exist)
 2. Add ``myapp@main`` as a root spec to the environment
 3. Register the ``myapp`` Spack repository in the environment
-3. Install Boost and other dependencies
-4. Configure the project with CMake
-5. Build and test the application
+4. Install Boost and other dependencies
+5. Configure the project with CMake
+6. Build and test the application
 
 Verifying the Build
 ~~~~~~~~~~~~~~~~~~~
