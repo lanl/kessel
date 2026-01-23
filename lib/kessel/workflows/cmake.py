@@ -48,4 +48,8 @@ class CTest(CMake):
 
     def submit(self, args):
         """Submit"""
+        if hasattr(self, "build_dir"):
+            sanitize_script = self.kessel_root / "libexec/kessel/workflows/ctest/sanitize-xml"
+            self.exec(f"{sanitize_script} {self.build_dir}")
+
         self.shenv.source(self.kessel_root / "libexec/kessel/workflows/ctest/submit.sh")

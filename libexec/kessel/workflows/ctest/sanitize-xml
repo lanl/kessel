@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+
+import re
+import sys
+import argparse
+from pathlib import Path
+
+
+class CTestSubmission(object):
+    def __init__(self, build_dir):
+        self.build_dir = Path(build_dir)
+        self._tag = None
+
+    @property
+    def tag(self):
+        if not self._tag:
+            tag_file = self.build_dir / "Testing" / "TAG"
+            if tag_file.exists():
+                with open(tag_file, "r") as f:
+                    self._tag = f.readline().strip()
+        return self._tag
+
+    def sanitize_ctest_xml(self, filename):
+        xmlfile = self.build_dir / "Testing" / self.tag / filename
+        if not xmlfile.exists():
+            return
+        print(f"Sanitizing {xmlfile}...")
+        original = xmlfile.read_text(encoding="utf-8", errors="replace")
+        NON_XML_PLACEHOLDER_RE = re.compile(r"\[NON-XML-CHAR-0x1B\]")
+        cleaned = NON_XML_PLACEHOLDER_RE.sub("", original)
+        cleaned = re.sub(r"\[[0-9;]*m", "", cleaned)
+        if cleaned != original:
+            xmlfile.write_text(cleaned, encoding="utf-8")
+
+    def sanitize(self):
+        if self.tag:
+            for fname in ("Build.xml", "Configure.xml", "Test.xml"):
+                self.sanitize_ctest_xml(fname)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="A script that cleans up CTest XML files")
+    parser.add_argument("build_directory", type=Path, help="Path to CMake build directory")
+    args = parser.parse_args()
+    s = CTestSubmission(args.build_directory)
+    s.sanitize()
+    sys.exit(0)
