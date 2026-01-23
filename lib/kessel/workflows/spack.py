@@ -24,6 +24,7 @@ class BuildEnvironment(Workflow):
     install_dir = environment(Path.cwd() / "build" / "install")
     project_spec = environment()
     git_mirrors: list[str] = []
+    allow_lockfile_changes = False
 
     def init(self):
         super().init()
@@ -53,12 +54,17 @@ class BuildEnvironment(Workflow):
             self.exec(f"spack config add \"packages:{wdir.name}:package_attributes:git:'file://{repo_path}'\"")
 
     def install_env(self, args):
+        if self.allow_lockfile_changes or args.force:
+            self.exec("spack concretize -f")
+        else:
+            self.exec("spack spec")
         self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "install_env.sh"))
 
     def env_args(self, parser):
         parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.spack_env, dest="spack_env")
         parser.add_argument("-S", "--source-dir", default=self.source_dir)
         parser.add_argument("-B", "--build-dir", default=self.build_dir)
+        parser.add_argument("-f", "--force", action="store_true", help="allow changes to Spack lockfile")
         parser.add_argument("project_spec", nargs=argparse.REMAINDER, default=self.project_spec)
 
     @collapsed

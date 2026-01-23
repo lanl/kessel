@@ -3,5 +3,4 @@ if [ -z "$SPACK_ENV" ]; then
   return 1
 fi
 
-spack concretize -f
 spack install --include-build-deps --only dependencies
