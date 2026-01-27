@@ -30,7 +30,7 @@ packages:
         extra_rpaths: []
   slurm:
     externals:
-    - spec: slurm@24-05-5-1
+    - spec: slurm@25-11-1-1
       prefix: /usr
     buildable: false
   llvm:
