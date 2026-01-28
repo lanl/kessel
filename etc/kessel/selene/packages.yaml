@@ -10,11 +10,11 @@ packages:
           fortran: /usr/projects/hpcsoft/tce/25.03/rhel8-x86_64-cc90/compilers/gcc/12.3.0/bin/gfortran
   cuda:
     prefer:
-      - "@12.9.1"
+      - "@12.9.0"
     externals:
-     - spec: "cuda@12.9.1"
+     - spec: "cuda@12.9.0"
        modules:
-        - "cudatoolkit/12.9"
+        - "cudatoolkit/12.9.0"
   openmpi:
     require:
      - "fabrics=ucx schedulers=slurm"
