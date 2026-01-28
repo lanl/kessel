@@ -49,9 +49,9 @@ class ShellEnvironment(object):
             self.unset_env_var(name)
             return
         if os.getenv("IN_FISH") is not None:
-            self.eval(f"set -g {name} {shlex.quote(value)}")
+            self.eval(f"set -g {name} {shlex.quote(str(value))}")
         else:
-            self.eval(f"export {name}={shlex.quote(value)}")
+            self.eval(f"export {name}={shlex.quote(str(value))}")
         os.environ[name] = str(value)
 
     def __contains__(self, key):
