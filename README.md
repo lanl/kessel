@@ -77,3 +77,15 @@ For detailed documentation, see:
 
 - Richard Berger, CAI-1 (rberger@lanl.gov)
 - Andres Yague Lopez, CAI-1 (ayaguelopez@lanl.gov)
+
+## Acknowledgements
+
+This project was orignally started in support of the following LANL ASC projects:
+
+- FleCSI
+- XCAP
+- IC DevOps
+
+Special thanks go to Davis Herring for encouraging the project's inception, proposing the project's name, and constructive critique that helped shape the direction of the project into its current form.
+
+This research used the LANL AI Portal and resources provided by the Information Technology (IT) Division at Los Alamos National Laboratory (Supported by the U.S. Department of Energy, National Nuclear Security Administration under Contract No. 89233218CNA000001).
