@@ -34,7 +34,7 @@ class BuildEnvironment(Workflow):
 
     def ci_message(self, parsed_args, pre_alloc_init="", post_alloc_init=""):
         if parsed_args.project_spec:
-            project = get_project_name_from_spec(parsed_args.project_spec)
+            project = get_project_name_from_spec(" ".join(parsed_args.project_spec))
         else:
             project = get_project_name_from_spec(self.project_spec)
         system = os.environ.get("KESSEL_SYSTEM", default="local")

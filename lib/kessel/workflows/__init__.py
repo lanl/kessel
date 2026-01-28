@@ -62,7 +62,10 @@ class Meta(type):
                 return state.type(self.shenv[variable])
 
             def setter(self, value):
-                self.shenv[variable] = str(value)
+                if isinstance(value, list):
+                    self.shenv[variable] = " ".join(value)
+                else:
+                    self.shenv[variable] = str(value)
 
             return getter, setter
 
