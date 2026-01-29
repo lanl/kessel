@@ -6,12 +6,10 @@ fi
 umask 0007
 
 echo "Using Spack installation at $SPACK_ROOT"
-fresh_env=false
 
 if ! spack env activate --without-view "$KESSEL_SPACK_ENV"; then
   spack env create --without-view "$KESSEL_SPACK_ENV"
   spack env activate --without-view "$KESSEL_SPACK_ENV"
-  fresh_env=true
 fi
 
 existing_lockfile="$SPACK_ENV/spack.lock.$(spack arch)"
@@ -33,7 +31,7 @@ if [ -d "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME" ]; then
   spack repo add "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME"
 fi
 
-if "$fresh_env"; then
+if spack find -r 2>/dev/null | grep -q "No root specs"; then
   spack add "$KESSEL_PROJECT_SPEC"
 fi
 
