@@ -68,7 +68,7 @@ packages:
           compilers:
             c: /vast/projects/darwin_contrib/spack-builds/2025-03-07/rhel8/x86_64/llvm/19.1.7-gcc_13.2.0/bin/clang
             cxx: /vast/projects/darwin_contrib/spack-builds/2025-03-07/rhel8/x86_64/llvm/19.1.7-gcc_13.2.0/bin/clang++
-      - spec: llvm@20.1.8 +clang
+      - spec: llvm@20.1.8 +clang +flang
         prefix: /vast/projects/darwin_contrib/spack-builds/2025-07-21/rhel8/x86_64/llvm/20.1.8-gcc_13.2.0
         modules:
         - gcc/13.2.0
