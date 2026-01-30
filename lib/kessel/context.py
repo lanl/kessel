@@ -1,17 +1,18 @@
 import itertools
 import os
 from pathlib import Path
+from typing import Iterator
 
-from kessel.util import create_squashfs, symbolic_to_octal
-from kessel.workflows import load_workflow_from_directory
+from kessel.util import ShellEnvironment
+from kessel.workflows import load_workflow_from_directory, Workflow
 
 
 class Context(object):
-    def __init__(self, senv):
+    def __init__(self, senv: ShellEnvironment) -> None:
         self.senv = senv
-        self._workflow_config = None
+        self._workflow_config: Workflow | None = None
 
-    def reset(self):
+    def reset(self) -> None:
         self.workflow = None
         setup_script = os.environ.get("KESSEL_SETUP_SCRIPT")
         for v in [
@@ -21,10 +22,12 @@ class Context(object):
                 "KESSEL_SYSTEM",
                 "KESSEL_CURRENT_SYSTEM")]:
             self.senv.unset_env_var(v)
+
+        assert setup_script is not None
         self.senv.source(setup_script)
 
     @property
-    def kessel_dir(self):
+    def kessel_dir(self) -> Path | None:
         canditates = itertools.chain([Path.cwd()], Path.cwd().parents)
         for d in canditates:
             path = d / ".kessel"
@@ -33,7 +36,7 @@ class Context(object):
         return None
 
     @property
-    def workflows(self):
+    def workflows(self) -> Iterator[str]:
         d = self.kessel_dir
         if d:
             wd = d / "workflows"
@@ -42,17 +45,18 @@ class Context(object):
                     if f.is_dir():
                         yield f.name
 
-    def load_workflow(self, name):
+    def load_workflow(self, name: str) -> Workflow:
+        assert self.kessel_dir is not None
         wf = load_workflow_from_directory(self.kessel_dir / "workflows" / name)
         wf.shenv = self.senv
         return wf
 
     @property
-    def workflow(self):
+    def workflow(self) -> str:
         return os.environ.get("KESSEL_WORKFLOW", "default")
 
     @workflow.setter
-    def workflow(self, value):
+    def workflow(self, value: str | None) -> None:
         if value is None:
             self.senv.unset_env_var("KESSEL_WORKFLOW")
             self._workflow_config = None
@@ -64,7 +68,7 @@ class Context(object):
             self._workflow_config = None
 
     @property
-    def workflow_config(self):
+    def workflow_config(self) -> Workflow | None:
         try:
             if self._workflow_config is None:
                 self._workflow_config = self.load_workflow(self.workflow)
@@ -73,26 +77,27 @@ class Context(object):
             return None
 
     @property
-    def run_state(self):
+    def run_state(self) -> str | None:
         return os.environ.get("KESSEL_RUN_STATE", None)
 
     @run_state.setter
-    def run_state(self, value):
+    def run_state(self, value: str | None) -> None:
         self.senv.set_env_var("KESSEL_RUN_STATE", value)
 
     @property
-    def kessel_root(self):
+    def kessel_root(self) -> Path:
         return Path(os.environ["KESSEL_ROOT"])
 
     @property
-    def kessel_config_dir(self):
+    def kessel_config_dir(self) -> Path:
         return self.kessel_root / "etc" / "kessel"
 
     @property
-    def deployment_dir(self):
+    def deployment_dir(self) -> Path | None:
         deployment_dir = os.environ.get("KESSEL_DEPLOYMENT", default=None)
         return Path(deployment_dir) if deployment_dir else None
 
     @property
-    def replicate_script(self):
+    def replicate_script(self) -> Path:
+        assert self.deployment_dir is not None
         return self.deployment_dir / "bin" / "replicate"

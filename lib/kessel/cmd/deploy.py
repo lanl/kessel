@@ -2,8 +2,12 @@ from pathlib import Path
 import os
 import subprocess
 
+from argparse import Namespace, ArgumentParser
+from kessel.util import ShellEnvironment
+from kessel.context import Context
 
-def activate(args, ctx, senv):
+
+def activate(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
     deployment_dir = Path(args.path).resolve()
     deployment_activate_script = deployment_dir / "activate.sh"
     if deployment_activate_script.exists():
@@ -12,7 +16,7 @@ def activate(args, ctx, senv):
         raise Exception(f"Deployment at '{deployment_dir} does not exist!")
 
 
-def replicate(args, ctx, senv):
+def replicate(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
     if args.src is None:
         raise Exception("No active deployment!")
 
@@ -22,13 +26,13 @@ def replicate(args, ctx, senv):
 
     if ctx.replicate_script.exists():
         renv = os.environ.copy()
-        renv["KESSEL_DEPLOYMENT"] = deployment_dir
+        renv["KESSEL_DEPLOYMENT"] = str(deployment_dir)
         subprocess.call([ctx.replicate_script, args.dest], env=renv)
     else:
         raise Exception("Deployment doesn't provide replicate script!")
 
 
-def setup_command(subparser, ctx):
+def setup_command(subparser: ArgumentParser, ctx: Context) -> None:
     subparsers = subparser.add_subparsers()
 
     activate_cmd = subparsers.add_parser("activate")

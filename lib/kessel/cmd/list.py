@@ -1,9 +1,13 @@
 """List available workflows."""
 
 from kessel.colors import COLOR_GREEN, COLOR_PLAIN
+from argparse import ArgumentParser, Namespace
+from kessel.context import Context
+from kessel.util import ShellEnvironment
 
 
-def list_workflows(args, ctx, senv):
+def list_workflows(args: Namespace, ctx: Context,
+                   senv: ShellEnvironment) -> None:
     """List all available workflows, highlighting the active one."""
     for wf in ctx.workflows:
         if wf == ctx.workflow:
@@ -12,6 +16,6 @@ def list_workflows(args, ctx, senv):
             print(wf)
 
 
-def setup_command(subparser, ctx):
+def setup_command(subparser: ArgumentParser, ctx: Context):
     """Setup the list command."""
     subparser.set_defaults(func=list_workflows)

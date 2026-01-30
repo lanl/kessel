@@ -3,11 +3,16 @@ import importlib.util
 import os
 import sys
 import subprocess
+from types import ModuleType
+from typing import Any
 from pathlib import Path
 from kessel.colors import COLOR_BLUE, COLOR_PLAIN
+from collections.abc import Callable
+import argparse
+from kessel.util import ShellEnvironment
 
 
-def import_workflow_module(path: Path):
+def import_workflow_module(path: Path) -> ModuleType:
     mod_name = f"kessel.workflows.project.{path.name}"
     spec = importlib.util.spec_from_file_location(mod_name, path / "workflow.py")
 
@@ -24,44 +29,35 @@ def import_workflow_module(path: Path):
     return mod
 
 
-def load_workflow_from_directory(path: Path):
-    cls_name = path.name.capitalize()
-    mod = import_workflow_module(path)
-    wf = getattr(mod, cls_name)
-    instance = wf()
-    instance.workflow_dir = path
-    return instance
-
-
 class EnvState:
-    def __init__(self, default=None, variable=None):
+    def __init__(self, default: Path | str | None = None, variable: Path | str | None = None) -> None:
         self.default = default
         self.variable = variable
-        self.type = type(default) if default else str
+        self.type: type[Path] | type[str] = type(default) if default else str
 
 
 class Meta(type):
-    def __new__(mcls, cname, bases, namespace):
+    def __new__(mcls, cname: str, bases: tuple[type, ...], namespace: dict[str, Any]) -> type:
         states = {
             name: value
             for name, value in namespace.items()
             if isinstance(value, EnvState)
         }
 
-        def make_accessors(name, state):
+        def make_accessors(name: str, state: EnvState) -> tuple[Callable, Callable]:
             if state.variable:
                 variable = state.variable
             else:
                 variable = f"KESSEL_{name.upper()}"
 
-            def getter(self):
+            def getter(self) -> Path | str | None:
                 if variable not in self.shenv:
                     self.shenv[variable] = state.default
                     if state.default is None:
                         return None
                 return state.type(self.shenv[variable])
 
-            def setter(self, value):
+            def setter(self, value: str | list[str]) -> None:
                 if isinstance(value, list):
                     self.shenv[variable] = " ".join(value)
                 else:
@@ -76,21 +72,21 @@ class Meta(type):
         return super().__new__(mcls, cname, bases, namespace)
 
 
-def environment(default=None, variable=None):
+def environment(default: Path | str | None = None, variable: str | None = None) -> EnvState:
     return EnvState(default=default, variable=variable)
 
 
-def collapsed(func):
+def collapsed(func) -> Callable:
     func.collapsed = True
     return func
 
 
-def default_ci_message(project,
-                       system="local",
-                       workflow="default",
-                       args=sys.argv[1:],
-                       pre_alloc_init="",
-                       post_alloc_init=""):
+def default_ci_message(project: str,
+                       system: str = "local",
+                       workflow: str = "default",
+                       args: list[str] = sys.argv[1:],
+                       pre_alloc_init: str = "",
+                       post_alloc_init: str = "") -> str:
     system_change = ""
     alloc = ""
     workflow_change = ""
@@ -133,51 +129,65 @@ def default_ci_message(project,
 
 
 class Workflow(metaclass=Meta):
-    def __init__(self):
-        self.shenv = None
-        self.workflow_dir = None
+    def __init__(self) -> None:
+        self.shenv: ShellEnvironment | None = None
+        self.workflow_dir: Path | str | None = None
+        self.steps: list[str]
 
     @property
-    def merged_states(self):
+    def merged_states(self) -> set:
         merged = set()
         for base in self.__class__.__mro__:
             if hasattr(base, "states"):
                 merged |= base.states
         return merged
 
-    def init(self):
+    def init(self) -> None:
         # initialize states to default values if not already set
         for s in self.merged_states:
             getattr(self, s)
 
-    def init_step(self, args):
+    def init_step(self, args: argparse.Namespace) -> None:
         for name, value in vars(args).items():
             if hasattr(self, name) and value:
                 setattr(self, name, value)
 
     @property
-    def workflow(self):
+    def workflow(self) -> str:
         return self.__class__.__name__.lower()
 
     @property
-    def kessel_root(self):
+    def kessel_root(self) -> Path:
         return Path(os.environ["KESSEL_ROOT"])
 
-    def is_step_collapsed(self, step):
+    def is_step_collapsed(self, step: str) -> bool:
         s = getattr(self, step)
         return hasattr(s, "collapsed") and s.collapsed
 
-    def get_step_title(self, step):
-        return inspect.getdoc(getattr(self, step)).splitlines()[0]
+    def get_step_title(self, step: str) -> str:
+        doc = inspect.getdoc(getattr(self, step))
+        assert doc is not None
+        return doc.splitlines()[0]
 
-    def exec(self, *args):
-        return self.shenv.eval(*args)
+    def exec(self, *args: str) -> None:
+        assert self.shenv is not None
+        self.shenv.eval(*args)
 
-    def print(self, *args):
-        return self.shenv.echo(*args)
+    def print(self, *args: str) -> None:
+        assert self.shenv is not None
+        self.shenv.echo(*args)
 
 
-def git(cmd, cwd=None, check=True):
+def load_workflow_from_directory(path: Path) -> Workflow:
+    cls_name = path.name.capitalize()
+    mod = import_workflow_module(path)
+    wf = getattr(mod, cls_name)
+    instance = wf()
+    instance.workflow_dir = path
+    return instance
+
+
+def git(cmd, cwd=None, check=True) -> None | str:
     """Run git command and return output, suppressing normal output."""
     env = os.environ.copy()
     env["GIT_ADVICE_DETACHED_HEAD"] = "false"

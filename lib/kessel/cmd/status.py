@@ -1,7 +1,9 @@
 """Display workflow status."""
 
-from kessel.colors import COLOR_GREEN, COLOR_BLUE, COLOR_MAGENTA, COLOR_CYAN, COLOR_PLAIN
 import textwrap
+from kessel.util import ShellEnvironment
+from kessel.context import Context
+from argparse import Namespace, ArgumentParser
 
 PROGRESS_STEP_COMPLETE = "●"
 PROGRESS_STEP_PENDING = "○"
@@ -9,7 +11,7 @@ PROGRESS_BAR_PENDING = "▭"
 PROGRESS_BAR_COMPLETE = "▬"
 
 
-def step_lines(title):
+def step_lines(title: str) -> list[str]:
     min_width = len(max(title.split(), key=len)) + 2
     return [
         line.center(min_width)
@@ -19,7 +21,7 @@ def step_lines(title):
     ]
 
 
-def format_status(ctx, step=None):
+def format_status(ctx: Context, step: str | None = None) -> str:
     """Format the workflow status display."""
     if ctx.workflow_config is None:
         raise Exception(f"{ctx.workflow} workflow can not be found!")
@@ -57,11 +59,11 @@ def format_status(ctx, step=None):
     return s
 
 
-def show_status(args, ctx, senv):
+def show_status(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
     """Display the current workflow status."""
     senv.echo(format_status(ctx, ctx.run_state))
 
 
-def setup_command(subparser, ctx):
+def setup_command(subparser: ArgumentParser, ctx: Context) -> None:
     """Setup the status command."""
     subparser.set_defaults(func=show_status)

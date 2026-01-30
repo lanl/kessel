@@ -1,9 +1,13 @@
-import sys
 from kessel.cmd.status import format_status
+from argparse import Namespace, ArgumentParser
+from kessel.context import Context
+from kessel.util import ShellEnvironment
 
 
-def step(args, ctx, senv):
+def step(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
     workflow = ctx.workflow_config
+
+    assert workflow is not None
     workflow.init()
     step_func = getattr(workflow, args.step)
     title = workflow.get_step_title(args.step)
@@ -21,7 +25,7 @@ def step(args, ctx, senv):
     ctx.run_state = args.step
 
 
-def setup_command(subparser, ctx):
+def setup_command(subparser: ArgumentParser, ctx: Context) -> None:
     subparsers = subparser.add_subparsers()
 
     if ctx.kessel_dir and ctx.workflow_config:

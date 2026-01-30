@@ -18,7 +18,7 @@ from kessel.util import ShellEnvironment
 from kessel import __version__
 
 
-def spinner(stop_event, message="Working"):
+def spinner(stop_event: threading.Event, message: str = "Working") -> None:
     frames = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
     sys.stdout.write("\033[?25l")
     sys.stdout.flush()
@@ -36,7 +36,7 @@ def spinner(stop_event, message="Working"):
     sys.stdout.flush()
 
 
-def main():
+def main() -> int:
     senv = ShellEnvironment()
     ctx = Context(senv)
     parser = argparse.ArgumentParser(

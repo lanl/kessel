@@ -1,8 +1,10 @@
 from pathlib import Path
 import shutil
+from argparse import Namespace, ArgumentParser
+from kessel.context import Context
 
 
-def init(args, ctx, senv):
+def init(args: Namespace, ctx: Context) -> None:
     kessel_dir = args.directory / ".kessel"
 
     ctx.workflow = None
@@ -16,7 +18,7 @@ def init(args, ctx, senv):
         raise Exception("Existing .kessel folder found.")
 
 
-def setup_command(subparser, ctx):
+def setup_command(subparser: ArgumentParser, ctx: Context) -> None:
     template_dir = ctx.kessel_root / "share" / "kessel" / "templates"
     templates = [f.name for f in template_dir.iterdir() if f.is_dir()]
     subparser.add_argument("-t", "--template", choices=templates, default="spack-project")

@@ -1,9 +1,10 @@
-import sys
-
 from kessel.cmd.step import step
+from argparse import Namespace, ArgumentParser
+from kessel.util import ShellEnvironment
+from kessel.context import Context
 
 
-def run(args, ctx, senv):
+def run(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
     ctx.run_state = None
     workflow = ctx.workflow_config
 
@@ -22,7 +23,7 @@ def run(args, ctx, senv):
             break
 
 
-def setup_command(subparser, ctx):
+def setup_command(subparser: ArgumentParser, ctx: Context) -> None:
     if ctx.kessel_dir and ctx.workflow_config:
         workflow = ctx.workflow_config
         subparser.add_argument("-u", "--until", choices=workflow.steps, default=workflow.steps[-1])
