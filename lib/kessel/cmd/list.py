@@ -6,8 +6,7 @@ from kessel.context import Context
 from kessel.util import ShellEnvironment
 
 
-def list_workflows(args: Namespace, ctx: Context,
-                   senv: ShellEnvironment) -> None:
+def list_workflows(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
     """List all available workflows, highlighting the active one."""
     for wf in ctx.workflows:
         if wf == ctx.workflow:

@@ -84,12 +84,11 @@ class ShellEnvironment(object):
     def source(self, path: str | Path, *args: str) -> None:
         self.eval("source", path, *args)
 
-    def echo(self, str: str = "") -> None:
-        for line in str.splitlines():
+    def echo(self, msg: str = "") -> None:
+        for line in msg.splitlines():
             self.eval("echo", line)
 
-    def _section(self, marker: str, section: str, passthrough: bool = False,
-                 msg: str = "") -> None:
+    def _section(self, marker: str, section: str, passthrough: bool = False, msg: str = "") -> None:
         if "CI" in os.environ:
             if passthrough:
                 print(
