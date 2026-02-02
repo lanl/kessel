@@ -1,7 +1,8 @@
+from argparse import ArgumentParser, Namespace
+
 from kessel.cmd.step import step
-from argparse import Namespace, ArgumentParser
-from kessel.util import ShellEnvironment
 from kessel.context import Context
+from kessel.util import ShellEnvironment
 
 
 def run(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:

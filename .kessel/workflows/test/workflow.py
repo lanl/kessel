@@ -1,5 +1,7 @@
-from kessel.workflows import Workflow
 from argparse import Namespace
+
+from kessel.workflows import Workflow
+
 
 class Test(Workflow):
     steps = ["tutorials"]

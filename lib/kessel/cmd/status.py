@@ -1,9 +1,10 @@
 """Display workflow status."""
 
 import textwrap
-from kessel.util import ShellEnvironment
+from argparse import ArgumentParser, Namespace
+
 from kessel.context import Context
-from argparse import Namespace, ArgumentParser
+from kessel.util import ShellEnvironment
 
 PROGRESS_STEP_COMPLETE = "●"
 PROGRESS_STEP_PENDING = "○"

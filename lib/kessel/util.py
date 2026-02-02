@@ -1,10 +1,10 @@
 import os
-import subprocess
 import shlex
+import subprocess
 import sys
-from typing import TextIO
 from io import TextIOWrapper
 from pathlib import Path
+from typing import TextIO
 
 from kessel.colors import COLOR_CYAN, COLOR_PLAIN
 

@@ -1,5 +1,6 @@
 from kessel.workflows import *
 
+
 class Default(Workflow):
     steps = ["configure", "build"]
 

@@ -1,14 +1,15 @@
-import inspect
+import argparse
 import importlib.util
+import inspect
 import os
-import sys
 import subprocess
+import sys
+from collections.abc import Callable
+from pathlib import Path
 from types import ModuleType
 from typing import Any
-from pathlib import Path
+
 from kessel.colors import COLOR_BLUE, COLOR_PLAIN
-from collections.abc import Callable
-import argparse
 from kessel.util import ShellEnvironment
 
 

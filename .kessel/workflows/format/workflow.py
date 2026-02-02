@@ -1,9 +1,11 @@
-from kessel.workflows import environment, default_ci_message
-from kessel.workflows.pip import Pip
 from argparse import Namespace
 
+from kessel.workflows import default_ci_message, environment
+from kessel.workflows.pip import Pip
+
+
 class Format(Pip):
-    steps = ["setup", "autopep8", "flake8", "mypy"]
+    steps = ["setup", "autopep8", "isort", "flake8", "mypy"]
 
     env = environment("format")
 
@@ -18,6 +20,10 @@ class Format(Pip):
     def autopep8(self, args: Namespace) -> None:
         """Autoformat"""
         self.shenv.source(self.workflow_dir / "autopep8.sh")
+
+    def isort(self, args: Namespace) -> None:
+        """Import sorting"""
+        self.shenv.source(self.workflow_dir / "isort.sh")
 
     def flake8(self, args: Namespace) -> None:
         """Linting"""

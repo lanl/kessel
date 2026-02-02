@@ -1,7 +1,8 @@
-from kessel.workflows import Workflow, environment
 import os
-from pathlib import Path
 from argparse import ArgumentParser, Namespace
+from pathlib import Path
+
+from kessel.workflows import Workflow, environment
 
 
 class CMake(Workflow):

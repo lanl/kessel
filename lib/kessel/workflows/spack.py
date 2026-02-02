@@ -1,12 +1,13 @@
-from kessel.workflows import Workflow, collapsed, environment, default_ci_message, git, EnvState
-from pathlib import Path
 import argparse
-import shlex
 import getpass
 import grp
 import os
+import shlex
 import shutil
 import subprocess
+from pathlib import Path
+
+from kessel.workflows import EnvState, Workflow, collapsed, default_ci_message, environment, git
 
 
 def get_project_name_from_spec(spec: EnvState | str) -> str:

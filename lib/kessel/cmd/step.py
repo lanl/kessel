@@ -1,5 +1,6 @@
+from argparse import ArgumentParser, Namespace
+
 from kessel.cmd.status import format_status
-from argparse import Namespace, ArgumentParser
 from kessel.context import Context
 from kessel.util import ShellEnvironment
 

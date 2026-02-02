@@ -1,6 +1,8 @@
-from kessel.workflows import environment, default_ci_message
-from kessel.workflows.pip import Pip
 from argparse import Namespace
+
+from kessel.workflows import default_ci_message, environment
+from kessel.workflows.pip import Pip
+
 
 class Docs(Pip):
     steps = ["setup", "html"]

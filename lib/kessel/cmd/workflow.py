@@ -1,7 +1,8 @@
 import sys
-from kessel.util import ShellEnvironment
+from argparse import ArgumentParser, Namespace
+
 from kessel.context import Context
-from argparse import Namespace, ArgumentParser
+from kessel.util import ShellEnvironment
 
 
 def workflow_list(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:

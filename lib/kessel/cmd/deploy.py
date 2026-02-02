@@ -1,10 +1,10 @@
-from pathlib import Path
 import os
 import subprocess
+from argparse import ArgumentParser, Namespace
+from pathlib import Path
 
-from argparse import Namespace, ArgumentParser
-from kessel.util import ShellEnvironment
 from kessel.context import Context
+from kessel.util import ShellEnvironment
 
 
 def activate(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:

@@ -1,9 +1,10 @@
 """Edit the active workflow."""
 
 from argparse import ArgumentParser, Namespace
-from kessel.util import ShellEnvironment
-from kessel.context import Context
 from pathlib import Path
+
+from kessel.context import Context
+from kessel.util import ShellEnvironment
 
 
 def edit_workflow(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:

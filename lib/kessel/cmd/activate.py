@@ -1,6 +1,7 @@
 """Activate a workflow."""
 
-from argparse import Namespace, ArgumentParser
+from argparse import ArgumentParser, Namespace
+
 from kessel.context import Context
 from kessel.util import ShellEnvironment
 

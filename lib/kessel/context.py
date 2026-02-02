@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Iterator
 
 from kessel.util import ShellEnvironment
-from kessel.workflows import load_workflow_from_directory, Workflow
+from kessel.workflows import Workflow, load_workflow_from_directory
 
 
 class Context(object):

@@ -1,7 +1,8 @@
 """List available workflows."""
 
-from kessel.colors import COLOR_GREEN, COLOR_PLAIN
 from argparse import ArgumentParser, Namespace
+
+from kessel.colors import COLOR_GREEN, COLOR_PLAIN
 from kessel.context import Context
 from kessel.util import ShellEnvironment
 

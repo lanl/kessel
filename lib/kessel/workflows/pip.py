@@ -1,6 +1,7 @@
-from kessel.workflows import Workflow, collapsed, environment
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from argparse import Namespace, ArgumentParser
+
+from kessel.workflows import Workflow, collapsed, environment
 
 
 class Pip(Workflow):

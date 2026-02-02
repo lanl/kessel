@@ -1,21 +1,22 @@
-import sys
 import argparse
-import time
+import sys
 import threading
-import kessel.cmd.init as init_cmd
-import kessel.cmd.deploy as deploy_cmd
-import kessel.cmd.workflow as workflow_cmd
-import kessel.cmd.step as step_cmd
-import kessel.cmd.run as run_cmd
-import kessel.cmd.reset as reset_cmd
-import kessel.cmd.build_env as build_env_cmd
+import time
+
 import kessel.cmd.activate as activate_cmd
-import kessel.cmd.list as list_cmd
-import kessel.cmd.status as status_cmd
+import kessel.cmd.build_env as build_env_cmd
+import kessel.cmd.deploy as deploy_cmd
 import kessel.cmd.edit as edit_cmd
+import kessel.cmd.init as init_cmd
+import kessel.cmd.list as list_cmd
+import kessel.cmd.reset as reset_cmd
+import kessel.cmd.run as run_cmd
+import kessel.cmd.status as status_cmd
+import kessel.cmd.step as step_cmd
+import kessel.cmd.workflow as workflow_cmd
+from kessel import __version__
 from kessel.context import Context
 from kessel.util import ShellEnvironment
-from kessel import __version__
 
 
 def spinner(stop_event: threading.Event, message: str = "Working") -> None:
