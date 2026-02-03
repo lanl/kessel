@@ -6,3 +6,14 @@ requires-python=">=3.6"
 dependencies=[
   "setuptools",
 ]
+
+[tool.isort]
+line_length = 120
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = "F401,E226,W503,W504"
+
+[tool.autopep8]
+max_line_length = 120
+ignore = "E226,W503,W504"
