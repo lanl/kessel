@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Kessel'
-copyright = '2025, Richard Berger, Andrés Yagüe López'
+copyright = '2026, Richard Berger, Andrés Yagüe López'
 author = 'Richard Berger, Andrés Yagüe López'
 
 # -- General configuration ---------------------------------------------------
