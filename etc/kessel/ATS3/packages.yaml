@@ -1,5 +1,6 @@
 packages:
   gcc:
+    version: [12.3.0]
     externals:
       - spec: "gcc@12.3.0 languages='c,c++,fortran'"
         prefix: /usr/projects/hpcsoft/tce/23.12/cos3-x86_64/compilers/gcc/12.3.0
@@ -11,6 +12,16 @@ packages:
             c: /usr/projects/hpcsoft/tce/23.12/cos3-x86_64/compilers/gcc/12.3.0/bin/gcc
             cxx: /usr/projects/hpcsoft/tce/23.12/cos3-x86_64/compilers/gcc/12.3.0/bin/g++
             fortran: /usr/projects/hpcsoft/tce/23.12/cos3-x86_64/compilers/gcc/12.3.0/bin/gfortran
+      - spec: "gcc@13.2.0 languages='c,c++,fortran'"
+        prefix: /usr/projects/hpcsoft/tce/23.12/cos3-x86_64/compilers/gcc/13.2.0
+        modules:
+         - PrgEnv-gnu
+         - gcc/13.2.0
+        extra_attributes:
+          compilers:
+            c: /usr/projects/hpcsoft/tce/23.12/cos3-x86_64/compilers/gcc/13.2.0/bin/gcc
+            cxx: /usr/projects/hpcsoft/tce/23.12/cos3-x86_64/compilers/gcc/13.2.0/bin/g++
+            fortran: /usr/projects/hpcsoft/tce/23.12/cos3-x86_64/compilers/gcc/13.2.0/bin/gfortran
   intel-oneapi-compilers:
     externals:
       - spec: intel-oneapi-compilers@2023.2.0
@@ -151,7 +162,18 @@ packages:
         - texlive/20220321
     buildable: false
   cray-mpich:
+    version: [8.1.28]
     externals:
+    - spec: "cray-mpich@8.1.30+wrappers %gcc@13.2.0"
+      prefix: /cpe/24.07/mpich/8.1.30/ofi/gnu/12.3
+      modules:
+       - libfabric/1.22.0
+       - cray-pmi/6.1.13
+    - spec: "cray-mpich@8.1.30+wrappers %gcc@12.3.0"
+      prefix: /cpe/24.07/mpich/8.1.30/ofi/gnu/12.3
+      modules:
+       - libfabric/1.22.0
+       - cray-pmi/6.1.13
     - spec: "cray-mpich@8.1.28+wrappers %gcc@12.3.0"
       prefix: /cpe/23.12/mpich/8.1.28/ofi/gnu/12.3
       modules:
