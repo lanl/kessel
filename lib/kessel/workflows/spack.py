@@ -107,6 +107,7 @@ class Deployment(Workflow):
     env_views = False
     require_git_mirrors = False
     bootstrap_mirror = False
+    allow_replicate = True
     git_mirrors: list[str] = []
     mirror_exclude: list[str] = []
     build_exclude: list[str] = []
@@ -186,6 +187,7 @@ class Deployment(Workflow):
         assert self.shenv is not None
         self.shenv["SPACK_CHECKOUT_URL"] = self.spack_url
         self.shenv["SPACK_CHECKOUT_REF"] = self.spack_ref
+        self.shenv["KESSEL_ALLOW_REPLICATE"] = "true" if self.allow_replicate else "false"
 
         # generate activate.sh for deployment
         activate_template = self.kessel_root / "libexec" / "kessel" / \
@@ -263,6 +265,8 @@ class Deployment(Workflow):
         """Finalize"""
         for pkg in self.build_exclude:
             self.exec(f"spack uninstall -y --all --dependents {shlex.quote(pkg)} || true")
+
+        self.shenv["KESSEL_ALLOW_REPLICATE"] = "true" if self.allow_replicate else "false"
 
         self.shenv.source(
             self.kessel_root.joinpath(

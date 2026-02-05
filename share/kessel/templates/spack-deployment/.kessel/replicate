@@ -1,2 +1,0 @@
-#!/bin/bash
-"$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/replicate_from_sqfs" "$1"

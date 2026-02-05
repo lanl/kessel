@@ -25,10 +25,12 @@ find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -type f -exec chmod "$KESSEL
 
 chmod g+s "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db"
 
-SQFS_FILE="$KESSEL_DEPLOYMENT/.replicate.sqfs"
-"$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/gen_replicate_sqfs" "$KESSEL_DEPLOYMENT" "$SQFS_FILE"
-chown ":$KESSEL_GROUP" "$SQFS_FILE"
-chmod "$KESSEL_PERMISSIONS" "$SQFS_FILE"
+if ${KESSEL_ALLOW_REPLICATE}; then
+  SQFS_FILE="$KESSEL_DEPLOYMENT/.replicate.sqfs"
+  "$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/gen_replicate_sqfs" "$KESSEL_DEPLOYMENT" "$SQFS_FILE"
+  chown ":$KESSEL_GROUP" "$SQFS_FILE"
+  chmod "$KESSEL_PERMISSIONS" "$SQFS_FILE"
+fi
 
 echo "Setting permissions and group of spack/opt/spack ..."
 chown -R ":$KESSEL_GROUP" "$KESSEL_DEPLOYMENT/spack/opt/spack"

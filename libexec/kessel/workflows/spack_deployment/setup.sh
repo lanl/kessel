@@ -46,7 +46,10 @@ generate_environments
 # link replicate tool
 rm -rf "${KESSEL_DEPLOYMENT}/bin"
 mkdir -p "${KESSEL_DEPLOYMENT}/bin"
-ln -s ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/replicate_from_sqfs ${KESSEL_DEPLOYMENT}/bin/replicate
+
+if ${KESSEL_ALLOW_REPLICATE}; then
+  ln -s ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/replicate_from_sqfs ${KESSEL_DEPLOYMENT}/bin/replicate
+fi
 
 # write kessel version used to generate this deployment
 kessel --version > ${KESSEL_DEPLOYMENT}/.kessel_version
