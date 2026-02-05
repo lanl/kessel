@@ -3,9 +3,10 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from kessel.context import Context
+from kessel.util import ShellEnvironment
 
 
-def init(args: Namespace, ctx: Context) -> None:
+def init(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
     kessel_dir = args.directory / ".kessel"
 
     ctx.workflow = None
