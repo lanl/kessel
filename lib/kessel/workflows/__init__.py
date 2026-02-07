@@ -52,17 +52,17 @@ class Meta(type):
                 variable = f"KESSEL_{name.upper()}"
 
             def getter(self) -> Path | str | None:
-                if variable not in self.shenv:
-                    self.shenv[variable] = state.default
+                if variable not in self.environ:
+                    self.environ[variable] = state.default
                     if state.default is None:
                         return None
-                return state.type(self.shenv[variable])
+                return state.type(self.environ[variable])
 
             def setter(self, value: str | list[str]) -> None:
                 if isinstance(value, list):
-                    self.shenv[variable] = " ".join(value)
+                    self.environ[variable] = " ".join(value)
                 else:
-                    self.shenv[variable] = str(value)
+                    self.environ[variable] = str(value)
 
             return getter, setter
 
@@ -177,6 +177,15 @@ class Workflow(metaclass=Meta):
     def print(self, *args: str) -> None:
         assert self.shenv is not None
         self.shenv.echo(*args)
+
+    def source(self, path: str | Path, *args: str) -> None:
+        assert self.shenv is not None
+        self.shenv.source(path, *args)
+
+    @property
+    def environ(self) -> ShellEnvironment:
+        assert self.shenv is not None
+        return self.shenv
 
 
 def load_workflow_from_directory(path: Path) -> Workflow:

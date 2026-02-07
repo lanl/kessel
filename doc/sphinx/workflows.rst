@@ -155,10 +155,14 @@ Steps can be marked with the ``@collapsed`` decorator to indicate that their out
 
 The ``@collapsed`` decorator only affects the presentation of step output in GitLab CI pipelines and does not change the step's behavior or execution.
 
-Executing Shell Scripts
-~~~~~~~~~~~~~~~~~~~~~~~
+Executing Shell Commands
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-Workflows typically execute shell scripts using the ``shenv`` object:
+Workflows typically execute one or more shell commands either by using the
+``exec`` method or by sourcing entire scripts via the ``source`` method.
+
+In addition, a convenience object ``environ`` gives access to your shell's
+environment variables as writable dictionary.
 
 .. code-block:: python
 
@@ -168,13 +172,13 @@ Workflows typically execute shell scripts using the ``shenv`` object:
        def build(self, args):
            """Build Project"""
            # Source a shell script
-           self.shenv.source(self.kessel_root / "libexec/kessel/workflows/cmake/build.sh")
+           self.source(self.kessel_root / "libexec/kessel/workflows/cmake/build.sh")
            
            # Execute a shell command
            self.exec("make -j$(nproc)")
            
            # Set environment variable
-           self.shenv["MY_VAR"] = "value"
+           self.environ["MY_VAR"] = "value"
 
 Built-in Workflow Classes
 -------------------------
