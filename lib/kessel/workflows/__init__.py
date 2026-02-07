@@ -132,6 +132,7 @@ def default_ci_message(project: str,
 class Workflow(metaclass=Meta):
     def __init__(self) -> None:
         self.shenv: ShellEnvironment | None = None
+        self._workflow: str | None = None
         self.workflow_dir: Path | str | None = None
         self.steps: list[str]
 
@@ -155,6 +156,14 @@ class Workflow(metaclass=Meta):
 
     @property
     def workflow(self) -> str:
+        return self._workflow if self._workflow else self.resolved_workflow
+
+    @workflow.setter
+    def workflow(self, name):
+        self._workflow = name
+
+    @property
+    def resolved_workflow(self) -> str:
         return self.__class__.__name__.lower()
 
     @property
@@ -189,10 +198,12 @@ class Workflow(metaclass=Meta):
 
 
 def load_workflow_from_directory(path: Path) -> Workflow:
-    cls_name = path.name.capitalize()
+    wf_name = path.name
+    cls_name = path.resolve().name.capitalize()
     mod = import_workflow_module(path)
     wf = getattr(mod, cls_name)
     instance = wf()
+    instance.workflow = wf_name
     instance.workflow_dir = path
     return instance
 
