@@ -69,7 +69,7 @@ def main() -> int:
     args = parser.parse_args()
     senv.debug = args.shell_debug
     senv.eval("set --")  # makes sure sourced scripts don't see our args
-    interactive = sys.stdout.isatty() and args.command in ("run", "step")
+    interactive = sys.stdout.isatty() and not args.shell_debug and args.command in ("run", "step")
     try:
         if hasattr(args, "func"):
             if interactive:
