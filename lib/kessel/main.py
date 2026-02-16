@@ -5,6 +5,7 @@ import time
 
 import kessel.cmd.activate as activate_cmd
 import kessel.cmd.build_env as build_env_cmd
+import kessel.cmd.create as create_cmd
 import kessel.cmd.deploy as deploy_cmd
 import kessel.cmd.edit as edit_cmd
 import kessel.cmd.init as init_cmd
@@ -65,6 +66,7 @@ def main() -> int:
     list_cmd.setup_command(subparsers.add_parser("list"), ctx)
     activate_cmd.setup_command(subparsers.add_parser("activate"), ctx)
     status_cmd.setup_command(subparsers.add_parser("status"), ctx)
+    create_cmd.setup_command(subparsers.add_parser("create"), ctx)
     edit_cmd.setup_command(subparsers.add_parser("edit"), ctx)
     args = parser.parse_args()
     senv.debug = args.shell_debug
