@@ -196,14 +196,21 @@ The ``CMake`` workflow class provides steps for CMake-based projects:
    from kessel.workflows.cmake import CMake
 
    class Default(CMake):
-       steps = ["build", "test", "install"]
+       steps = ["configure", "build", "test", "install"]
 
 Available methods:
 
+- ``configure(args, cmake_args=[])``: Configure CMake project
 - ``build(args, cmake_args=[])``: Run CMake build
 - ``test(args, ctest_args=[])``: Run CTest
 - ``install(args)``: Install built artifacts
 - ``define(arg, value)``: Helper to create CMake -D arguments
+
+Environment variables:
+
+- ``source_dir``: Source directory (defaults to current directory)
+- ``build_dir``: Build directory (defaults to ``./build``)
+- ``install_dir``: Installation directory (defaults to ``./build/install``)
 
 Example with custom CMake arguments:
 
@@ -212,17 +219,17 @@ Example with custom CMake arguments:
    from kessel.workflows.cmake import CMake
 
    class Default(CMake):
-       steps = ["build", "test", "install"]
+       steps = ["configure", "build", "test", "install"]
        
-       def build(self, args):
-           """Build Project"""
+       def configure(self, args):
+           """Configure Project"""
            cmake_args = [
                self.define("CMAKE_BUILD_TYPE", "Release"),
                self.define("BUILD_TESTING", True),
                self.define("CMAKE_INSTALL_PREFIX", "/opt/myapp")
            ]
            # Call parent class method with custom arguments
-           super().build(args, cmake_args)
+           super().configure(args, cmake_args)
 
 Spack Build Environment Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -384,23 +391,23 @@ A simple CMake project workflow:
    from pathlib import Path
 
    class Default(CMake):
-       steps = ["build", "test", "install"]
+       steps = ["configure", "build", "test", "install"]
        
        build_dir = environment(Path.cwd() / "build")
        build_type = environment("Release")
        
-       def build_args(self, parser):
+       def configure_args(self, parser):
            parser.add_argument("--build-type", default=self.build_type,
                              choices=["Debug", "Release", "RelWithDebInfo"])
        
-       def build(self, args):
-           """Build Project"""
+       def configure(self, args):
+           """Configure Project"""
            cmake_args = [
                self.define("CMAKE_BUILD_TYPE", args.build_type),
                self.define("BUILD_TESTING", True)
            ]
            # Call parent class method with custom arguments
-           super().build(args, cmake_args)
+           super().configure(args, cmake_args)
 
 Spack + CMake Workflow
 ~~~~~~~~~~~~~~~~~~~~~~

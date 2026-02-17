@@ -1,0 +1,6 @@
+(
+if [ -f "$KESSEL_BUILD_ENV" ]; then
+  source "$KESSEL_BUILD_ENV"
+fi
+cmake -B "$KESSEL_BUILD_DIR" -S "$KESSEL_SOURCE_DIR" -DCMAKE_INSTALL_PREFIX="$KESSEL_INSTALL_DIR" --fresh "$@"
+)

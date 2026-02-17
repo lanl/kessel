@@ -6,7 +6,15 @@ from kessel.workflows import Workflow, environment
 
 
 class CMake(Workflow):
-    steps = ["build", "test", "install"]
+    steps = ["configure", "build", "test", "install"]
+
+    source_dir = environment(Path.cwd())
+    build_dir = environment(Path.cwd() / "build")
+    install_dir = environment(Path.cwd() / "build" / "install")
+
+    def configure(self, args: Namespace, cmake_args: list[str] = []) -> None:
+        """Configure"""
+        self.source(self.kessel_root / "libexec/kessel/workflows/cmake/configure.sh", *cmake_args)
 
     def build(self, args: Namespace, cmake_args: list[str] = []) -> None:
         """Build"""
