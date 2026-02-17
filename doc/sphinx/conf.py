@@ -1,3 +1,15 @@
+# © 2026. Triad National Security, LLC. All rights reserved.
+# This program was produced under U.S. Government contract 89233218CNA000001
+# for Los Alamos National Laboratory (LANL), which is operated by Triad
+# National Security, LLC for the U.S.  Department of Energy/National Nuclear
+# Security Administration. All rights in the program are reserved by Triad
+# National Security, LLC, and the U.S. Department of Energy/National Nuclear
+# Security Administration. The Government is granted for itself and others
+# acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license
+# in this material to reproduce, prepare derivative works, distribute copies to
+# the public, perform publicly and display publicly, and to permit others to do
+# so.
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -6,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Kessel'
-copyright = '2026, Richard Berger, Andrés Yagüe López'
+project = 'kessel'
+copyright = '2026, Triad National Security, LLC. All rights reserved.'
 author = 'Richard Berger, Andrés Yagüe López'
 
 # -- General configuration ---------------------------------------------------

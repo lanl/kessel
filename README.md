@@ -86,6 +86,29 @@ This project was orignally started in support of the following LANL ASC projects
 - XCAP
 - IC DevOps
 
-Special thanks go to Davis Herring for encouraging the project's inception, proposing the project's name, and constructive critique that helped shape the direction of the project into its current form.
+Special thanks go to Davis Herring for encouraging the project's inception,
+proposing the project's name, and constructive critique that helped shape the
+direction of the project into its current form.
 
-This research used the LANL AI Portal and resources provided by the Information Technology (IT) Division at Los Alamos National Laboratory (Supported by the U.S. Department of Energy, National Nuclear Security Administration under Contract No. 89233218CNA000001).
+This research used the LANL AI Portal and resources provided by the Information
+Technology (IT) Division at Los Alamos National Laboratory (Supported by the
+U.S. Department of Energy, National Nuclear Security Administration under
+Contract No. 89233218CNA000001).
+
+# Release
+
+This software has been approved for open source release and has been assigned
+O5070 by the Feynman Center for Innovation at Los Alamos National Laboratory.
+
+# Copyright
+
+© 2026. Triad National Security, LLC. All rights reserved.
+This program was produced under U.S. Government contract 89233218CNA000001 for
+Los Alamos National Laboratory (LANL), which is operated by Triad National
+Security, LLC for the U.S.  Department of Energy/National Nuclear Security
+Administration. All rights in the program are reserved by Triad National
+Security, LLC, and the U.S. Department of Energy/National Nuclear Security
+Administration. The Government is granted for itself and others acting on its
+behalf a nonexclusive, paid-up, irrevocable worldwide license in this material
+to reproduce, prepare derivative works, distribute copies to the public,
+perform publicly and display publicly, and to permit others to do so.
