@@ -43,12 +43,12 @@ fi
 copy_configuration
 generate_environments
 
-# link replicate tool
+# link clone tool
 rm -rf "${KESSEL_DEPLOYMENT}/bin"
 mkdir -p "${KESSEL_DEPLOYMENT}/bin"
 
 if ${KESSEL_ALLOW_REPLICATE}; then
-  ln -s ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/replicate_from_sqfs ${KESSEL_DEPLOYMENT}/bin/replicate
+  ln -s ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/clone_from_sqfs ${KESSEL_DEPLOYMENT}/bin/clone-deployment
 fi
 
 # write kessel version used to generate this deployment
@@ -57,7 +57,7 @@ kessel --version > ${KESSEL_DEPLOYMENT}/.kessel_version
 ################################################################################
 # activate deployment and setup git clones
 ################################################################################
-kessel deploy activate "$KESSEL_DEPLOYMENT"
+source "${KESSEL_DEPLOYMENT}/activate.sh"
 
 # clone spack/spack-packages
 spack repo update builtin

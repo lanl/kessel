@@ -1,0 +1,2 @@
+#!/bin/bash
+unsquashfs -d "$1" "$KESSEL_DEPLOYMENT/.clone.sqfs"

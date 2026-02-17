@@ -1,4 +1,4 @@
-kessel deploy activate "$KESSEL_DEPLOYMENT"
+source "${KESSEL_DEPLOYMENT}/activate.sh"
 
 export KESSEL_REQUIRE_SYSTEM_MIRROR=none
 if [ "$KESSEL_SYSTEM" = "rocinante"  ] || [ "$KESSEL_SYSTEM" = "ATS3" ] || [ "$KESSEL_SYSTEM" = "selene" ]; then

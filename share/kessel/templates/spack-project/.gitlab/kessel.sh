@@ -22,19 +22,9 @@ else
   return 1
 fi
 
-KESSEL_ROOT="${KESSEL_DEPLOYMENT}/kessel"
-
-if [ -d "$KESSEL_ROOT" ]; then
-  echo "Using Kessel installation at: ${KESSEL_ROOT}"
-  source "${KESSEL_ROOT}/share/kessel/setup-env.sh"
-else
-  echo "ERROR: Could not find kessel installation!" >&2
-  return 1
-fi
-
 if [ -d "${KESSEL_DEPLOYMENT}" ] && [ ! -d "${KESSEL_WORKFLOW_DEPLOYMENT}" ]; then
-  kessel deploy activate "${KESSEL_DEPLOYMENT}"
-  kessel deploy replicate "${KESSEL_WORKFLOW_DEPLOYMENT}"
+  source "${KESSEL_DEPLOYMENT}/activate.sh"
+  clone-deployment "${KESSEL_WORKFLOW_DEPLOYMENT}"
 fi
 
-kessel deploy activate "${KESSEL_WORKFLOW_DEPLOYMENT}"
+source "${KESSEL_WORKFLOW_DEPLOYMENT}/activate.sh"
