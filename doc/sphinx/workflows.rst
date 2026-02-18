@@ -302,6 +302,8 @@ Configuration options:
 
 - ``spack_url``: Git URL for Spack repository
 - ``spack_ref``: Git branch/tag/commit to use
+- ``site_configs_url``: Git URL for site-specific configuration repository (optional)
+- ``site_configs_ref``: Git branch/tag/commit for site configs (default: ``main``)
 - ``build_roots``: Whether to build compiler toolchains
 - ``env_views``: Whether to create environment views
 - ``git_mirrors``: List of Git repositories to mirror
