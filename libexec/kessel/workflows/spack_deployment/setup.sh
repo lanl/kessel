@@ -18,6 +18,28 @@ git clone "$KESSEL_INITIAL_ROOT/.git" ${KESSEL_DEPLOYMENT}/kessel
 source ${KESSEL_DEPLOYMENT}/kessel/share/kessel/setup-env.sh
 
 ################################################################################
+# clone default configurations into deployment
+################################################################################
+SITE_CONFIGS_CHECKOUT="${KESSEL_DEPLOYMENT}/config/site"
+
+rm -rf "${KESSEL_DEPLOYMENT}/config"
+mkdir -p "$KESSEL_DEPLOYMENT/config"
+
+if [ ! -d "${SITE_CONFIGS_CHECKOUT}" ]; then
+  git clone "${SITE_CONFIGS_CHECKOUT_URL}" ${SITE_CONFIGS_CHECKOUT}
+else
+  git -C "${SITE_CONFIGS_CHECKOUT}" remote set-url origin "${SITE_CONFIGS_CHECKOUT_URL}"
+fi
+
+SITE_CONFIGS_HEAD=$(git -C "${SITE_CONFIGS_CHECKOUT}" rev-parse HEAD)
+
+if [ "${SITE_CONFIGS_HEAD}" != "${SITE_CONFIGS_CHECKOUT_REF}" ]; then
+  git -C "${SITE_CONFIGS_CHECKOUT}" fetch origin "${SITE_CONFIGS_CHECKOUT_REF}"
+  git -C "${SITE_CONFIGS_CHECKOUT}" checkout FETCH_HEAD
+  git -C "${SITE_CONFIGS_CHECKOUT}" branch -q -D "@{-1}" || true
+fi
+
+################################################################################
 # clone Spack into deployment
 ################################################################################
 SPACK_CHECKOUT="${KESSEL_DEPLOYMENT}/spack"

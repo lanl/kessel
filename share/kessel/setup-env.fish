@@ -1,7 +1,6 @@
 set -l PARENT_DIR (dirname (status current-filename))
 set -x KESSEL_SETUP_SCRIPT (realpath (status current-filename))
 set -x KESSEL_ROOT (realpath $PARENT_DIR/../..)
-set -x KESSEL_CONFIG_DIR $KESSEL_ROOT/etc/kessel
 set -x IN_FISH true
 
 function kessel

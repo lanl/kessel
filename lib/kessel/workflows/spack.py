@@ -15,6 +15,26 @@ def get_project_name_from_spec(spec: EnvState | str) -> str:
         ["spack-python", "-c", f"spec = spack.spec.Spec('{spec}');print(spec.name)"]).decode('utf-8').strip()
 
 
+def join_ssh_url(pathA, pathB):
+    parts = pathA.split('/')
+    partsB = pathB.split('/')
+    for p in partsB:
+        if p == '.': continue
+        if p == '..':
+          parts = parts[:-1]
+          continue
+        parts.append(p)
+    return '/'.join(parts)
+
+
+def resolve_relative_ssh_url(url):
+    """handles a special case where the site configs repo is a relative URL to the deployment config repo"""
+    if url.startswith("../"):
+        base_url = git(["remote", "get-url", "origin"])
+        return join_ssh_url(base_url, url)
+    return url
+
+
 class BuildEnvironment(Workflow):
     steps = ["env", "configure"]
 
@@ -97,10 +117,14 @@ class Deployment(Workflow):
     group = environment(grp.getgrgid(os.getgid()).gr_name)
     system = environment("local")
 
+    site_configs_url = "https://github.com/lanl/kessel-spack-configs.git"
+    site_configs_ref = "main"
+
     spack_url = "https://github.com/spack/spack.git"
     spack_ref = "develop"
     build_roots = False
     env_views = False
+    require_system_mirrors = False
     require_git_mirrors = False
     bootstrap_mirror = False
     allow_replicate = True
@@ -180,9 +204,12 @@ class Deployment(Workflow):
         config_dir.mkdir(exist_ok=True)
         envs_dir.mkdir(exist_ok=True)
 
-        self.environ["SPACK_CHECKOUT_URL"] = self.spack_url
+        self.environ["SPACK_CHECKOUT_URL"] = resolve_relative_ssh_url(self.spack_url)
         self.environ["SPACK_CHECKOUT_REF"] = self.spack_ref
         self.environ["KESSEL_ALLOW_REPLICATE"] = "true" if self.allow_replicate else "false"
+
+        self.environ["SITE_CONFIGS_CHECKOUT_URL"] = resolve_relative_ssh_url(self.site_configs_url)
+        self.environ["SITE_CONFIGS_CHECKOUT_REF"] = self.site_configs_ref
 
         # generate activate.sh for deployment
         activate_template = self.kessel_root / "libexec" / "kessel" / \
@@ -210,13 +237,14 @@ class Deployment(Workflow):
                     git_out = git(["rev-parse", "--absolute-git-dir"], cwd=wdir)
                     assert git_out is not None
                     repo_path = Path(git_out)
-                    self.print(f"Creating Git Mirror for '{wdir.name}' pointing to file://{repo_path}...")
+                    self.print(f"Setting Git attribute for '{wdir.name}' to file://{repo_path}...")
                     print(f"  {wdir.name}:\n    package_attributes:\n      git: 'file://{repo_path}'", file=dst)
 
         self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "setup.sh"))
 
     def bootstrap(self, args: argparse.Namespace) -> None:
         """Bootstrap"""
+        self.environ["KESSEL_REQUIRE_SYSTEM_MIRRORS"] = "true" if self.require_system_mirrors else "false"
         self.source(
             self.kessel_root.joinpath(
                 "libexec",
@@ -231,6 +259,7 @@ class Deployment(Workflow):
     def mirror(self, args: argparse.Namespace) -> None:
         """Create Source Mirror"""
         assert isinstance(self.deployment, Path)
+        self.environ["KESSEL_REQUIRE_SYSTEM_MIRRORS"] = "true" if self.require_system_mirrors else "false"
         mirror_exclude_file = self.deployment / "config" / "mirror.exclude"
         self.exec(f'mirror_exclude_file="{mirror_exclude_file}"')
 
@@ -243,6 +272,7 @@ class Deployment(Workflow):
 
         self.environ["KESSEL_REQUIRE_GIT_MIRRORS"] = "true" if self.require_git_mirrors else "false"
         self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "mirror.sh"))
+        self.environ["KESSEL_REQUIRE_SYSTEM_MIRROR"] = None
 
     def envs(self, args: argparse.Namespace) -> None:
         """Build Environments"""

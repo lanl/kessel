@@ -1,8 +1,3 @@
-export KESSEL_REQUIRE_SYSTEM_MIRROR=none
-if [ "$KESSEL_SYSTEM" = "rocinante"  ] || [ "$KESSEL_SYSTEM" = "ATS3" ] || [ "$KESSEL_SYSTEM" = "selene" ]; then
-    export KESSEL_REQUIRE_SYSTEM_MIRROR="pe-serve"
-fi
-
 concretize_env_for_mirror() {
     env_name="$1"
     echo "Concretizing $env_name..."
@@ -75,5 +70,3 @@ do
         create_env_mirror "$mirror_dir" "$mirror_exclude_file" "$e"
     fi
 done
-
-unset KESSEL_REQUIRE_SYSTEM_MIRROR

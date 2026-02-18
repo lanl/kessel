@@ -1,0 +1,20 @@
+include:
+  - name: "deployment_system"
+    when: env.get("KESSEL_DEPLOYMENT", "none") != "none"
+    path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM
+    optional: true
+  - name: "deployment"
+    when: env.get("KESSEL_DEPLOYMENT", "none") != "none"
+    path: $KESSEL_DEPLOYMENT/config
+    optional: true
+  - name: "site_system"
+    when: env.get("KESSEL_DEPLOYMENT", "none") != "none"
+    path: $KESSEL_DEPLOYMENT/config/site/$KESSEL_SYSTEM
+    optional: true
+  - name: "site"
+    when: env.get("KESSEL_DEPLOYMENT", "none") != "none"
+    path: $KESSEL_DEPLOYMENT/config/site
+    optional: true
+  - name: "kessel_base"
+    path: $KESSEL_ROOT/etc/kessel/spack-deployment/base
+    optional: true

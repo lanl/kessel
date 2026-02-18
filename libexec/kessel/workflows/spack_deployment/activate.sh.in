@@ -4,3 +4,5 @@ export KESSEL_SYSTEM="@KESSEL_SYSTEM@"
 
 source "$KESSEL_DEPLOYMENT/kessel/share/kessel/setup-env.sh"
 source "$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/activate.sh"
+
+export KESSEL_CONFIG_DIR="$KESSEL_ROOT/etc/kessel/spack-deployment"

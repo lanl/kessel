@@ -1,6 +1,4 @@
 copy_configuration() {
-  mkdir -p "$KESSEL_DEPLOYMENT/config"
-
   rsync -av --include="/config/" --include='/config/*.yaml' \
             --include='/config/templates/' --include='/config/templates/**' \
             --exclude='*' "$KESSEL_DEPLOYMENT_CONFIG/" "$KESSEL_DEPLOYMENT/"
