@@ -117,11 +117,10 @@ class Deployment(Workflow):
     group = environment(grp.getgrgid(os.getgid()).gr_name)
     system = environment("local")
 
-    site_configs_url = "https://github.com/lanl/kessel-spack-configs.git"
-    site_configs_ref = "main"
-
     spack_url = "https://github.com/spack/spack.git"
     spack_ref = "develop"
+    site_configs_url = ""
+    site_configs_ref = "main"
     build_roots = False
     env_views = False
     require_system_mirrors = False
@@ -208,8 +207,9 @@ class Deployment(Workflow):
         self.environ["SPACK_CHECKOUT_REF"] = self.spack_ref
         self.environ["KESSEL_ALLOW_REPLICATE"] = "true" if self.allow_replicate else "false"
 
-        self.environ["SITE_CONFIGS_CHECKOUT_URL"] = resolve_relative_ssh_url(self.site_configs_url)
-        self.environ["SITE_CONFIGS_CHECKOUT_REF"] = self.site_configs_ref
+        if self.site_configs_url:
+            self.environ["SITE_CONFIGS_CHECKOUT_URL"] = resolve_relative_ssh_url(self.site_configs_url)
+            self.environ["SITE_CONFIGS_CHECKOUT_REF"] = self.site_configs_ref
 
         # generate activate.sh for deployment
         activate_template = self.kessel_root / "libexec" / "kessel" / \
