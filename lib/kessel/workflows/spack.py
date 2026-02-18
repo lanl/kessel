@@ -19,10 +19,11 @@ def join_ssh_url(pathA, pathB):
     parts = pathA.split('/')
     partsB = pathB.split('/')
     for p in partsB:
-        if p == '.': continue
+        if p == '.':
+            continue
         if p == '..':
-          parts = parts[:-1]
-          continue
+            parts = parts[:-1]
+            continue
         parts.append(p)
     return '/'.join(parts)
 
