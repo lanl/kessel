@@ -82,7 +82,7 @@ class BuildEnvironment(Workflow):
         parser.add_argument("-I", "--install-dir", default=self.install_dir)
 
     @collapsed
-    def configure(self, args: Namespace, cmake_args: list[str] = []) -> None:
+    def configure(self, args: argparse.Namespace, cmake_args: list[str] = []) -> None:
         """Configure"""
         self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "configure.sh"), *cmake_args)
 
