@@ -71,25 +71,25 @@ Edit ``.kessel/workflows/default/workflow.py`` to configure your deployment:
 
    class Default(Deployment):
        steps = ["setup", "bootstrap", "mirror", "envs", "finalize"]
-       
+
        # Spack version to use
        spack_url = "https://github.com/spack/spack.git"
        spack_ref = "v1.1.0"
-       
+
        # Deployment options
        build_roots = False
        env_views = True
-       
+
        # Git repositories to mirror
        git_mirrors = []
-       
+
        # Packages to exclude from source mirror
        mirror_exclude = [
            "cmake",
            "ninja",
            "python"
        ]
-       
+
        # Packages to exclude from final deployment
        build_exclude = [
            "llvm"
@@ -148,7 +148,7 @@ Environments reference configuration scopes using the ``include::`` key in their
      include::
      - name: kessel
        path: $KESSEL_CONFIG_DIR
-     
+
      specs:
      - myapp
 
@@ -175,10 +175,10 @@ Example using templates:
      - $KESSEL_CONFIG_DIR/templates/cuda-ampere.yaml
      - name: kessel
        path: $KESSEL_CONFIG_DIR
-     
+
      specs:
      - flecsi
-     
+
      packages:
        flecsi:
          require:
@@ -211,7 +211,7 @@ The ``config/`` directory in your deployment project provides project-wide defau
      cmake:
        require:
        - "@3.22.1"
-     
+
      openmpi:
        require:
        - "@4.1.5"
@@ -262,14 +262,14 @@ Example Environment File
      include::
      - name: kessel
        path: $KESSEL_CONFIG_DIR
-     
+
      specs:
      - myapp@main +mpi
      - cmake@3.27
      - openmpi@4.1.5
-     
+
      view: true
-     
+
      concretizer:
        unify: true
 
@@ -362,7 +362,7 @@ Using a Deployment
 Activating a Deployment
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-To use a deployment, source its activation script:
+To use a deployment, source its activation script directly:
 
 .. code-block:: console
 
@@ -374,6 +374,8 @@ This sets up:
 - ``KESSEL_SYSTEM``: System name
 - Spack environment variables
 - Access to the Spack installation
+
+The activation script is generated during the deployment creation process and provides everything needed to use the deployment.
 
 Using Environments
 ~~~~~~~~~~~~~~~~~~
@@ -398,7 +400,7 @@ Use a deployment in your project's workflow:
 
    class Default(BuildEnvironment, CMake):
        steps = ["env", "configure", "build", "test"]
-       
+
        spack_env = environment("myapp")
        project_spec = environment("myproject@main")
 
@@ -422,10 +424,10 @@ You can create deployments for multiple systems from the same deployment project
 
    # On Ubuntu system:
    $ kessel run ubuntu24.04
-   
+
    # On macOS system:
    $ kessel run macos-tahoe
-   
+
    # On RHEL system:
    $ kessel run rhel8
 
@@ -472,7 +474,7 @@ Override the ``setup`` step to clone repositories:
 
    class Default(Deployment):
        git_mirrors = ["repos/my-repo"]
-       
+
        def setup(self, args):
            """Setup"""
            # Clone repositories before calling parent setup
@@ -481,7 +483,7 @@ Override the ``setup`` step to clone repositories:
                self.exec(
                    f"git clone https://github.com/myorg/my-repo.git {repo_path}"
                )
-           
+
            # Call parent setup to complete deployment initialization
            super().setup(args)
 
@@ -549,10 +551,10 @@ Here's a complete example for a deployment with LAMMPS:
 
    class Default(Deployment):
        steps = ["setup", "bootstrap", "mirror", "envs", "finalize"]
-       
+
        spack_url = "https://github.com/spack/spack.git"
        spack_ref = "v1.1.0"
-       
+
        build_roots = True
        env_views = True
 
@@ -564,7 +566,7 @@ Here's a complete example for a deployment with LAMMPS:
      cmake:
        require:
        - "@3.22.1"
-     
+
      openmpi:
        require:
        - "@4.1.5"
@@ -577,10 +579,10 @@ Here's a complete example for a deployment with LAMMPS:
      include::
      - name: kessel
        path: $KESSEL_CONFIG_DIR
-     
+
      specs:
      - lammps@20251210 +mpi +kokkos
-     
+
      view: true
 
 Create the deployment:

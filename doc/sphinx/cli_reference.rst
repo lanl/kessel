@@ -128,38 +128,6 @@ Opens the current workflow's Python file in your default editor (set by the $EDI
 
 
 
-kessel deploy
-~~~~~~~~~~~~~
-
-Manage Spack deployments.
-
-.. code-block:: console
-
-   $ kessel deploy <SUBCOMMAND> [OPTIONS]
-
-Subcommands:
-
-``activate``
-  Activate an existing deployment.
-
-  .. code-block:: console
-
-     $ kessel deploy activate [PATH]
-
-  Arguments:
-    - ``PATH``: Path to the deployment (default: current directory)
-
-``replicate``
-  Replicate an existing deployment to a new location.
-
-  .. code-block:: console
-
-     $ kessel deploy replicate [SRC] DEST
-
-  Arguments:
-    - ``SRC``: Source deployment folder (default: active deployment)
-    - ``DEST``: Destination folder
-
 kessel build-env
 ~~~~~~~~~~~~~~~~
 
@@ -187,12 +155,6 @@ Environment Variables
 
 ``KESSEL_WORKFLOW``
   The name of the active workflow.
-
-``KESSEL_DEPLOYMENT``
-  The path to the active Spack deployment.
-
-``KESSEL_SYSTEM``
-  The name of the current system.
 
 ``KESSEL_CONFIG_DIR``
   The directory containing Kessel configuration files.
@@ -256,8 +218,8 @@ Create a Deployment
    $ kessel init --template spack-deployment
    $ kessel run ubuntu24.04
 
-Use a Deployment
-~~~~~~~~~~~~~~~~
+Activate and Use a Deployment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: console
 

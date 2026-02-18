@@ -91,13 +91,3 @@ class Context(object):
     @property
     def kessel_config_dir(self) -> Path:
         return self.kessel_root / "etc" / "kessel"
-
-    @property
-    def deployment_dir(self) -> Path | None:
-        deployment_dir = os.environ.get("KESSEL_DEPLOYMENT", default=None)
-        return Path(deployment_dir) if deployment_dir else None
-
-    @property
-    def replicate_script(self) -> Path:
-        assert self.deployment_dir is not None
-        return self.deployment_dir / "bin" / "replicate"

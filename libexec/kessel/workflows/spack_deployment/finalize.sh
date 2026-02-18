@@ -26,8 +26,8 @@ find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -type f -exec chmod "$KESSEL
 chmod g+s "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db"
 
 if ${KESSEL_ALLOW_REPLICATE}; then
-  SQFS_FILE="$KESSEL_DEPLOYMENT/.replicate.sqfs"
-  "$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/gen_replicate_sqfs" "$KESSEL_DEPLOYMENT" "$SQFS_FILE"
+  SQFS_FILE="$KESSEL_DEPLOYMENT/.clone.sqfs"
+  "$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/gen_clone_sqfs" "$KESSEL_DEPLOYMENT" "$SQFS_FILE"
   chown ":$KESSEL_GROUP" "$SQFS_FILE"
   chmod "$KESSEL_PERMISSIONS" "$SQFS_FILE"
 fi
