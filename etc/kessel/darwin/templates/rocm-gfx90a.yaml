@@ -1,2 +1,0 @@
-include:
- - $KESSEL_CONFIG_DIR/darwin/rocm/6.4.3.yaml
