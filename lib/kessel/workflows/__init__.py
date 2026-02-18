@@ -52,17 +52,17 @@ class Meta(type):
                 variable = f"KESSEL_{name.upper()}"
 
             def getter(self) -> Path | str | None:
-                if variable not in self.shenv:
-                    self.shenv[variable] = state.default
+                if variable not in self.environ:
+                    self.environ[variable] = state.default
                     if state.default is None:
                         return None
-                return state.type(self.shenv[variable])
+                return state.type(self.environ[variable])
 
             def setter(self, value: str | list[str]) -> None:
                 if isinstance(value, list):
-                    self.shenv[variable] = " ".join(value)
+                    self.environ[variable] = " ".join(value)
                 else:
-                    self.shenv[variable] = str(value)
+                    self.environ[variable] = str(value)
 
             return getter, setter
 
@@ -132,6 +132,7 @@ def default_ci_message(project: str,
 class Workflow(metaclass=Meta):
     def __init__(self) -> None:
         self.shenv: ShellEnvironment | None = None
+        self._workflow: str | None = None
         self.workflow_dir: Path | str | None = None
         self.steps: list[str]
 
@@ -155,6 +156,14 @@ class Workflow(metaclass=Meta):
 
     @property
     def workflow(self) -> str:
+        return self._workflow if self._workflow else self.resolved_workflow
+
+    @workflow.setter
+    def workflow(self, name):
+        self._workflow = name
+
+    @property
+    def resolved_workflow(self) -> str:
         return self.__class__.__name__.lower()
 
     @property
@@ -178,12 +187,23 @@ class Workflow(metaclass=Meta):
         assert self.shenv is not None
         self.shenv.echo(*args)
 
+    def source(self, path: str | Path, *args: str) -> None:
+        assert self.shenv is not None
+        self.shenv.source(path, *args)
+
+    @property
+    def environ(self) -> ShellEnvironment:
+        assert self.shenv is not None
+        return self.shenv
+
 
 def load_workflow_from_directory(path: Path) -> Workflow:
-    cls_name = path.name.capitalize()
+    wf_name = path.name
+    cls_name = path.resolve().name.capitalize()
     mod = import_workflow_module(path)
     wf = getattr(mod, cls_name)
     instance = wf()
+    instance.workflow = wf_name
     instance.workflow_dir = path
     return instance
 

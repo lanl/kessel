@@ -123,11 +123,12 @@ Example: CMake Project Workflow
 
 For a typical CMake project, the workflow steps are:
 
-1. **env**: Set up the build environment (activate Spack environment if using Spack)
-2. **configure**: Run CMake configuration
-3. **build**: Compile the project
-4. **test**: Run tests with CTest
-5. **install**: Install the built artifacts
+1. **configure**: Run CMake configuration to generate build files
+2. **build**: Compile the project
+3. **test**: Run tests with CTest
+4. **install**: Install the built artifacts
+
+For projects using Spack for dependency management, an additional **env** step is added at the beginning to set up the build environment.
 
 Run the complete workflow:
 
@@ -142,8 +143,9 @@ Or run steps individually:
    $ kessel step env
    $ kessel step configure
    $ kessel step build
+   $ kessel step test
 
-You can pass arguments to steps. For example, to specify a custom build directory:
+You can pass arguments to steps. For example, to specify custom CMake arguments:
 
 .. code-block:: console
 

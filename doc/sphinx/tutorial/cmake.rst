@@ -113,7 +113,12 @@ The workflow should look like:
            """Build"""
            self.exec("cmake --build build --parallel")
 
-This simple workflow defines build steps using the ``exec`` method to run shell commands directly.
+This simple workflow defines two steps:
+
+1. **configure**: Removes any existing build directory and runs CMake configuration
+2. **build**: Compiles the project using CMake's build command
+
+The workflow uses the ``exec`` method to run shell commands directly.
 
 Running the Workflow
 --------------------
@@ -157,6 +162,10 @@ You'll see output showing each step:
    [100%] Linking CXX executable myapp
    [100%] Built target myapp
 
+The progress bar shows:
+- **Configure** step completed (●)
+- **Build** step in progress or completed
+
 Running Individual Steps
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -165,28 +174,28 @@ You can run individual steps:
 .. code-block:: console
 
    $ kessel reset  # Reset to start over
-   $ kessel step build
+   $ kessel step configure
 
-This runs only the build step. The workflow progress shows:
+This runs only the configure step. The workflow progress shows:
 
 .. code-block:: console
 
-          ○▭▭▭▭▭▭▭▭○
+          ●▭▭▭▭▭▭▭▭○
 
       Configure  Build
 
 
-Continue with the test step:
+Continue with the build step:
 
 .. code-block:: console
 
-   $ kessel step configure
+   $ kessel step build
 
 Now the progress shows:
 
 .. code-block:: console
 
-       ●▭▭▭▭▭▭▭▭○
+       ●▬▬▬▬▬▬▬▬●
 
    Configure  Build
 
@@ -349,7 +358,16 @@ In this tutorial, you:
 2. Added Kessel using ``kessel init --template minimal-cmake-project``
 3. Ran the complete workflow with ``kessel run``
 4. Learned to run individual steps with ``kessel step <name>``
-5. Customized the workflow with environment variables and CMake arguments
+5. Customized the workflow with environment variables and command-line arguments
+
+Key Takeaways
+~~~~~~~~~~~~~
+
+- The ``configure`` step sets up the CMake build system
+- The ``build`` step compiles the project
+- Environment variables (like ``build_dir``) provide default values
+- Command-line arguments allow runtime customization
+- The ``@collapsed`` decorator hides verbose output in CI pipelines
 
 Next Steps
 ----------

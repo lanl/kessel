@@ -8,5 +8,5 @@ export KESSEL_BUILD_ENV="$KESSEL_BUILD_DIR/build_env.sh"
 $KESSEL_ROOT/libexec/kessel/workflows/spack/gen-build-env
 (
 source "$KESSEL_BUILD_ENV"
-cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX="$KESSEL_INSTALL_DIR" "$KESSEL_BUILD_DIR" 2> /dev/null > /dev/null
+cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX="$KESSEL_INSTALL_DIR" "$@" "$KESSEL_BUILD_DIR"
 )

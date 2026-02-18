@@ -2,7 +2,6 @@ DEPLOYMENT_VERSION="2025-10-21"
 SCRIPT_PATH=${BASH_SOURCE[0]:-${(%):-%x}}
 PARENT_DIR="$( cd "$( dirname "${SCRIPT_PATH}" )" &>/dev/null && pwd )"
 
-export KESSEL_INIT="source $SCRIPT_PATH"
 export FLECSI_CHECKOUT=$(realpath $PARENT_DIR/..)
 
 if command -v jq >/dev/null 2>&1 && command -v sacctmgr >/dev/null 2>&1; then

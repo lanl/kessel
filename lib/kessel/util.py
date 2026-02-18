@@ -65,7 +65,7 @@ class ShellEnvironment(object):
             raise KeyError(f"Environment variable '{key}' is not defined.")
         return os.environ[key]
 
-    def __setitem__(self, key: str, value: str) -> None:
+    def __setitem__(self, key: str, value: str | None) -> None:
         self.set_env_var(key, value)
 
     def get(self, key: str, default: str | None = None) -> str | None:

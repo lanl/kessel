@@ -18,6 +18,4 @@ class Pip(Workflow):
     @collapsed
     def setup(self, args: Namespace) -> None:
         """Setup"""
-
-        assert self.shenv is not None
-        self.shenv.source(self.kessel_root / "libexec/kessel/workflows/pip_env/setup.sh")
+        self.source(self.kessel_root / "libexec/kessel/workflows/pip_env/setup.sh")

@@ -46,8 +46,7 @@ class BuildEnvironment(Workflow):
             post_alloc_init=post_alloc_init)
 
     def prepare_env(self, args: argparse.Namespace) -> None:
-        assert self.shenv is not None
-        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "prepare_env.sh"))
+        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "prepare_env.sh"))
         for p in self.git_mirrors:
             assert isinstance(self.source_dir, Path)
             wdir = self.source_dir / p
@@ -64,8 +63,7 @@ class BuildEnvironment(Workflow):
         else:
             self.exec("spack spec")
 
-        assert self.shenv is not None
-        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "install_env.sh"))
+        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "install_env.sh"))
 
     def env_args(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.spack_env, dest="spack_env")
@@ -86,9 +84,7 @@ class BuildEnvironment(Workflow):
     @collapsed
     def configure(self, args: argparse.Namespace) -> None:
         """Configure"""
-
-        assert self.shenv is not None
-        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "configure.sh"))
+        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "configure.sh"))
 
 
 class Deployment(Workflow):
@@ -184,10 +180,9 @@ class Deployment(Workflow):
         config_dir.mkdir(exist_ok=True)
         envs_dir.mkdir(exist_ok=True)
 
-        assert self.shenv is not None
-        self.shenv["SPACK_CHECKOUT_URL"] = self.spack_url
-        self.shenv["SPACK_CHECKOUT_REF"] = self.spack_ref
-        self.shenv["KESSEL_ALLOW_REPLICATE"] = "true" if self.allow_replicate else "false"
+        self.environ["SPACK_CHECKOUT_URL"] = self.spack_url
+        self.environ["SPACK_CHECKOUT_REF"] = self.spack_ref
+        self.environ["KESSEL_ALLOW_REPLICATE"] = "true" if self.allow_replicate else "false"
 
         # generate activate.sh for deployment
         activate_template = self.kessel_root / "libexec" / "kessel" / \
@@ -218,13 +213,11 @@ class Deployment(Workflow):
                     self.print(f"Creating Git Mirror for '{wdir.name}' pointing to file://{repo_path}...")
                     print(f"  {wdir.name}:\n    package_attributes:\n      git: 'file://{repo_path}'", file=dst)
 
-        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "setup.sh"))
+        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "setup.sh"))
 
     def bootstrap(self, args: argparse.Namespace) -> None:
         """Bootstrap"""
-
-        assert self.shenv is not None
-        self.shenv.source(
+        self.source(
             self.kessel_root.joinpath(
                 "libexec",
                 "kessel",
@@ -233,7 +226,7 @@ class Deployment(Workflow):
                 "bootstrap.sh"))
         if self.bootstrap_mirror:
             self.exec('spack bootstrap mirror --binary-packages "${KESSEL_DEPLOYMENT}/spack-bootstrap" || true')
-        self.shenv.unset_env_var("KESSEL_REQUIRE_SYSTEM_MIRROR")
+        self.environ["KESSEL_REQUIRE_SYSTEM_MIRROR"] = None
 
     def mirror(self, args: argparse.Namespace) -> None:
         """Create Source Mirror"""
@@ -248,27 +241,25 @@ class Deployment(Workflow):
         elif mirror_exclude_file.is_file():
             mirror_exclude_file.unlink()
 
-        assert self.shenv is not None
-        self.shenv["KESSEL_REQUIRE_GIT_MIRRORS"] = "true" if self.require_git_mirrors else "false"
-        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "mirror.sh"))
+        self.environ["KESSEL_REQUIRE_GIT_MIRRORS"] = "true" if self.require_git_mirrors else "false"
+        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "mirror.sh"))
 
     def envs(self, args: argparse.Namespace) -> None:
         """Build Environments"""
 
-        assert self.shenv is not None
-        self.shenv["KESSEL_BUILD_ROOTS"] = "true" if self.build_roots else "false"
-        self.shenv["KESSEL_ENV_VIEWS"] = "true" if self.env_views else "false"
-        self.shenv["KESSEL_REQUIRE_GIT_MIRRORS"] = "true" if self.require_git_mirrors else "false"
-        self.shenv.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "envs.sh"))
+        self.environ["KESSEL_BUILD_ROOTS"] = "true" if self.build_roots else "false"
+        self.environ["KESSEL_ENV_VIEWS"] = "true" if self.env_views else "false"
+        self.environ["KESSEL_REQUIRE_GIT_MIRRORS"] = "true" if self.require_git_mirrors else "false"
+        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "envs.sh"))
 
     def finalize(self, args):
         """Finalize"""
         for pkg in self.build_exclude:
             self.exec(f"spack uninstall -y --all --dependents {shlex.quote(pkg)} || true")
 
-        self.shenv["KESSEL_ALLOW_REPLICATE"] = "true" if self.allow_replicate else "false"
+        self.environ["KESSEL_ALLOW_REPLICATE"] = "true" if self.allow_replicate else "false"
 
-        self.shenv.source(
+        self.source(
             self.kessel_root.joinpath(
                 "libexec",
                 "kessel",
