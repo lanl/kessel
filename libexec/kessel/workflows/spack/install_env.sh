@@ -1,6 +1,0 @@
-if [ -z "$SPACK_ENV" ]; then
-  echo "ERROR: Invalid state" >&2
-  return 1
-fi
-
-spack install --include-build-deps --only dependencies

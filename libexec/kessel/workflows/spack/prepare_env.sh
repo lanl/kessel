@@ -7,9 +7,15 @@ umask 0007
 
 echo "Using Spack installation at $SPACK_ROOT"
 
-if ! spack env activate --without-view "$KESSEL_SPACK_ENV"; then
-  spack env create --without-view "$KESSEL_SPACK_ENV"
-  spack env activate --without-view "$KESSEL_SPACK_ENV"
+extra_args=""
+
+if ! $KESSEL_ENABLE_VIEW; then
+  extra_args="--without-view"
+fi
+
+if ! spack env activate $extra_args "$KESSEL_SPACK_ENV"; then
+  spack env create $extra_args "$KESSEL_SPACK_ENV"
+  spack env activate $extra_args "$KESSEL_SPACK_ENV"
 fi
 
 existing_lockfile="$SPACK_ENV/spack.lock.$(spack arch)"
@@ -17,11 +23,14 @@ existing_lockfile="$SPACK_ENV/spack.lock.$(spack arch)"
 if  [ ! -f "$SPACK_ENV/spack.lock" ] && [ -f "$existing_lockfile" ]; then
   cp "$existing_lockfile" "$SPACK_ENV/spack.lock"
   echo "Reusing existing lockfile for $(spack arch)"
-  spack env activate --without-view "$KESSEL_SPACK_ENV"
+  spack env activate $extra_args "$KESSEL_SPACK_ENV"
 fi
 
-# always disable view for now, until we know there is a use case that we need it
-spack config add view:false
+unset extra_args
+
+if ! $KESSEL_ENABLE_VIEW; then
+  spack config add view:false
+fi
 
 # chicken and egg problem: we need to figure out the project name before we can ask Spack
 export KESSEL_PROJECT_NAME=$(echo "$KESSEL_PROJECT_SPEC" | awk '{print $1}' | sed 's/[@+~^%-].*//')
