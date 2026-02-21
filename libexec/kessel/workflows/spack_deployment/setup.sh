@@ -22,8 +22,7 @@ source ${KESSEL_DEPLOYMENT}/kessel/share/kessel/setup-env.sh
 ################################################################################
 SITE_CONFIGS_CHECKOUT="${KESSEL_DEPLOYMENT}/config/site"
 
-rm -rf "${KESSEL_DEPLOYMENT}/config"
-mkdir -p "$KESSEL_DEPLOYMENT/config"
+rm -rf "${SITE_CONFIGS_CHECKOUT}"
 
 if [ -n "$SITE_CONFIGS_CHECKOUT_URL" ]; then
   if [ ! -d "${SITE_CONFIGS_CHECKOUT}" ]; then
