@@ -1,7 +1,0 @@
-packages:
-  mpi:
-    require:
-     - "cray-mpich"
-  libfabric:
-    require:
-     - "@2.1-system"

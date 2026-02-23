@@ -19,6 +19,7 @@ class Context(object):
             e for e in os.environ if e.startswith("KESSEL_") and e not in (
                 "KESSEL_DEPLOYMENT",
                 "KESSEL_PARENT_DEPLOYMENT",
+                "KESSEL_CONFIG_DIR",
                 "KESSEL_SYSTEM",
                 "KESSEL_CURRENT_SYSTEM")]:
             self.senv.unset_env_var(v)

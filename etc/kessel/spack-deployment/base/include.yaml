@@ -1,10 +1,12 @@
 include:
   - when: env.get("KESSEL_DEPLOYMENT", "none") != "none" and env['KESSEL_DEPLOYMENT'] != env['KESSEL_PARENT_DEPLOYMENT']
     path: parent.yaml
-  - when: env.get("KESSEL_SYSTEM", "local") != "local"
-    path: envs.yaml
-  - when: env.get("KESSEL_REQUIRE_SYSTEM_MIRROR", "none") == "pe-serve"
-    path: lanl_pe_serve_mirror.yaml
+  - when: env.get("KESSEL_REQUIRE_SYSTEM_MIRRORS", "false") == "true"
+    path: $KESSEL_DEPLOYMENT/config/$KESSEL_SYSTEM/system_mirrors.yaml
+    optional: true
+  - when: env.get("KESSEL_REQUIRE_SYSTEM_MIRRORS", "false") == "true"
+    path: $KESSEL_DEPLOYMENT/config/site/$KESSEL_SYSTEM/system_mirrors.yaml
+    optional: true
   - when: env.get("KESSEL_REQUIRE_GIT_MIRRORS", "false") == "true"
     optional: true
     path: $KESSEL_DEPLOYMENT/config/git_mirrors.yaml

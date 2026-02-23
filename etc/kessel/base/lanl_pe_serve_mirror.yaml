@@ -1,5 +1,0 @@
-mirrors:
-  pe-serve:
-    url: https://pe-serve.lanl.gov/spack-mirror
-    binary: false
-    source: true

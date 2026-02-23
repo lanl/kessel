@@ -104,6 +104,12 @@ Configuration Options
 **spack_ref**
   Git branch, tag, or commit to use. Examples: ``v1.1.0``, ``develop``
 
+**site_configs_url**
+  Git URL for a site-specific configuration repository (optional). When provided, this repository is cloned into ``config/site/`` during deployment setup and included in the Spack configuration hierarchy. Default: ``""`` (disabled)
+
+**site_configs_ref**
+  Git branch, tag, or commit to use for the site configs repository. Default: ``"main"``
+
 **build_roots**
   If ``True``, builds the root specs defined in environments. If ``False``, only builds dependencies. Default: ``False``
 
@@ -127,15 +133,32 @@ Kessel uses Spack's configuration scope system to provide flexible, layered conf
 Configuration Scopes
 ~~~~~~~~~~~~~~~~~~~~
 
-Kessel deployments use the following configuration scopes:
+Kessel deployments use the following configuration scopes, in order of increasing precedence:
 
-- **Global defaults**: Built-in Kessel configurations
-- **System defaults**: System-specific configurations (e.g., for ``ubuntu24.04``, ``macos-tahoe``)
+- **Spack defaults**: Built-in Spack configurations (lowest priority)
+- **Kessel defaults**: Built-in Kessel configurations
+- **Site defaults**: Configuration from ``config/site/`` (if ``site_configs_url`` is set)
+- **Site system defaults**: System-specific site configuration from ``config/site/<SYSTEM>/``
 - **Project defaults**: Configuration in ``config/`` directory
-- **Project + System defaults**: Configuration in ``config/<SYSTEM>/`` directory
-- **Environment-specific**: Configuration in the environment's ``spack.yaml``
+- **Project system defaults**: Configuration in ``config/<SYSTEM>/`` directory
+- **Environment-specific**: Configuration in the environment's ``spack.yaml`` (highest priority)
 
-The available scopes are defined in ``etc/kessel/include.yaml`` within the Kessel installation.
+The available scopes are defined in ``etc/kessel/spack-deployment/include.yaml`` within the Kessel installation.
+
+Site Configuration Scope
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The site configuration scope is optional and enabled by setting ``site_configs_url`` in your deployment workflow. When enabled, Kessel clones the specified Git repository into ``config/site/`` during the setup step.
+
+Site configurations can include both general settings (``config/site/*.yaml``) and system-specific settings (``config/site/<SYSTEM>/*.yaml``). This allows organizations to:
+
+- Maintain site-wide or facility-wide Spack configurations separately from deployment projects
+- Define system-specific defaults that apply across all deployments at a site
+- Share common configuration across multiple deployment projects
+- Version control site-specific settings independently
+- Separate proprietary or sensitive configurations from public deployment configs
+
+The site configuration has higher precedence than Spack and Kessel defaults but lower precedence than project-specific configuration, allowing projects to override site settings when needed.
 
 Using Configuration Scopes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -231,6 +254,188 @@ For system-specific settings, create ``config/<SYSTEM>/`` directories:
        └── packages.yaml      # System-specific settings
 
 These system-specific configurations are automatically included when building environments for that system.
+
+Site-Specific Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For organization-wide or facility-wide settings that should be shared across multiple deployment projects, use the site configuration feature. This is particularly useful when:
+
+- Managing deployments across multiple HPC facilities with shared policies
+- Maintaining proprietary configurations separately from public deployment configs
+- Standardizing compiler and package preferences across an organization
+- Sharing mirror locations or upstream installations
+
+Configuring Site Configs
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Enable site configs in your deployment workflow:
+
+.. code-block:: python
+
+   from kessel.workflows.spack import Deployment
+
+   class Default(Deployment):
+       spack_url = "https://github.com/spack/spack.git"
+       spack_ref = "v1.1.0"
+
+       # Site-specific configuration
+       site_configs_url = "https://github.com/myorg/spack-site-configs.git"
+       site_configs_ref = "v1.0.0"  # Can use branch, tag, or commit
+
+Relative URLs are supported for repositories in the same organization:
+
+.. code-block:: python
+
+   # If deployment config is at github.com/myorg/deployment-config
+   # This resolves to github.com/myorg/spack-site-configs
+   site_configs_url = "../spack-site-configs.git"
+
+Site Config Repository Structure
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A site configuration repository should follow the standard Spack configuration structure and can include both general and system-specific settings:
+
+.. code-block::
+
+   spack-site-configs/
+   ├── packages.yaml           # Site-wide package preferences
+   ├── mirrors.yaml            # Site-wide mirror locations
+   ├── config.yaml             # Site-wide general settings
+   ├── modules.yaml            # Site-wide module generation
+   ├── upstreams.yaml          # Site-wide upstream installations
+   ├── ubuntu24.04/            # System-specific site settings
+   │   └── packages.yaml
+   └── macos-tahoe/            # Another system's site settings
+       └── packages.yaml
+
+Example site ``packages.yaml``:
+
+.. code-block:: yaml
+
+   packages:
+     # Organization-wide compiler preference
+     all:
+       compiler: [gcc@13.2.0, clang@17.0.0]
+       target: [x86_64_v3]
+
+     # Prefer system packages for utilities
+     openssl:
+       externals:
+       - spec: openssl@3.0.2
+         prefix: /usr
+       buildable: false
+
+     curl:
+       externals:
+       - spec: curl@7.81.0
+         prefix: /usr
+       buildable: false
+
+     # Organization standard versions
+     cmake:
+       require: ["@3.27:"]
+
+     python:
+       require: ["@3.11:"]
+
+Example site ``mirrors.yaml``:
+
+.. code-block:: yaml
+
+   mirrors:
+     facility-cache:
+       url: https://cache.facility.org/spack
+       signed: true
+
+     facility-source:
+       url: file:///facility/mirrors/source
+
+Configuration Priority
+^^^^^^^^^^^^^^^^^^^^^^
+
+When site configs are enabled, the full configuration hierarchy is:
+
+1. Spack defaults (lowest priority)
+2. Kessel defaults
+3. **Site defaults** (``config/site/``)
+4. **Site system defaults** (``config/site/<SYSTEM>/``)
+5. Project defaults (``config/``)
+6. Project system defaults (``config/<SYSTEM>/``)
+7. Environment-specific (highest priority)
+
+This allows:
+
+- Site configs to override Spack and Kessel defaults
+- Site system configs to provide system-specific site-wide settings
+- Project configs to override site-wide policies when needed
+- Project system configs to provide final system-specific overrides
+- Environments to have ultimate control
+
+Example: Multi-Facility Deployment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Suppose you manage deployments for multiple HPC facilities:
+
+**Site config repository** (shared across facilities):
+
+.. code-block:: yaml
+
+   # packages.yaml
+   packages:
+     all:
+       target: [x86_64_v3]
+
+     cmake:
+       require: ["@3.27:"]
+
+     python:
+       require: ["@3.11:"]
+
+**Deployment workflow** (references site configs):
+
+.. code-block:: python
+
+   from kessel.workflows.spack import Deployment
+
+   class Default(Deployment):
+       spack_url = "https://github.com/spack/spack.git"
+       spack_ref = "v1.1.0"
+
+       # Shared configuration for all facilities
+       site_configs_url = "https://github.com/hpc-facilities/spack-configs.git"
+       site_configs_ref = "v2024.1"
+
+**Site system-specific settings** in site config repository (``config/site/facility-a/packages.yaml``):
+
+.. code-block:: yaml
+
+   packages:
+     # Facility A uses Cray MPI across all deployments
+     mpi:
+       require: ["cray-mpich@8.1.27"]
+
+**Project system-specific overrides** in deployment project (``config/facility-a/packages.yaml``):
+
+.. code-block:: yaml
+
+   packages:
+     # This specific deployment uses a newer Cray MPI
+     mpi:
+       require: ["cray-mpich@8.1.28"]
+
+Best Practices for Site Configs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. **Version your site configs**: Use tags for ``site_configs_ref`` to ensure reproducibility
+2. **Keep minimal**: Only include truly site-wide settings in site configs
+3. **Document thoroughly**: Include a README explaining the purpose of each configuration
+4. **Test changes**: Test site config updates in development before production
+5. **Use appropriate scopes**:
+
+   - Site configs: Settings shared across all deployments
+   - Project configs: Deployment-specific settings
+   - System configs: System-specific overrides
+   - Environment configs: Environment-specific requirements
 
 Defining Environments
 ---------------------

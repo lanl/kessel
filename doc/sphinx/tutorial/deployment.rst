@@ -114,6 +114,10 @@ Edit ``.kessel/workflows/default/workflow.py``:
        spack_url = "https://github.com/spack/spack.git"
        spack_ref = "v1.1.0"
 
+       # Site-specific configuration (optional)
+       site_configs_url = ""    # Git URL for site configs (e.g., "https://github.com/myorg/site-configs.git")
+       site_configs_ref = "main" # Git ref for site configs
+
        # Deployment options
        build_roots = True       # Build the root specs (not just dependencies)
        env_views = True         # Create unified views of installed packages
@@ -123,6 +127,8 @@ Key configuration options:
 
 - ``spack_url``: Git URL for Spack (default: ``https://github.com/spack/spack.git``)
 - ``spack_ref``: Spack version to use (branch, tag, or commit)
+- ``site_configs_url``: Git URL for site-specific configuration repository (optional, default: ``""``)
+- ``site_configs_ref``: Git branch/tag/commit for site configs (default: ``"main"``)
 - ``build_roots``: Whether to build root specs (``True``) or just dependencies (``False``)
 - ``env_views``: Whether to create unified environment views (``True`` or ``False``)
 - ``bootstrap_mirror``: Whether to create a bootstrap mirror for offline bootstrapping (``True`` or ``False``, default: ``False``)
@@ -616,6 +622,28 @@ Available templates include:
   - ``rocm-gfx942.yaml``
 
 Templates provide sensible defaults that can be overridden in your environment's ``packages:`` section if needed.
+
+Advanced: Site-Specific Configuration
+--------------------------------------
+
+For organization-wide or facility-wide settings that should be shared across multiple deployment projects, Kessel supports site-specific configurations through the ``site_configs_url`` and ``site_configs_ref`` options.
+
+Site configurations are external Git repositories containing Spack configuration files that are cloned into ``config/site/`` during deployment setup. They're useful for:
+
+- Maintaining organization-wide or facility-wide defaults
+- Separating proprietary configurations from public deployment configs
+- Sharing common configurations across multiple deployment projects
+- Version controlling site-specific settings independently
+
+For detailed information on site-specific configurations, including:
+
+- Repository structure and examples
+- Configuration hierarchy and priority
+- Multi-facility deployment patterns
+- Updating and managing site configs
+- Best practices
+
+See the :doc:`../deployments` documentation, specifically the "Site-Specific Configuration" section
 
 Advanced: Deployment Options
 ----------------------------
