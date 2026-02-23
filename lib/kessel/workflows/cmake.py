@@ -16,9 +16,13 @@ class CMake(Workflow):
         """Configure"""
         self.source(self.kessel_root / "libexec/kessel/workflows/cmake/configure.sh", *cmake_args)
 
-    def build(self, args: Namespace, cmake_args: list[str] = []) -> None:
+    def build(self, args: Namespace, cmake_args: list[str] = [], targets: list[str] = []) -> None:
         """Build"""
+        if targets:
+            self.environ["KESSEL_CMAKE_TARGETS"] = "--target " + " ".join(targets)
         self.source(self.kessel_root / "libexec/kessel/workflows/cmake/build.sh", *cmake_args)
+        if targets:
+            self.environ["KESSEL_CMAKE_TARGETS"] = None
 
     def test(self, args: Namespace, ctest_args: list[str] = []) -> None:
         """Test"""
@@ -42,7 +46,7 @@ class CTest(CMake):
     submit_on_error = environment("true", variable="CTEST_SUBMIT_ON_ERROR")
     build_name = environment("default", variable="CTEST_BUILD_NAME")
 
-    def build(self, args: Namespace, cmake_args: list[str] = []) -> None:
+    def build(self, args: Namespace, cmake_args: list[str] = [], targets: list[str] = []) -> None:
         """Build"""
         self.environ["REPORT_ERRORS"] = "ReportErrors" if self.submit_on_error == "true" else ""
         self.source(self.kessel_root / "libexec/kessel/workflows/ctest/build.sh")
