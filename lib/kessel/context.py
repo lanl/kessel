@@ -44,7 +44,8 @@ class Context(object):
             if wd.exists() and wd.is_dir():
                 for f in wd.iterdir():
                     # Support both .py files and directories
-                    if f.is_file() and f.suffix == ".py":
+                    # Skip names starting with _ (private/shared modules)
+                    if f.is_file() and f.suffix == ".py" and not f.stem.startswith('_'):
                         yield f.stem
                     elif f.is_dir() and not f.name.startswith('_'):
                         # Check if it has __init__.py or workflow.py

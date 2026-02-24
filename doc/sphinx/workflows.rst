@@ -494,12 +494,58 @@ Switch between workflows:
 .. code-block:: console
 
    $ kessel run  # Uses default workflow
-   
+
    $ kessel activate format
    $ kessel run  # Runs clang-format
-   
+
    $ kessel activate default
    $ kessel run  # Back to building
+
+Private Workflows and Shared Modules
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Workflows and modules starting with underscore (``_``) are "private" - they can be imported by other workflows but won't appear in ``kessel list``. This is useful for:
+
+- Shared base classes
+- Utility modules
+- Common functionality that shouldn't be run directly
+
+Example structure:
+
+.. code-block::
+
+   .kessel/workflows/
+   ├── _shared.py      # Private base class
+   ├── _utils.py       # Private utility functions
+   ├── workflow1.py    # Public workflow
+   └── workflow2.py    # Public workflow
+
+``.kessel/workflows/_shared.py`` (private):
+
+.. code-block:: python
+
+   from kessel.workflows import Workflow
+
+   class Shared(Workflow):
+       def validate(self, args):
+           """Validate Configuration"""
+           # Common validation logic
+           pass
+
+``.kessel/workflows/workflow1.py`` (public):
+
+.. code-block:: python
+
+   from kessel.workflows._shared import Shared
+
+   class Workflow1(Shared):
+       steps = ["validate", "build"]
+
+       def build(self, args):
+           """Build Project"""
+           self.exec("make build")
+
+When you run ``kessel list``, only ``workflow1`` and ``workflow2`` will be shown. The private modules ``_shared`` and ``_utils`` remain hidden but importable.
 
 Custom Workflow with External Tools
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
