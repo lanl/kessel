@@ -24,14 +24,23 @@ Workflows are defined in the ``.kessel/workflows/`` directory:
 
    .kessel/
    └── workflows/
-       ├── default/
-       │   └── workflow.py
-       ├── debug/
-       │   └── workflow.py
-       └── release/
-           └── workflow.py
+       ├── default.py
+       ├── debug.py
+       └── release.py
 
-Each workflow is a subdirectory containing a ``workflow.py`` file that defines the workflow class.
+Simple workflows are defined as ``.py`` files directly in the workflows directory. For workflows that need additional resources (scripts, requirements.txt, etc.), use a package structure:
+
+.. code-block::
+
+   .kessel/
+   └── workflows/
+       ├── default.py
+       └── format/
+           ├── __init__.py
+           ├── requirements.txt
+           └── format.sh
+
+The old structure with ``<name>/workflow.py`` is still supported for backwards compatibility.
 
 Defining a Workflow
 -------------------
@@ -193,7 +202,7 @@ The ``CMake`` workflow class provides steps for CMake-based projects:
 .. code-block:: python
 
    from kessel.workflows import Workflow
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.cmake import CMake
 
    class Default(CMake):
        steps = ["configure", "build", "test", "install"]
@@ -216,7 +225,7 @@ Example with custom CMake arguments:
 
 .. code-block:: python
 
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.cmake import CMake
 
    class Default(CMake):
        steps = ["configure", "build", "test", "install"]
@@ -238,8 +247,8 @@ The ``BuildEnvironment`` workflow class integrates with Spack for dependency man
 
 .. code-block:: python
 
-   from kessel.workflows.spack import BuildEnvironment
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.spack import BuildEnvironment
+   from kessel.workflows.base.cmake import CMake
 
    class Default(BuildEnvironment, CMake):
        steps = ["env", "configure", "build", "test", "install"]
@@ -274,7 +283,7 @@ The ``Deployment`` workflow class creates Spack deployments:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import Deployment
+   from kessel.workflows.base.spack import Deployment
 
    class Default(Deployment):
        steps = ["setup", "bootstrap", "mirror", "envs", "finalize"]
@@ -376,7 +385,7 @@ Open the active workflow in your editor:
 
    $ kessel edit
 
-This opens the ``workflow.py`` file using your ``$EDITOR``.
+This opens the workflow file using your ``$EDITOR``.
 
 Workflow Examples
 -----------------
@@ -389,7 +398,7 @@ A simple CMake project workflow:
 .. code-block:: python
 
    from kessel.workflows import Workflow, environment
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.cmake import CMake
    from pathlib import Path
 
    class Default(CMake):
@@ -418,8 +427,8 @@ A workflow that uses Spack for dependencies and CMake for building:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import BuildEnvironment
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.spack import BuildEnvironment
+   from kessel.workflows.base.cmake import CMake
 
    class Default(BuildEnvironment, CMake):
        steps = ["env", "configure", "build", "test", "install"]
@@ -439,31 +448,31 @@ Usage:
 Multiple Workflows
 ~~~~~~~~~~~~~~~~~~
 
-You can define multiple workflows for different purposes. Each workflow must be in its own directory:
+You can define multiple workflows for different purposes:
 
 .. code-block::
 
    .kessel/workflows/
-   ├── default/
-   │   └── workflow.py
+   ├── default.py
    └── format/
-       └── workflow.py
+       ├── __init__.py
+       └── requirements.txt
 
-``.kessel/workflows/default/workflow.py`` for building:
+``.kessel/workflows/default.py`` for building:
 
 .. code-block:: python
 
    from kessel.workflows import environment
-   from kessel.workflows.spack import BuildEnvironment
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.spack import BuildEnvironment
+   from kessel.workflows.base.cmake import CMake
 
    class Default(BuildEnvironment, CMake):
        steps = ["env", "configure", "build", "test"]
-       
+
        spack_env = environment("dev")
        project_spec = environment("myapp@main")
 
-``.kessel/workflows/format/workflow.py`` for code formatting:
+``.kessel/workflows/format/__init__.py`` for code formatting:
 
 .. code-block:: python
 
@@ -570,7 +579,7 @@ The ``default_ci_message()`` helper function provides a useful default implement
 
 .. code-block:: python
 
-   from kessel.workflows.spack import BuildEnvironment
+   from kessel.workflows.base.spack import BuildEnvironment
 
    class Default(BuildEnvironment):
        steps = ["env", "build"]
@@ -606,14 +615,14 @@ Workflow Not Found
 
 If Kessel can't find a workflow:
 
-1. Verify the workflow directory exists in ``.kessel/workflows/``
-2. Check that ``workflow.py`` exists in the workflow directory
-3. Ensure the class name matches the directory name (capitalized)
+1. Verify the workflow file exists in ``.kessel/workflows/``
+2. Check for either ``<name>.py``, ``<name>/__init__.py``, or ``<name>/workflow.py`` (legacy)
+3. Ensure the class name matches the workflow name (capitalized)
 
 .. code-block:: console
 
    $ ls .kessel/workflows/
-   $ cat .kessel/workflows/default/workflow.py
+   $ cat .kessel/workflows/default.py
 
 Step Fails
 ~~~~~~~~~~

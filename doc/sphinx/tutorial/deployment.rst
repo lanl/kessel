@@ -80,7 +80,7 @@ The workflow is simple:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import Deployment
+   from kessel.workflows.base.spack import Deployment
 
    class Default(Deployment):
        pass
@@ -105,7 +105,7 @@ Edit ``.kessel/workflows/default/workflow.py``:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import Deployment
+   from kessel.workflows.base.spack import Deployment
 
    class Default(Deployment):
        steps = ["setup", "bootstrap", "mirror", "envs", "finalize"]
@@ -274,7 +274,7 @@ Edit ``.kessel/workflows/default/workflow.py`` to add logic for cloning your sou
 .. code-block:: python
    :emphasize-lines: 16-30
 
-   from kessel.workflows.spack import Deployment
+   from kessel.workflows.base.spack import Deployment
    from kessel.workflows import *
 
    class Default(Deployment):
@@ -464,8 +464,8 @@ you can extend existing step logic in your own workflows.
 
 .. code-block:: python
 
-   from kessel.workflows.spack import BuildEnvironment
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.spack import BuildEnvironment
+   from kessel.workflows.base.cmake import CMake
    from kessel.workflows import *
 
    class Default(BuildEnvironment, CMake):

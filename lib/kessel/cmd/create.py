@@ -10,12 +10,13 @@ from kessel.util import ShellEnvironment
 def create_workflow(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
     """Create a new workflow."""
     assert ctx.kessel_dir is not None
-    workflow_dir = ctx.kessel_dir / "workflows" / args.name
+    workflows_dir = ctx.kessel_dir / "workflows"
+    workflow_file = workflows_dir / f"{args.name}.py"
 
-    if not workflow_dir.exists():
-        workflow_dir.mkdir(parents=True)
+    if not workflow_file.exists():
+        workflows_dir.mkdir(parents=True, exist_ok=True)
         print(f"Creating kessel workflow with name: '{args.name}'")
-        with open(workflow_dir / "workflow.py", "w") as f:
+        with open(workflow_file, "w") as f:
             print(f"""from kessel.workflows import *
 
 class {args.name.capitalize()}(Workflow):

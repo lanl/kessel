@@ -67,7 +67,7 @@ Edit ``.kessel/workflows/default/workflow.py`` to configure your deployment:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import Deployment
+   from kessel.workflows.base.spack import Deployment
 
    class Default(Deployment):
        steps = ["setup", "bootstrap", "mirror", "envs", "finalize"]
@@ -272,7 +272,7 @@ Enable site configs in your deployment workflow:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import Deployment
+   from kessel.workflows.base.spack import Deployment
 
    class Default(Deployment):
        spack_url = "https://github.com/spack/spack.git"
@@ -395,7 +395,7 @@ Suppose you manage deployments for multiple HPC facilities:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import Deployment
+   from kessel.workflows.base.spack import Deployment
 
    class Default(Deployment):
        spack_url = "https://github.com/spack/spack.git"
@@ -600,8 +600,8 @@ Use a deployment in your project's workflow:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import BuildEnvironment
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.spack import BuildEnvironment
+   from kessel.workflows.base.cmake import CMake
 
    class Default(BuildEnvironment, CMake):
        steps = ["env", "configure", "build", "test"]
@@ -752,7 +752,7 @@ Here's a complete example for a deployment with LAMMPS:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import Deployment
+   from kessel.workflows.base.spack import Deployment
 
    class Default(Deployment):
        steps = ["setup", "bootstrap", "mirror", "envs", "finalize"]

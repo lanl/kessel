@@ -120,8 +120,8 @@ Edit ``.kessel/workflows/default/workflow.py``:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import BuildEnvironment
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.spack import BuildEnvironment
+   from kessel.workflows.base.cmake import CMake
    from kessel.workflows import *
 
    class Default(BuildEnvironment, CMake):

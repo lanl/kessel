@@ -80,8 +80,7 @@ This creates a ``.kessel`` directory with a default workflow:
    myapp/
    ├── .kessel/
    │   └── workflows/
-   │       └── default/
-   │           └── workflow.py
+   │       └── default.py
    ├── CMakeLists.txt
    └── main.cpp
 
@@ -92,7 +91,7 @@ Let's look at the generated workflow:
 
 .. code-block:: console
 
-   $ cat .kessel/workflows/default/workflow.py
+   $ cat .kessel/workflows/default.py
 
 The workflow should look like:
 
@@ -255,7 +254,7 @@ This opens the workflow in your default editor (``$EDITOR``).
 Custom Build Directory
 ~~~~~~~~~~~~~~~~~~~~~~
 
-First, let's make the build directory configurable. Edit ``.kessel/workflows/default/workflow.py`` (or run ``kessel edit``):
+First, let's make the build directory configurable. Edit ``.kessel/workflows/default.py`` (or run ``kessel edit``):
 
 
 

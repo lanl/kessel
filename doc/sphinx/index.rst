@@ -34,12 +34,12 @@ Initialize a project with a workflow:
    $ kessel init --template spack-project
    $ kessel run
 
-Define a custom workflow in ``.kessel/workflows/default/workflow.py``:
+Define a custom workflow in ``.kessel/workflows/default.py``:
 
 .. code-block:: python
 
-   from kessel.workflows.spack import BuildEnvironment
-   from kessel.workflows.cmake import CMake
+   from kessel.workflows.base.spack import BuildEnvironment
+   from kessel.workflows.base.cmake import CMake
 
    class Default(BuildEnvironment, CMake):
        steps = ["env", "configure", "build", "test"]

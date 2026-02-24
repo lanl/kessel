@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from kessel.workflows import default_ci_message, environment
-from kessel.workflows.pip import Pip
+from kessel.workflows.base.pip import Pip
 
 
 class Docs(Pip):

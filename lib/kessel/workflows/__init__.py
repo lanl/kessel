@@ -13,21 +13,39 @@ from kessel.colors import COLOR_BLUE, COLOR_PLAIN
 from kessel.util import ShellEnvironment
 
 
-def import_workflow_module(path: Path) -> ModuleType:
-    mod_name = f"kessel.workflows.project.{path.name}"
-    spec = importlib.util.spec_from_file_location(mod_name, path / "workflow.py")
+def import_workflow_module(workflows_dir: Path, name: str) -> tuple[ModuleType, Path]:
+    """
+    Load a workflow module from .kessel/workflows/.
 
-    if spec is None:
-        raise Exception("Could not load workflow")
+    Tries in order:
+    1. <name>.py (simple module)
+    2. <name>/__init__.py (package)
+    3. <name>/workflow.py (legacy)
 
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[mod_name] = mod
+    Returns: (module, workflow_dir_path)
+    """
+    mod_name = f"kessel.workflows.{name}"
+    package_dir = workflows_dir / name
 
-    if spec.loader is None:
-        raise Exception("Could create loader for workflow")
+    search_paths = (
+        (workflows_dir / f"{name}.py", workflows_dir),
+        (package_dir / "__init__.py", package_dir),
+        (package_dir / "workflow.py", package_dir)
+    )
 
-    spec.loader.exec_module(mod)
-    return mod
+    for mod_file, workflow_dir in search_paths:
+        if mod_file.exists():
+            spec = importlib.util.spec_from_file_location(mod_name, mod_file)
+
+            if spec is None or spec.loader is None:
+                raise Exception(f"Could not load workflow '{name}'")
+
+            mod = importlib.util.module_from_spec(spec)
+            sys.modules[mod_name] = mod
+            spec.loader.exec_module(mod)
+            return mod, workflow_dir
+
+    raise FileNotFoundError(f"Could not find workflow '{name}'")
 
 
 class EnvState:
@@ -197,14 +215,14 @@ class Workflow(metaclass=Meta):
         return self.shenv
 
 
-def load_workflow_from_directory(path: Path) -> Workflow:
-    wf_name = path.name
-    cls_name = path.resolve().name.capitalize()
-    mod = import_workflow_module(path)
+def load_workflow(workflows_dir: Path, name: str) -> Workflow:
+    """Load workflow by name from workflows directory."""
+    cls_name = name.capitalize()
+    mod, workflow_dir = import_workflow_module(workflows_dir, name)
     wf = getattr(mod, cls_name)
     instance = wf()
-    instance.workflow = wf_name
-    instance.workflow_dir = path
+    instance.workflow = name
+    instance.workflow_dir = workflow_dir
     return instance
 
 
