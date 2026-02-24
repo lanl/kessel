@@ -51,12 +51,6 @@ class Context(object):
                         if (f / "__init__.py").exists() or (f / "workflow.py").exists():
                             yield f.name
 
-    def load_workflow(self, name: str) -> Workflow:
-        assert self.kessel_dir is not None
-        wf = load_workflow(self.kessel_dir / "workflows", name)
-        wf.shenv = self.senv
-        return wf
-
     @property
     def workflow(self) -> str:
         return os.environ.get("KESSEL_WORKFLOW", "default")
@@ -77,7 +71,8 @@ class Context(object):
     def workflow_config(self) -> Workflow | None:
         try:
             if self._workflow_config is None:
-                self._workflow_config = self.load_workflow(self.workflow)
+                self._workflow_config = load_workflow(self.workflow)
+                self._workflow_config.shenv = self.senv
             return self._workflow_config
         except FileNotFoundError:
             return None

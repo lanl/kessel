@@ -1,6 +1,8 @@
 import argparse
+import importlib.abc
 import importlib.util
 import inspect
+import itertools
 import os
 import subprocess
 import sys
@@ -13,39 +15,42 @@ from kessel.colors import COLOR_BLUE, COLOR_PLAIN
 from kessel.util import ShellEnvironment
 
 
-def import_workflow_module(workflows_dir: Path, name: str) -> tuple[ModuleType, Path]:
-    """
-    Load a workflow module from .kessel/workflows/.
+class ProjectWorkflowFinder(importlib.abc.MetaPathFinder):
+    """Import hook to enable project workflows to import from each other."""
 
-    Tries in order:
-    1. <name>.py (simple module)
-    2. <name>/__init__.py (package)
-    3. <name>/workflow.py (legacy)
+    def __init__(self):
+        self.workflows_dir = None
+        for d in itertools.chain([Path.cwd()], Path.cwd().parents):
+            kessel_dir = d / ".kessel"
+            if kessel_dir.exists() and kessel_dir.is_dir():
+                self.workflows_dir = kessel_dir / "workflows"
+                break
 
-    Returns: (module, workflow_dir_path)
-    """
-    mod_name = f"kessel.workflows.{name}"
-    package_dir = workflows_dir / name
+    def find_spec(self, fullname, path, target=None):
+        """Find import spec for kessel.workflows.<name> if it's a project workflow."""
+        if not self.workflows_dir or not self.workflows_dir.exists() or not fullname.startswith("kessel.workflows."):
+            return None
 
-    search_paths = (
-        (workflows_dir / f"{name}.py", workflows_dir),
-        (package_dir / "__init__.py", package_dir),
-        (package_dir / "workflow.py", package_dir)
-    )
+        parts = fullname.split(".")
+        if len(parts) != 3:  # Must be exactly kessel.workflows.<name>
+            return None
 
-    for mod_file, workflow_dir in search_paths:
-        if mod_file.exists():
-            spec = importlib.util.spec_from_file_location(mod_name, mod_file)
+        name = parts[2]
 
-            if spec is None or spec.loader is None:
-                raise Exception(f"Could not load workflow '{name}'")
+        if name == "base":
+            return None
 
-            mod = importlib.util.module_from_spec(spec)
-            sys.modules[mod_name] = mod
-            spec.loader.exec_module(mod)
-            return mod, workflow_dir
+        search_paths = (
+            self.workflows_dir / f"{name}.py",
+            self.workflows_dir / name / "__init__.py",
+            self.workflows_dir / name / "workflow.py",
+        )
+        return next((importlib.util.spec_from_file_location(fullname, path)
+                    for path in search_paths if path.exists()), None)
 
-    raise FileNotFoundError(f"Could not find workflow '{name}'")
+
+_workflow_finder = ProjectWorkflowFinder()
+sys.meta_path.insert(0, _workflow_finder)
 
 
 class EnvState:
@@ -151,7 +156,6 @@ class Workflow(metaclass=Meta):
     def __init__(self) -> None:
         self.shenv: ShellEnvironment | None = None
         self._workflow: str | None = None
-        self.workflow_dir: Path | str | None = None
         self.steps: list[str]
 
     @property
@@ -188,6 +192,10 @@ class Workflow(metaclass=Meta):
     def kessel_root(self) -> Path:
         return Path(os.environ["KESSEL_ROOT"])
 
+    @property
+    def workflow_dir(self) -> Path:
+        return Path(inspect.getfile(type(self))).parent
+
     def is_step_collapsed(self, step: str) -> bool:
         s = getattr(self, step)
         return hasattr(s, "collapsed") and s.collapsed
@@ -215,14 +223,19 @@ class Workflow(metaclass=Meta):
         return self.shenv
 
 
-def load_workflow(workflows_dir: Path, name: str) -> Workflow:
+def load_workflow(name: str) -> Workflow:
     """Load workflow by name from workflows directory."""
+    import importlib
+    try:
+        mod = importlib.import_module(f"kessel.workflows.{name}")
+    except ModuleNotFoundError as e:
+        # Convert to FileNotFoundError to maintain same exception interface
+        raise FileNotFoundError(f"Could not find workflow '{name}'") from e
+
     cls_name = name.capitalize()
-    mod, workflow_dir = import_workflow_module(workflows_dir, name)
     wf = getattr(mod, cls_name)
     instance = wf()
     instance.workflow = name
-    instance.workflow_dir = workflow_dir
     return instance
 
 
