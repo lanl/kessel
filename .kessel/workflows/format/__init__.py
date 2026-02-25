@@ -19,16 +19,16 @@ class Format(Pip):
 
     def autopep8(self, args: Namespace) -> None:
         """Autoformat"""
-        self.shenv.source(self.workflow_dir / "autopep8.sh")
+        self.source(self.workflow_dir / "autopep8.sh")
 
     def isort(self, args: Namespace) -> None:
         """Import sorting"""
-        self.shenv.source(self.workflow_dir / "isort.sh")
+        self.source(self.workflow_dir / "isort.sh")
 
     def flake8(self, args: Namespace) -> None:
         """Linting"""
-        self.shenv.source(self.workflow_dir / "flake8.sh")
+        self.source(self.workflow_dir / "flake8.sh")
 
     def mypy(self, args: Namespace) -> None:
         """Type checking"""
-        self.shenv.source(self.workflow_dir / "mypy.sh")
+        self.source(self.workflow_dir / "mypy.sh")

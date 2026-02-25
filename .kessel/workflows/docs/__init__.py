@@ -19,4 +19,4 @@ class Docs(Pip):
 
     def html(self, args: Namespace) -> None:
         """Build HTML Documentation"""
-        self.shenv.source(self.workflow_dir / "html.sh")
+        self.source(self.workflow_dir / "html.sh")
