@@ -46,6 +46,8 @@ class BuildEnvironment(Workflow):
     project_spec = environment()
     git_mirrors: list[str] = []
     allow_lockfile_changes = False
+    install_roots = False
+    view = False
 
     def init(self) -> None:
         super().init()
@@ -67,6 +69,7 @@ class BuildEnvironment(Workflow):
             post_alloc_init=post_alloc_init)
 
     def prepare_env(self, args: argparse.Namespace) -> None:
+        self.environ["KESSEL_ENABLE_VIEWS"] = "true" if self.view else "false"
         self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "prepare_env.sh"))
         for p in self.git_mirrors:
             assert isinstance(self.source_dir, Path)
@@ -84,7 +87,10 @@ class BuildEnvironment(Workflow):
         else:
             self.exec("spack spec")
 
-        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "install_env.sh"))
+        if self.install_roots:
+            self.exec("spack install")
+        else:
+            self.exec("spack install --include-build-deps --only dependencies")
 
     def env_args(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument("-e", "--env", metavar="ENVIRONMENT", default=self.spack_env, dest="spack_env")
@@ -106,6 +112,12 @@ class BuildEnvironment(Workflow):
     def configure(self, args: argparse.Namespace, cmake_args: list[str] = []) -> None:
         """Configure"""
         self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "configure.sh"), *cmake_args)
+
+
+class RunEnvironment(BuildEnvironment):
+    steps = ["env"]
+    install_roots = True
+    view = True
 
 
 class Deployment(Workflow):
