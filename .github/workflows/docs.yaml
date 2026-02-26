@@ -1,4 +1,4 @@
-name: Build and Deploy docs
+name: docs
 
 on:
   push:
@@ -7,20 +7,36 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-    build:
-      runs-on: ubuntu-latest
-      steps:      
-        - uses: actions/checkout@v4
-        - name: build docs
-          run: |
-            source share/kessel/setup-env.sh
-            kessel activate docs
-            kessel run
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build docs
+        run: |
+          source share/kessel/setup-env.sh
+          kessel activate docs
+          kessel run
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./doc/sphinx/_build/html
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
