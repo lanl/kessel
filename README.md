@@ -10,14 +10,14 @@ execute complex workflows consistently.
 
 ## Documentation
 
-📚 **[Full Documentation](https://rberger.re-pages.lanl.gov/kessel)**
+📚 **[Full Documentation](https://lanl.github.io/kessel)**
 
 ## Quick Start
 
 ### Installation
 
 ```bash
-git clone https://re-git.lanl.gov/rberger/kessel
+git clone https://github.com/lanl/kessel
 cd kessel
 source share/kessel/setup-env.sh
 ```
@@ -68,10 +68,10 @@ teams.
 
 For detailed documentation, see:
 
-- [Quickstart Guide](https://rberger.re-pages.lanl.gov/kessel/quickstart.html)
-- [Workflows](https://rberger.re-pages.lanl.gov/kessel/workflows.html)
-- [Deployments](https://rberger.re-pages.lanl.gov/kessel/deployments.html)
-- [CLI Reference](https://rberger.re-pages.lanl.gov/kessel/cli_reference.html)
+- [Quickstart Guide](https://lanl.github.io/kessel/quickstart.html)
+- [Workflows](https://lanl.github.io/kessel/workflows.html)
+- [Deployments](https://lanl.github.io/kessel/deployments.html)
+- [CLI Reference](https://lanl.github.io/kessel/cli_reference.html)
 
 ## Developers
 
