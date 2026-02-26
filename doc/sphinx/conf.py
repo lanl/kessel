@@ -40,5 +40,4 @@ html_theme_options = {
     "sidebar_hide_name": True,
     "light_logo": "images/kessel.svg",
     "dark_logo": "images/kessel-dark.svg",
-    "announcement": "Kessel is still under active development!",
 }
