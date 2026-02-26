@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+    format:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - name: run formatting checks
+          run: |
+            source share/kessel/setup-env.sh
+            kessel activate format
+            kessel run
+
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - name: run tests
+          run: |
+            source share/kessel/setup-env.sh
+            kessel activate test
+            kessel run
