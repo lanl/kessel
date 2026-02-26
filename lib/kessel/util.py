@@ -47,6 +47,7 @@ class ShellEnvironment(object):
     def __init__(self) -> None:
         self.fd: TextIOWrapper = open(3, "w", closefd=False)
         self.debug: bool = False
+        self._collapsed_sections: set[str] = set()
 
     @property
     def target(self) -> TextIO | TextIOWrapper:
@@ -100,8 +101,16 @@ class ShellEnvironment(object):
         for line in msg.splitlines():
             self.eval("echo", line)
 
+    def _is_github_actions(self) -> bool:
+        """Check if running on GitHub Actions."""
+        return "GITHUB_ACTIONS" in os.environ and os.environ["GITHUB_ACTIONS"] == "true"
+
+    def _is_gitlab_ci(self) -> bool:
+        """Check if running on GitLab CI."""
+        return "GITLAB_CI" in os.environ
+
     def _section(self, marker: str, section: str, passthrough: bool = False, msg: str = "") -> None:
-        if "CI" in os.environ:
+        if self._is_gitlab_ci():
             if passthrough:
                 print(
                     f"\033[0Ksection_{marker}:$(date +%s):{section}\r\033[0K{COLOR_CYAN}{msg}{COLOR_PLAIN}",
@@ -118,11 +127,35 @@ class ShellEnvironment(object):
                 self.eval(f'echo -e "{COLOR_CYAN}{msg}{COLOR_PLAIN}"')
 
     def section_start(self, section: str, msg: str, collapsed: bool = False, passthrough: bool = False) -> None:
-        if "CI" in os.environ:
+        if self._is_github_actions():
+            if collapsed:
+                self._collapsed_sections.add(section)
+                if passthrough:
+                    print(f"::group::{msg}", flush=True)
+                else:
+                    self.eval(f'echo "::group::{msg}"')
+            else:
+                if passthrough:
+                    print(f"{COLOR_CYAN}{msg}{COLOR_PLAIN}", flush=True)
+                else:
+                    self.eval(f'echo -e "{COLOR_CYAN}{msg}{COLOR_PLAIN}"')
+        elif self._is_gitlab_ci():
             if collapsed:
                 section += "[collapsed=true]"
-
-        self._section("start", section, passthrough, msg)
+            self._section("start", section, passthrough, msg)
+        else:
+            if passthrough:
+                print(f"{COLOR_CYAN}{msg}{COLOR_PLAIN}", flush=True)
+            else:
+                self.eval(f'echo -e "{COLOR_CYAN}{msg}{COLOR_PLAIN}"')
 
     def section_end(self, section: str, passthrough: bool = False) -> None:
-        self._section("end", section, passthrough)
+        if self._is_github_actions():
+            if section in self._collapsed_sections:
+                self._collapsed_sections.remove(section)
+                if passthrough:
+                    print("::endgroup::", flush=True)
+                else:
+                    self.eval('echo "::endgroup::"')
+        elif self._is_gitlab_ci():
+            self._section("end", section, passthrough)
