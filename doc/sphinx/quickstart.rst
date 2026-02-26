@@ -10,7 +10,7 @@ Kessel can be installed directly from the repository:
 
 .. code-block:: console
 
-   $ git clone <repository-url>
+   $ git clone https://github.com/lanl/kessel.git
    $ cd kessel
    $ source share/kessel/setup-env.sh
 
@@ -66,11 +66,10 @@ After initialization, your project will contain:
    your-project/
    ├── .kessel/
    │   └── workflows/
-   │       └── default/
-   │           └── workflow.py
+   │       └── default.py
    └── (your project files)
 
-The ``.kessel/workflows/`` directory contains workflow definitions. Each workflow is a subdirectory with a ``workflow.py`` file that defines the steps.
+The ``.kessel/workflows/`` directory contains workflow definitions. Each workflow is defined as a ``.py`` file (or a package directory with an ``__init__.py`` file) that defines the workflow steps.
 
 Running Your First Workflow
 ----------------------------

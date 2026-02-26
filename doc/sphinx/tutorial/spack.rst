@@ -97,8 +97,7 @@ Your project structure should now look like:
    myapp/
    ├── .kessel/
    │   └── workflows/
-   │       └── default/
-   │           └── workflow.py
+   │       └── default.py
    ├── spack_repo/
    │   └── myapp/
    │       ├── repo.yaml
@@ -116,7 +115,7 @@ Now we'll update the Kessel workflow to use Spack.
 Extend with BuildEnvironment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Edit ``.kessel/workflows/default/workflow.py``:
+Edit ``.kessel/workflows/default.py``:
 
 .. code-block:: python
 

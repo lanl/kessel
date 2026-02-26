@@ -31,8 +31,7 @@ A typical deployment project has the following structure:
    my-deployment/
    ├── .kessel/
    │   └── workflows/
-   │       └── default/
-   │           └── workflow.py
+   │       └── default.py
    ├── config/
    │   └── packages.yaml
    └── environments/
@@ -43,7 +42,7 @@ A typical deployment project has the following structure:
 
 Key directories:
 
-- ``.kessel/workflows/default/``: Deployment workflow definition
+- ``.kessel/workflows/default.py``: Deployment workflow definition
 - ``config/``: Spack configuration files
 - ``environments/``: System-specific Spack environment definitions
 
@@ -63,7 +62,7 @@ This creates the basic structure with a default workflow.
 Configuring the Deployment Workflow
 ------------------------------------
 
-Edit ``.kessel/workflows/default/workflow.py`` to configure your deployment:
+Edit ``.kessel/workflows/default.py`` to configure your deployment:
 
 .. code-block:: python
 
@@ -748,7 +747,7 @@ Example: Complete Deployment
 
 Here's a complete example for a deployment with LAMMPS:
 
-``.kessel/workflows/default/workflow.py``:
+``.kessel/workflows/default.py``:
 
 .. code-block:: python
 

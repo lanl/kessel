@@ -50,8 +50,7 @@ This creates the following structure:
    myapp-deployment/
    ├── .kessel/
    │   └── workflows/
-   │       └── default/
-   │           └── workflow.py
+   │       └── default.py
    ├── config/
    │   ├── packages.yaml
    │   └── repos.yaml
@@ -74,7 +73,7 @@ Let's look at the generated workflow:
 
 .. code-block:: console
 
-   $ cat .kessel/workflows/default/workflow.py
+   $ cat .kessel/workflows/default.py
 
 The workflow is simple:
 
@@ -101,7 +100,7 @@ Now let's customize the deployment for our ``myapp`` application.
 Customize the Workflow
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Edit ``.kessel/workflows/default/workflow.py``:
+Edit ``.kessel/workflows/default.py``:
 
 .. code-block:: python
 
@@ -248,8 +247,7 @@ Your deployment structure should now look like:
    myapp-deployment/
    ├── .kessel/
    │   └── workflows/
-   │       └── default/
-   │           └── workflow.py
+   │       └── default.py
    ├── config/
    │   ├── packages.yaml
    │   └── repos.yaml
@@ -269,7 +267,7 @@ The deployment needs access to your ``myapp`` Spack package recipe. In our case,
 Configure Source Repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Edit ``.kessel/workflows/default/workflow.py`` to add logic for cloning your source repository:
+Edit ``.kessel/workflows/default.py`` to add logic for cloning your source repository:
 
 .. code-block:: python
    :emphasize-lines: 16-30
