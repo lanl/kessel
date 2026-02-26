@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Iterator
 
 from kessel.util import ShellEnvironment
-from kessel.workflows import Workflow, load_workflow_from_directory
+from kessel.workflows import Workflow, load_workflow
 
 
 class Context(object):
@@ -43,14 +43,14 @@ class Context(object):
             wd = d / "workflows"
             if wd.exists() and wd.is_dir():
                 for f in wd.iterdir():
-                    if f.is_dir():
-                        yield f.name
-
-    def load_workflow(self, name: str) -> Workflow:
-        assert self.kessel_dir is not None
-        wf = load_workflow_from_directory(self.kessel_dir / "workflows" / name)
-        wf.shenv = self.senv
-        return wf
+                    # Support both .py files and directories
+                    # Skip names starting with _ (private/shared modules)
+                    if f.is_file() and f.suffix == ".py" and not f.stem.startswith('_'):
+                        yield f.stem
+                    elif f.is_dir() and not f.name.startswith('_'):
+                        # Check if it has __init__.py or workflow.py
+                        if (f / "__init__.py").exists() or (f / "workflow.py").exists():
+                            yield f.name
 
     @property
     def workflow(self) -> str:
@@ -72,7 +72,8 @@ class Context(object):
     def workflow_config(self) -> Workflow | None:
         try:
             if self._workflow_config is None:
-                self._workflow_config = self.load_workflow(self.workflow)
+                self._workflow_config = load_workflow(self.workflow)
+                self._workflow_config.shenv = self.senv
             return self._workflow_config
         except FileNotFoundError:
             return None

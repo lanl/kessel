@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from kessel.workflows import default_ci_message, environment
-from kessel.workflows.pip import Pip
+from kessel.workflows.base.pip import Pip
 
 
 class Docs(Pip):
@@ -19,4 +19,4 @@ class Docs(Pip):
 
     def html(self, args: Namespace) -> None:
         """Build HTML Documentation"""
-        self.shenv.source(self.workflow_dir / "html.sh")
+        self.source(self.workflow_dir / "html.sh")

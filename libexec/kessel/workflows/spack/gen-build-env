@@ -1,7 +1,16 @@
 #!/bin/bash
-spack build-env --dump "$KESSEL_BUILD_ENV" "$KESSEL_PROJECT_NAME"
+
+if [ "$#" -lt 2 ]; then
+  echo "Usage: $0 dump-file spec" >&2
+  exit 1
+fi
+
+dump_file=$1
+shift
+
+spack build-env --dump "$dump_file" "$@"
 
 # filter common batch system variables
-grep -Ev '^(FLUX_|SLURM_|XPC_)' "$KESSEL_BUILD_ENV" > "$KESSEL_BUILD_ENV.tmp"
-echo "PS1='(build) ${KESSEL_PARENT_PROMPT}'" >> "$KESSEL_BUILD_ENV.tmp"
-mv "$KESSEL_BUILD_ENV.tmp" "$KESSEL_BUILD_ENV"
+grep -Ev '^(FLUX_|SLURM_|XPC_)' "$dump_file" > "$dump_file.tmp"
+echo "PS1='(build) ${KESSEL_PARENT_PROMPT}'" >> "$dump_file.tmp"
+mv "$dump_file.tmp" "$dump_file"

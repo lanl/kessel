@@ -1,2 +1,3 @@
 #!/bin/bash
+mkdir -p $(dirname $1)
 unsquashfs -d "$1" "$KESSEL_DEPLOYMENT/.clone.sqfs"

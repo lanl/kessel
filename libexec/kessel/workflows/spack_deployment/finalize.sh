@@ -10,6 +10,9 @@ fi
 
 spack clean -sdfmp
 
+git -C $KESSEL_DEPLOYMENT/spack gc --aggressive --prune=now
+git -C $KESSEL_DEPLOYMENT/spack-packages gc --aggressive --prune=now
+
 echo "Setting permissions and group (excluding spack/opt/spack) ..."
 find "$KESSEL_DEPLOYMENT" -path "$KESSEL_DEPLOYMENT/spack/opt/spack" -prune -o -exec chown -h ":$KESSEL_GROUP" {} +
 find "$KESSEL_DEPLOYMENT" -path "$KESSEL_DEPLOYMENT/spack/opt/spack" -prune -o -type d -exec chmod "$KESSEL_PERMISSIONS" {} +
@@ -27,6 +30,7 @@ chmod g+s "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db"
 
 if ${KESSEL_ALLOW_REPLICATE}; then
   SQFS_FILE="$KESSEL_DEPLOYMENT/.clone.sqfs"
+  rm -f "$KESSEL_DEPLOYMENT/.*.sqfs" # remove any legacy sqfs files
   "$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/gen_clone_sqfs" "$KESSEL_DEPLOYMENT" "$SQFS_FILE"
   chown ":$KESSEL_GROUP" "$SQFS_FILE"
   chmod "$KESSEL_PERMISSIONS" "$SQFS_FILE"

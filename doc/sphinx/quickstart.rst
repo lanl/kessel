@@ -31,7 +31,7 @@ To make Kessel available in future shell sessions, add the source command to you
 Prerequisites
 -------------
 
-- Python 3.6 or higher
+- Python 3.10 or higher
 - Git
 
 Initializing a Project
