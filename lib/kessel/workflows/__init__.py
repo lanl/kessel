@@ -249,7 +249,14 @@ def load_workflow(name: str) -> Workflow:
         # Convert to FileNotFoundError to maintain same exception interface
         raise FileNotFoundError(f"Could not find workflow '{name}'") from e
 
-    cls_name = name.capitalize()
+    # Resolve symlinks by using the actual module file location
+    mod_file = Path(inspect.getfile(mod)).resolve()
+    if mod_file.name == "__init__.py":
+        resolved_name = mod_file.parent.name
+    else:
+        resolved_name = mod_file.stem
+
+    cls_name = resolved_name.capitalize()
     wf = getattr(mod, cls_name)
     instance = wf()
     instance.workflow = name
