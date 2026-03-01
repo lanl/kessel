@@ -19,38 +19,32 @@ from kessel.context import Context
 from kessel.util import ShellEnvironment
 
 
+def locate_workflow_file(base_dir: Path, name: str) -> Path | None:
+    search_paths = [
+        base_dir / f"{name}.py",
+        base_dir / name / "__init__.py",
+        base_dir / name / "workflow.py",
+    ]
+    for p in search_paths:
+        if p.exists():
+            return p
+    return None
+
+
 def edit_workflow(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
     """Edit the current workflow."""
     if args.workflow:
         if args.workflow in set(ctx.workflows):
             assert ctx.kessel_dir is not None
             workflows_dir = ctx.kessel_dir / "workflows"
-
-            # Check for .py file first
-            py_file = workflows_dir / f"{args.workflow}.py"
-            if py_file.exists():
-                workflow_path = py_file
-            # Then check for __init__.py
-            elif (workflows_dir / args.workflow / "__init__.py").exists():
-                workflow_path = workflows_dir / args.workflow / "__init__.py"
-            # Fall back to legacy workflow.py
-            else:
-                workflow_path = workflows_dir / args.workflow / "workflow.py"
+            workflow_path = locate_workflow_file(workflows_dir, args.workflow)
         else:
             raise Exception(f"Unknown workflow '{args.workflow}'")
     else:
         workflow = ctx.workflow_config
-
         assert workflow is not None
         assert isinstance(workflow.workflow_dir, Path)
-
-        # Determine the actual file to edit
-        if (workflow.workflow_dir.parent / f"{workflow.workflow}.py").exists():
-            workflow_path = workflow.workflow_dir.parent / f"{workflow.workflow}.py"
-        elif (workflow.workflow_dir / "__init__.py").exists():
-            workflow_path = workflow.workflow_dir / "__init__.py"
-        else:
-            workflow_path = workflow.workflow_dir / "workflow.py"
+        workflow_path = locate_workflow_file(workflow.workflow_dir, workflow.workflow)
 
     senv.eval(f"${{EDITOR:-vim}} {workflow_path}")
 
