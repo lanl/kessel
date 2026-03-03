@@ -1,5 +1,5 @@
 spack:
-  include::
+  include:
    - $KESSEL_CONFIG_DIR/templates/apple-clang.yaml
    - $KESSEL_CONFIG_DIR/templates/mpich.yaml
    - name: kessel

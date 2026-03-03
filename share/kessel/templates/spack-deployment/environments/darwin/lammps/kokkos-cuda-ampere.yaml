@@ -1,5 +1,5 @@
 spack:
-  include::
+  include:
    - $KESSEL_CONFIG_DIR/templates/gcc.yaml
    - $KESSEL_CONFIG_DIR/templates/mpich.yaml
    - $KESSEL_CONFIG_DIR/templates/cuda-ampere.yaml

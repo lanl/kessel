@@ -162,19 +162,18 @@ The site configuration has higher precedence than Spack and Kessel defaults but 
 Using Configuration Scopes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Environments reference configuration scopes using the ``include::`` key in their ``spack.yaml``:
+Environments reference configuration scopes using the ``include:`` key in their ``spack.yaml``:
 
 .. code-block:: yaml
 
    spack:
-     include::
+     include:
      - name: kessel
        path: $KESSEL_CONFIG_DIR
 
      specs:
      - myapp
 
-The ``include::`` syntax (with double colon) overrides Spack's default ``include:`` behavior and allows specifying named configuration scopes with paths.
 
 Configuration Templates
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -191,7 +190,7 @@ Example using templates:
 .. code-block:: yaml
 
    spack:
-     include::
+     include:
      - $KESSEL_CONFIG_DIR/templates/gcc.yaml
      - $KESSEL_CONFIG_DIR/templates/mpich.yaml
      - $KESSEL_CONFIG_DIR/templates/cuda-ampere.yaml
@@ -463,7 +462,7 @@ Example Environment File
 .. code-block:: yaml
 
    spack:
-     include::
+     include:
      - name: kessel
        path: $KESSEL_CONFIG_DIR
 
@@ -477,7 +476,7 @@ Example Environment File
      concretizer:
        unify: true
 
-The ``include::`` directive ensures the environment uses Kessel's configuration scopes. The ``specs`` list defines what packages to install in this environment. During deployment, this file is converted to the standard Spack environment structure (``myapp/spack.yaml``).
+The ``kessel`` include ensures the environment uses Kessel's configuration scopes. The ``specs`` list defines what packages to install in this environment. During deployment, this file is converted to the standard Spack environment structure (``myapp/spack.yaml``).
 
 Creating a Deployment
 ---------------------
@@ -780,7 +779,7 @@ Here's a complete example for a deployment with LAMMPS:
 .. code-block:: yaml
 
    spack:
-     include::
+     include:
      - name: kessel
        path: $KESSEL_CONFIG_DIR
 
