@@ -82,7 +82,7 @@ class BuildEnvironment(Workflow):
 
     def prepare_env(self, args: argparse.Namespace) -> None:
         self.environ["KESSEL_ENABLE_VIEWS"] = "true" if self.view else "false"
-        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "prepare_env.sh"))
+        self.source(self.kessel_root.joinpath("lib", "kessel", "workflows", "base", "spack", "build_environment", "prepare_env.sh"))
         for p in self.git_mirrors:
             assert isinstance(self.source_dir, Path)
             wdir = self.source_dir / p
@@ -123,7 +123,7 @@ class BuildEnvironment(Workflow):
     @collapsed
     def configure(self, args: argparse.Namespace, cmake_args: list[str] = []) -> None:
         """Configure"""
-        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack", "configure.sh"), *cmake_args)
+        self.source(self.kessel_root.joinpath("lib", "kessel", "workflows", "base", "spack", "build_environment", "configure.sh"), *cmake_args)
 
 
 class RunEnvironment(BuildEnvironment):
@@ -237,8 +237,8 @@ class Deployment(Workflow):
             self.environ["SITE_CONFIGS_CHECKOUT_REF"] = self.site_configs_ref
 
         # generate activate.sh for deployment
-        activate_template = self.kessel_root / "libexec" / "kessel" / \
-            "workflows" / "spack_deployment" / "activate.sh.in"
+        activate_template = self.kessel_root / "lib" / "kessel" / \
+            "workflows" / "base" / "spack" / "deployment" / "activate.sh.in"
 
         with open(activate_template, "r") as src, open(self.deployment / "activate.sh", "w") as dst:
             for line in src:
@@ -265,17 +265,19 @@ class Deployment(Workflow):
                     self.print(f"Setting Git attribute for '{wdir.name}' to file://{repo_path}...")
                     print(f"  {wdir.name}:\n    package_attributes:\n      git: 'file://{repo_path}'", file=dst)
 
-        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "setup.sh"))
+        self.source(self.kessel_root.joinpath("lib", "kessel", "workflows", "base", "spack", "deployment", "setup.sh"))
 
     def bootstrap(self, args: argparse.Namespace) -> None:
         """Bootstrap"""
         self.environ["KESSEL_REQUIRE_SYSTEM_MIRRORS"] = "true" if self.require_system_mirrors else "false"
         self.source(
             self.kessel_root.joinpath(
-                "libexec",
+                "lib",
                 "kessel",
                 "workflows",
-                "spack_deployment",
+                "base",
+                "spack",
+                "deployment",
                 "bootstrap.sh"))
         if self.bootstrap_mirror:
             self.exec('spack bootstrap mirror --binary-packages "${KESSEL_DEPLOYMENT}/spack-bootstrap" || true')
@@ -296,7 +298,7 @@ class Deployment(Workflow):
             mirror_exclude_file.unlink()
 
         self.environ["KESSEL_REQUIRE_GIT_MIRRORS"] = "true" if self.require_git_mirrors else "false"
-        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "mirror.sh"))
+        self.source(self.kessel_root.joinpath("lib", "kessel", "workflows", "base", "spack", "deployment", "mirror.sh"))
         self.environ["KESSEL_REQUIRE_SYSTEM_MIRROR"] = None
 
     def envs(self, args: argparse.Namespace) -> None:
@@ -305,7 +307,7 @@ class Deployment(Workflow):
         self.environ["KESSEL_BUILD_ROOTS"] = "true" if self.build_roots else "false"
         self.environ["KESSEL_ENV_VIEWS"] = "true" if self.env_views else "false"
         self.environ["KESSEL_REQUIRE_GIT_MIRRORS"] = "true" if self.require_git_mirrors else "false"
-        self.source(self.kessel_root.joinpath("libexec", "kessel", "workflows", "spack_deployment", "envs.sh"))
+        self.source(self.kessel_root.joinpath("lib", "kessel", "workflows", "base", "spack", "deployment", "envs.sh"))
 
     def finalize(self, args):
         """Finalize"""
@@ -316,8 +318,10 @@ class Deployment(Workflow):
 
         self.source(
             self.kessel_root.joinpath(
-                "libexec",
+                "lib",
                 "kessel",
                 "workflows",
-                "spack_deployment",
+                "base",
+                "spack",
+                "deployment",
                 "finalize.sh"))

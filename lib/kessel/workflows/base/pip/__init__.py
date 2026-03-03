@@ -30,4 +30,4 @@ class Pip(Workflow):
     @collapsed
     def setup(self, args: Namespace) -> None:
         """Setup"""
-        self.source(self.kessel_root / "libexec/kessel/workflows/pip_env/setup.sh")
+        self.source(self.kessel_root / "lib/kessel/workflows/base/pip/setup.sh")

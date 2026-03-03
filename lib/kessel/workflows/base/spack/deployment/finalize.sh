@@ -10,7 +10,7 @@
 # the public, perform publicly and display publicly, and to permit others to do
 # so.
 
-source ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/common.sh
+source ${KESSEL_ROOT}/lib/kessel/workflows/base/spack/deployment/common.sh
 export KESSEL_DEPLOYMENT_CONFIG=${KESSEL_DEPLOYMENT_CONFIG:-$PWD}
 
 copy_configuration
@@ -48,7 +48,7 @@ fi
 if ${KESSEL_ALLOW_REPLICATE}; then
   SQFS_FILE="$KESSEL_DEPLOYMENT/.clone.sqfs"
   rm -f "$KESSEL_DEPLOYMENT/.*.sqfs" # remove any legacy sqfs files
-  "$KESSEL_ROOT/libexec/kessel/workflows/spack_deployment/gen_clone_sqfs" "$KESSEL_DEPLOYMENT" "$SQFS_FILE"
+  "$KESSEL_ROOT/lib/kessel/workflows/base/spack/deployment/gen_clone_sqfs" "$KESSEL_DEPLOYMENT" "$SQFS_FILE"
   chown ":$KESSEL_GROUP" "$SQFS_FILE"
   chmod "$KESSEL_PERMISSIONS" "$SQFS_FILE"
 fi

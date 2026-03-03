@@ -26,23 +26,23 @@ class CMake(Workflow):
 
     def configure(self, args: Namespace, cmake_args: list[str] = []) -> None:
         """Configure"""
-        self.source(self.kessel_root / "libexec/kessel/workflows/cmake/configure.sh", *cmake_args)
+        self.source(self.kessel_root / "lib/kessel/workflows/base/cmake/cmake/configure.sh", *cmake_args)
 
     def build(self, args: Namespace, cmake_args: list[str] = [], targets: list[str] = []) -> None:
         """Build"""
         if targets:
             self.environ["KESSEL_CMAKE_TARGETS"] = "--target " + " ".join(targets)
-        self.source(self.kessel_root / "libexec/kessel/workflows/cmake/build.sh", *cmake_args)
+        self.source(self.kessel_root / "lib/kessel/workflows/base/cmake/cmake/build.sh", *cmake_args)
         if targets:
             self.environ["KESSEL_CMAKE_TARGETS"] = None
 
     def test(self, args: Namespace, ctest_args: list[str] = []) -> None:
         """Test"""
-        self.source(self.kessel_root / "libexec/kessel/workflows/cmake/test.sh", *ctest_args)
+        self.source(self.kessel_root / "lib/kessel/workflows/base/cmake/cmake/test.sh", *ctest_args)
 
     def install(self, args: Namespace) -> None:
         """Install"""
-        self.source(self.kessel_root / "libexec/kessel/workflows/cmake/install.sh")
+        self.source(self.kessel_root / "lib/kessel/workflows/base/cmake/cmake/install.sh")
 
     def define(self, arg: str, value: bool | str) -> str:
         if isinstance(value, bool):
@@ -61,12 +61,12 @@ class CTest(CMake):
     def build(self, args: Namespace, cmake_args: list[str] = [], targets: list[str] = []) -> None:
         """Build"""
         self.environ["REPORT_ERRORS"] = "ReportErrors" if self.submit_on_error == "true" else ""
-        self.source(self.kessel_root / "libexec/kessel/workflows/ctest/build.sh")
+        self.source(self.kessel_root / "lib/kessel/workflows/base/cmake/ctest/build.sh")
 
     def test(self, args: Namespace, ctest_args: list[str] = []) -> None:
         """Test"""
         self.environ["REPORT_ERRORS"] = "ReportErrors" if self.submit_on_error == "true" else ""
-        self.source(self.kessel_root / "libexec/kessel/workflows/ctest/test.sh")
+        self.source(self.kessel_root / "lib/kessel/workflows/base/cmake/ctest/test.sh")
 
     def submit_args(self, parser: ArgumentParser) -> None:
         parser.add_argument("-n", "--build-name", default=self.build_name)
@@ -74,7 +74,7 @@ class CTest(CMake):
     def submit(self, args: Namespace) -> None:
         """Submit"""
         if hasattr(self, "build_dir"):
-            sanitize_script = self.kessel_root / "libexec/kessel/workflows/ctest/sanitize-xml"
+            sanitize_script = self.kessel_root / "lib/kessel/workflows/base/cmake/ctest/sanitize-xml"
             self.exec(f"{sanitize_script} {self.build_dir}")
 
-        self.source(self.kessel_root / "libexec/kessel/workflows/ctest/submit.sh")
+        self.source(self.kessel_root / "lib/kessel/workflows/base/cmake/ctest/submit.sh")

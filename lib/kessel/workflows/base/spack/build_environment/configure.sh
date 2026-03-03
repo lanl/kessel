@@ -17,7 +17,7 @@ fi
 
 spack install --test root --include-build-deps -u cmake -v "$KESSEL_PROJECT_NAME"
 export KESSEL_BUILD_ENV="$KESSEL_BUILD_DIR/build_env.sh"
-$KESSEL_ROOT/libexec/kessel/workflows/spack/gen-build-env "$KESSEL_BUILD_ENV" "$KESSEL_PROJECT_NAME"
+$KESSEL_ROOT/lib/kessel/workflows/base/spack/build_environment/gen-build-env "$KESSEL_BUILD_ENV" "$KESSEL_PROJECT_NAME"
 (
 source "$KESSEL_BUILD_ENV"
 cmake -DCMAKE_VERBOSE_MAKEFILE=off -DCMAKE_INSTALL_PREFIX="$KESSEL_INSTALL_DIR" "$@" "$KESSEL_BUILD_DIR"
