@@ -34,11 +34,16 @@ find "$KESSEL_DEPLOYMENT/spack/opt/spack/bin" -exec chown -h ":$KESSEL_GROUP" {}
 find "$KESSEL_DEPLOYMENT/spack/opt/spack/bin" -type d -exec chmod "$KESSEL_PERMISSIONS" {} +
 find "$KESSEL_DEPLOYMENT/spack/opt/spack/bin" -type f -exec chmod "$KESSEL_PERMISSIONS" {} +
 
-find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -exec chown -h ":$KESSEL_GROUP" {} +
-find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -type d -exec chmod "$KESSEL_PERMISSIONS" {} +
-find "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db" -type f -exec chmod "$KESSEL_PERMISSIONS" {} +
+# find .spack-db directory, since it is dependent on whether we're using prefix padding
+_SPACK_DB_DIR=$(find $KESSEL_DEPLOYMENT/spack/opt/spack -type d -name .spack-db -print -quit)
 
-chmod g+s "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db"
+if [ -d "$_SPACK_DB_DIR" ]; then
+  find "$_SPACK_DB_DIR" -exec chown -h ":$KESSEL_GROUP" {} +
+  find "$_SPACK_DB_DIR" -type d -exec chmod "$KESSEL_PERMISSIONS" {} +
+  find "$_SPACK_DB_DIR" -type f -exec chmod "$KESSEL_PERMISSIONS" {} +
+
+  chmod g+s "$_SPACK_DB_DIR"
+fi
 
 if ${KESSEL_ALLOW_REPLICATE}; then
   SQFS_FILE="$KESSEL_DEPLOYMENT/.clone.sqfs"
@@ -51,4 +56,8 @@ fi
 echo "Setting permissions and group of spack/opt/spack ..."
 chown -R ":$KESSEL_GROUP" "$KESSEL_DEPLOYMENT/spack/opt/spack"
 chmod -R "$KESSEL_PERMISSIONS" "$KESSEL_DEPLOYMENT/spack/opt/spack"
-chmod g+s "$KESSEL_DEPLOYMENT/spack/opt/spack/.spack-db"
+if [ -d "$_SPACK_DB_DIR" ]; then
+  chmod g+s "$_SPACK_DB_DIR"
+fi
+
+unset _SPACK_DB_DIR
