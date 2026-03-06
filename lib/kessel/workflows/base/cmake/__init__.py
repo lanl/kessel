@@ -78,7 +78,7 @@ class CTest(CMake):
     def submit(self, args: Namespace) -> None:
         """Submit"""
         if hasattr(self, "build_dir"):
-            sanitize_script = self.kessel_root /\
+            sanitize_script = self.kessel_root / \
                 "lib" / "kessel" / "workflows" / "base" / "cmake" / "ctest" / "sanitize-xml"
             self.exec(f"{sanitize_script} {self.build_dir}")
 

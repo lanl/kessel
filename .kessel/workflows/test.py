@@ -11,5 +11,5 @@ class Test(Workflow):
         """Tutorials"""
         self.environ["CTEST_OUTPUT_ON_FAILURE"] = "1"
         self.exec("rm -rf build_tutorials")
-        self.exec(f"cmake -B build_tutorials -S {Path("examples") / "tutorials"}")
+        self.exec(f"cmake -B build_tutorials -S {Path('examples') / 'tutorials'}")
         self.exec("ctest --test-dir build_tutorials --output-junit tests.xml")

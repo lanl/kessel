@@ -82,7 +82,15 @@ class BuildEnvironment(Workflow):
 
     def prepare_env(self, args: argparse.Namespace) -> None:
         self.environ["KESSEL_ENABLE_VIEWS"] = "true" if self.view else "false"
-        self.source(self.kessel_root.joinpath("lib", "kessel", "workflows", "base", "spack", "build_environment", "prepare_env.sh"))
+        self.source(
+            self.kessel_root.joinpath(
+                "lib",
+                "kessel",
+                "workflows",
+                "base",
+                "spack",
+                "build_environment",
+                "prepare_env.sh"))
         for p in self.git_mirrors:
             assert isinstance(self.source_dir, Path)
             wdir = self.source_dir / p
@@ -123,7 +131,16 @@ class BuildEnvironment(Workflow):
     @collapsed
     def configure(self, args: argparse.Namespace, cmake_args: list[str] = []) -> None:
         """Configure"""
-        self.source(self.kessel_root.joinpath("lib", "kessel", "workflows", "base", "spack", "build_environment", "configure.sh"), *cmake_args)
+        self.source(
+            self.kessel_root.joinpath(
+                "lib",
+                "kessel",
+                "workflows",
+                "base",
+                "spack",
+                "build_environment",
+                "configure.sh"),
+            *cmake_args)
 
 
 class RunEnvironment(BuildEnvironment):
@@ -178,11 +195,11 @@ class Deployment(Workflow):
                 dest.parent.mkdir(parents=True, exist_ok=True)
 
             self.print("  Creating mirror clone...")
-            git(["clone", "--mirror", src, f"{Path(dest) / ".git"}"])
-            git(["config", "--local", "--bool", "core.bare", "false"], cwd=f"{Path(dest) / ".git"}")
+            git(["clone", "--mirror", src, f"{dest / '.git'}"])
+            git(["config", "--local", "--bool", "core.bare", "false"], cwd=f"{dest / '.git'}")
 
             os.makedirs(dest, exist_ok=True)
-            git(["config", "--local", "core.worktree", ".."], cwd=f"{Path(dest) / ".git"}")
+            git(["config", "--local", "core.worktree", ".."], cwd=f"{dest / '.git'}")
             git(["checkout", "--force", "HEAD"], cwd=dest)
 
             self.print("  Setting up tracking for remote branches...")
@@ -269,6 +286,7 @@ class Deployment(Workflow):
 
     def bootstrap(self, args: argparse.Namespace) -> None:
         """Bootstrap"""
+        assert isinstance(self.deployment, Path)
         self.environ["KESSEL_REQUIRE_SYSTEM_MIRRORS"] = "true" if self.require_system_mirrors else "false"
         self.source(
             self.kessel_root.joinpath(
@@ -280,8 +298,7 @@ class Deployment(Workflow):
                 "deployment",
                 "bootstrap.sh"))
         if self.bootstrap_mirror:
-            self.exec(f'spack bootstrap mirror --binary-packages {
-                      Path("${KESSEL_DEPLOYMENT}") / "spack-bootstrap"} || true')
+            self.exec(f"spack bootstrap mirror --binary-packages {self.deployment / 'spack-bootstrap'} || true")
         self.environ["KESSEL_REQUIRE_SYSTEM_MIRROR"] = None
 
     def mirror(self, args: argparse.Namespace) -> None:
