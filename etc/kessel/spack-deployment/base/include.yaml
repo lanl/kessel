@@ -13,3 +13,4 @@ include:
   - when: env.get("KESSEL_BUILD_CACHE_MIRROR", "") != ""
     optional: true
     path: $KESSEL_DEPLOYMENT/config/buildcache.yaml
+  - path: ignore_other_scopes.yaml

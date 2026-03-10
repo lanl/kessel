@@ -221,7 +221,7 @@ Create ``environments/workstation/myapp-dev.yaml``:
 .. code-block:: yaml
 
    spack:
-     include::
+     include:
      - name: kessel
        path: $KESSEL_CONFIG_DIR
 
@@ -520,7 +520,7 @@ Create ``environments/macos_tahoe/myapp.yaml``:
 .. code-block:: yaml
 
    spack:
-     include::
+     include:
      - name: kessel
        path: $KESSEL_CONFIG_DIR
 
@@ -586,7 +586,7 @@ You can include templates in your environment configuration. For example, to use
 .. code-block:: yaml
 
    spack:
-     include::
+     include:
      - $KESSEL_CONFIG_DIR/templates/gcc.yaml
      - $KESSEL_CONFIG_DIR/templates/mpich.yaml
      - name: kessel
