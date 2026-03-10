@@ -60,7 +60,14 @@ class ProjectWorkflowFinder(importlib.abc.MetaPathFinder):
 
         if name in {'spack', 'cmake', 'pip'}:
             # fall back for legacy workflows
-            search_paths.append(Path(os.environ["KESSEL_ROOT"]) / "lib" / "kessel" / "workflows" / "base" / f"{name}.py")
+            search_paths.append(
+                Path(
+                    os.environ["KESSEL_ROOT"]) /
+                "lib" /
+                "kessel" /
+                "workflows" /
+                "base" /
+                f"{name}.py")
 
         return next((importlib.util.spec_from_file_location(fullname, path)
                     for path in search_paths if path.exists()), None)

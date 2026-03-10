@@ -13,7 +13,7 @@
 ################################################################################
 # Spack Deployment: Setup
 ################################################################################
-source ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/common.sh
+source ${KESSEL_ROOT}/lib/kessel/workflows/base/spack/deployment/common.sh
 
 umask 0007
 chgrp ${KESSEL_GROUP} ${KESSEL_DEPLOYMENT} || true
@@ -83,7 +83,7 @@ rm -rf "${KESSEL_DEPLOYMENT}/bin"
 mkdir -p "${KESSEL_DEPLOYMENT}/bin"
 
 if ${KESSEL_ALLOW_REPLICATE}; then
-  ln -s ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/clone_from_sqfs ${KESSEL_DEPLOYMENT}/bin/clone-deployment
+  ln -s ${KESSEL_ROOT}/lib/kessel/workflows/base/spack/deployment/clone_from_sqfs ${KESSEL_DEPLOYMENT}/bin/clone-deployment
 fi
 
 # write kessel version used to generate this deployment

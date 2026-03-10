@@ -22,6 +22,6 @@ rsync -a --no-p --no-g --chmod=ugo=rwX --include='{*__pycache__* "*.pyc"}' \
          --exclude-from="$DEPLOYMENT_DIR/spack-packages/.gitignore" \
         "$DEPLOYMENT_DIR/spack-packages/" "$DEST/spack-packages"
 
-cp ${KESSEL_ROOT}/libexec/kessel/workflows/spack_deployment/activate.sh.in $DEST/activate.sh
+cp ${KESSEL_ROOT}/lib/kessel/workflows/base/spack/deployment/activate.sh.in $DEST/activate.sh
 sed -i "s#@KESSEL_PARENT_DEPLOYMENT@#$DEPLOYMENT_DIR#g" $DEST/activate.sh
 sed -i "s/@KESSEL_SYSTEM@/$KESSEL_SYSTEM/g" $DEST/activate.sh
