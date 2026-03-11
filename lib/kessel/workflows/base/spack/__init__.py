@@ -81,7 +81,7 @@ class BuildEnvironment(Workflow):
             post_alloc_init=post_alloc_init)
 
     def prepare_env(self, args: argparse.Namespace) -> None:
-        self.environ["KESSEL_ENABLE_VIEWS"] = "true" if self.view else "false"
+        self.environ["KESSEL_ENABLE_VIEW"] = "true" if self.view else "false"
         self.source(
             self.kessel_root.joinpath(
                 "lib",
