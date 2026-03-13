@@ -1,4 +1,4 @@
-# Kessel
+![logo](doc/sphinx/_static/images/kessel.svg)
 
 Kessel is a tool to create and drive continuous integration (CI) and developer
 workflows through a unified interface across multiple code projects and
