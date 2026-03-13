@@ -45,7 +45,11 @@ def symbolic_to_octal(perm_str: str, directory: bool = False) -> int:
 
 class ShellEnvironment(object):
     def __init__(self) -> None:
-        self.fd: TextIOWrapper = open(3, "w", closefd=False)
+        try:
+            self.fd: TextIOWrapper = open(3, "w", closefd=False)
+        except OSError:
+            print("ERROR: Current shell is misconfigured. Reload kessel into current shell.", file=sys.stderr)
+            sys.exit(1)
         self.debug: bool = False
         self._collapsed_sections: set[str] = set()
 
