@@ -8,7 +8,7 @@ fi
 dump_file=$1
 shift
 
-spack build-env --dump "$dump_file" "$@"
+spack build-env --dump "$dump_file" "$@" || exit 1
 
 # filter common batch system variables
 grep -Ev '^(FLUX_|SLURM_|XPC_)' "$dump_file" > "$dump_file.tmp"
