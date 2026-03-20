@@ -27,22 +27,18 @@ printf "%s\n" "$ENVIRONMENTS" | while IFS= read -r ENVIRONMENT
 do
   if [ -n "${ENVIRONMENT}" ]; then
     echo "Building '${ENVIRONMENT}' environment"
-    spack env activate ${ENV_DIR:+${ENV_DIR}/}${ENVIRONMENT}
+    spack env activate ${ENV_DIR:+${ENV_DIR}/}${ENVIRONMENT} || rc=1
 
     if [ "${KESSEL_ENV_VIEWS}" != "true" ]; then
       spack config add view:false
     fi
 
-    spack concretize -f --fresh
+    spack concretize -f --fresh || rc=1
 
     # keep lock file for this architecture
-    cp "$SPACK_ENV/spack.lock" "$SPACK_ENV/spack.lock.$(spack arch)"
+    cp "$SPACK_ENV/spack.lock" "$SPACK_ENV/spack.lock.$(spack arch)" || rc=1
 
-    spack install $install_options
-
-    if [ $? -ne 0 ]; then
-      rc=1
-    fi
+    spack install $install_options || rc=1
 
     if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
       spack buildcache push $buildcache_options "${KESSEL_BUILD_CACHE_MIRROR}"
@@ -50,4 +46,4 @@ do
   fi
 done
 
-test $rc -eq 0
+return $rc
