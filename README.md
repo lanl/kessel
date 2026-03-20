@@ -8,6 +8,8 @@ It serves as a driver and integration layer for build systems and package
 managers, providing a flexible library of reusable components to build and
 execute complex workflows consistently.
 
+![kessel_demo](https://github.com/user-attachments/assets/c4c67a8b-0417-499f-a3e8-602d4bcd3433)
+
 ## Documentation
 
 📚 **[Full Documentation](https://lanl.github.io/kessel)**
