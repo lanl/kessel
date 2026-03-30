@@ -20,7 +20,7 @@ if [ -n "$KESSEL_BUILD_CACHE_MIRROR" ]; then
   spack buildcache update-index "${KESSEL_BUILD_CACHE_MIRROR}"
 fi
 
-spack clean -sdfmp
+spack clean -sdf
 
 git -C $KESSEL_DEPLOYMENT/spack gc --aggressive --prune=now
 git -C $KESSEL_DEPLOYMENT/spack-packages gc --aggressive --prune=now
