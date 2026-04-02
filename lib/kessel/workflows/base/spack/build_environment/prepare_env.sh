@@ -52,7 +52,7 @@ if [ -d "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME" ]; then
   spack repo add "$KESSEL_SOURCE_DIR/spack_repo/$KESSEL_PROJECT_NAME"
 fi
 
-if spack find -r 2>/dev/null | grep -q "No root specs"; then
+if spack find -r 2>/dev/null | grep -q "[Nn]o root specs"; then
   spack add "$KESSEL_PROJECT_SPEC"
 fi
 
