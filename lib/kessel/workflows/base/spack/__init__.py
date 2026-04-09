@@ -60,6 +60,7 @@ class BuildEnvironment(Workflow):
     allow_lockfile_changes = False
     install_roots = False
     view = False
+    tests = True
 
     def init(self) -> None:
         super().init()
@@ -131,6 +132,7 @@ class BuildEnvironment(Workflow):
     @collapsed
     def configure(self, args: argparse.Namespace, cmake_args: list[str] = []) -> None:
         """Configure"""
+        self.environ["KESSEL_ENABLE_TESTS"] = "true" if self.tests else "false"
         self.source(
             self.kessel_root.joinpath(
                 "lib",

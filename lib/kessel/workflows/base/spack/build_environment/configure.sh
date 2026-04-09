@@ -15,7 +15,14 @@ if [ -z "$SPACK_ENV" ] || [ -z "$KESSEL_BUILD_DIR" ]; then
   return 1
 fi
 
-spack install --test root --include-build-deps -u cmake -v "$KESSEL_PROJECT_NAME" || return
+test_args=""
+
+if $KESSEL_ENABLE_TESTS; then
+  test_args="--test root"
+fi
+
+spack install $test_args --include-build-deps -u cmake -v "$KESSEL_PROJECT_NAME" || return
+
 export KESSEL_BUILD_ENV="$KESSEL_BUILD_DIR/build_env.sh"
 $KESSEL_ROOT/lib/kessel/workflows/base/spack/build_environment/gen-build-env "$KESSEL_BUILD_ENV" "$KESSEL_PROJECT_NAME" || return
 (
