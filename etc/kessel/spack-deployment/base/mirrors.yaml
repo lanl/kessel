@@ -1,2 +1,6 @@
 mirrors:
-  local: $spack/../spack-mirror
+  local:
+    url: $spack/../spack-mirror
+    signed: False
+    source: True
+    binary: False
