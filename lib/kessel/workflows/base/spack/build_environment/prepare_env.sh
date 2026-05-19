@@ -54,6 +54,8 @@ fi
 
 if spack find -r 2>/dev/null | grep -q "[Nn]o root specs"; then
   spack add "$KESSEL_PROJECT_SPEC"
+else
+  spack change "$KESSEL_PROJECT_SPEC"
 fi
 
 # now that Spack "should" know about it, we'll ask again (TODO: is this still necessary?)
