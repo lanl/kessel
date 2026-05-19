@@ -18,9 +18,17 @@ from kessel.util import ShellEnvironment
 
 
 def build_env(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
-    os.execl(os.environ["SHELL"], os.environ["SHELL"],
-             "--rcfile", os.environ["KESSEL_BUILD_ENV"], "-i")
+    if args.inplace:
+        senv.source(os.environ["KESSEL_BUILD_ENV"])
+    else:
+        os.execl(os.environ["SHELL"], os.environ["SHELL"],
+                 "--rcfile", os.environ["KESSEL_BUILD_ENV"], "-i")
 
 
 def setup_command(subparser: ArgumentParser):
+    subparser.add_argument(
+        "--inplace",
+        action="store_true",
+        help="source build environment in current shell instead of launching a subshell"
+    )
     subparser.set_defaults(func=build_env)
