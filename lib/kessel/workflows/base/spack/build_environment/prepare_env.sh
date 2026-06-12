@@ -68,5 +68,7 @@ spack config add "packages:${KESSEL_PROJECT_NAME}:package_attributes:keep_werror
 if [ -n "${KESSEL_USER_BUILD_CACHE}" ]; then
   mkdir -p "${KESSEL_USER_BUILD_CACHE}"
   spack mirror add --type binary --autopush --unsigned user-ci-mirror "${KESSEL_USER_BUILD_CACHE}"
-  spack buildcache update-index "${KESSEL_USER_BUILD_CACHE}" || true
+  if [ "${KESSEL_USER_BUILD_CACHE_UPDATE_INDEX}" ]; then
+    spack buildcache update-index "${KESSEL_USER_BUILD_CACHE}" || true
+  fi
 fi
