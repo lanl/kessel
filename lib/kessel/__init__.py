@@ -9,4 +9,4 @@
 # in this material to reproduce, prepare derivative works, distribute copies to
 # the public, perform publicly and display publicly, and to permit others to do
 # so.
-__version__ = "0.2.0"
+__version__ = "0.3.0"

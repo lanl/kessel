@@ -44,9 +44,9 @@ create_env_mirror() {
         spack spec
         if [ -f "$SPACK_ENV/spack.lock" ]; then
             if [ -f "$mirror_exclude_file" ]; then
-                spack mirror create -d "$mirror_dir" --all --skip-unstable-version --exclude-file "$mirror_exclude_file"
+                spack mirror create -d "$mirror_dir" --all --private --skip-unstable-version --exclude-file "$mirror_exclude_file"
             else
-                spack mirror create -d "$mirror_dir" --all --skip-unstable-version
+                spack mirror create -d "$mirror_dir" --all --private --skip-unstable-version
             fi
         else
             echo "SKIPPING $env_name due to missing concrete specs."

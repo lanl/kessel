@@ -290,7 +290,7 @@ The ``Deployment`` workflow class creates Spack deployments:
        
        # Spack configuration
        spack_url = "https://github.com/spack/spack.git"
-       spack_ref = "v1.1.0"
+       spack_ref = "v1.2.0"
        
        # Deployment options
        build_roots = False
