@@ -111,7 +111,7 @@ Edit ``.kessel/workflows/default.py``:
 
        # Spack version to use
        spack_url = "https://github.com/spack/spack.git"
-       spack_ref = "v1.1.0"
+       spack_ref = "v1.2.0"
 
        # Site-specific configuration (optional)
        site_configs_url = ""    # Git URL for site configs (e.g., "https://github.com/myorg/site-configs.git")
@@ -280,7 +280,7 @@ Edit ``.kessel/workflows/default.py`` to add logic for cloning your source repos
 
        # Spack version to use
        spack_url = "https://github.com/spack/spack.git"
-       spack_ref = "v1.1.0"
+       spack_ref = "v1.2.0"
 
        # Deployment options
        build_roots = True       # Build the root specs (not just dependencies)

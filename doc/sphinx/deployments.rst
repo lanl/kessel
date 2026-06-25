@@ -73,7 +73,7 @@ Edit ``.kessel/workflows/default.py`` to configure your deployment:
 
        # Spack version to use
        spack_url = "https://github.com/spack/spack.git"
-       spack_ref = "v1.1.0"
+       spack_ref = "v1.2.0"
 
        # Deployment options
        build_roots = False
@@ -101,7 +101,7 @@ Configuration Options
   Git URL for the Spack repository. Default: ``https://github.com/spack/spack.git``
 
 **spack_ref**
-  Git branch, tag, or commit to use. Examples: ``v1.1.0``, ``develop``
+  Git branch, tag, or commit to use. Examples: ``v1.2.0``, ``develop``
 
 **site_configs_url**
   Git URL for a site-specific configuration repository (optional). When provided, this repository is cloned into ``config/site/`` during deployment setup and included in the Spack configuration hierarchy. Default: ``""`` (disabled)
@@ -274,7 +274,7 @@ Enable site configs in your deployment workflow:
 
    class Default(Deployment):
        spack_url = "https://github.com/spack/spack.git"
-       spack_ref = "v1.1.0"
+       spack_ref = "v1.2.0"
 
        # Site-specific configuration
        site_configs_url = "https://github.com/myorg/spack-site-configs.git"
@@ -397,7 +397,7 @@ Suppose you manage deployments for multiple HPC facilities:
 
    class Default(Deployment):
        spack_url = "https://github.com/spack/spack.git"
-       spack_ref = "v1.1.0"
+       spack_ref = "v1.2.0"
 
        # Shared configuration for all facilities
        site_configs_url = "https://github.com/hpc-facilities/spack-configs.git"
@@ -695,7 +695,7 @@ The ``git_mirrors`` list specifies paths (relative to the deployment project) th
 Deployment Best Practices
 --------------------------
 
-1. **Pin Spack versions**: Use specific tags (e.g., ``v1.1.0``) rather than ``develop`` for reproducibility
+1. **Pin Spack versions**: Use specific tags (e.g., ``v1.2.0``) rather than ``develop`` for reproducibility
 2. **Test locally first**: Create deployments on a local system before deploying to production
 3. **Use external packages**: Mark system packages as external to avoid rebuilding them
 4. **Exclude build dependencies**: Use ``build_exclude`` to remove packages only needed during builds
@@ -756,7 +756,7 @@ Here's a complete example for a deployment with LAMMPS:
        steps = ["setup", "bootstrap", "mirror", "envs", "finalize"]
 
        spack_url = "https://github.com/spack/spack.git"
-       spack_ref = "v1.1.0"
+       spack_ref = "v1.2.0"
 
        build_roots = True
        env_views = True
