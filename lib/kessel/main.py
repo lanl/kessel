@@ -18,7 +18,6 @@ import time
 import kessel.cmd.activate as activate_cmd
 import kessel.cmd.build_env as build_env_cmd
 import kessel.cmd.create as create_cmd
-import kessel.cmd.deploy as deploy_cmd
 import kessel.cmd.edit as edit_cmd
 import kessel.cmd.init as init_cmd
 import kessel.cmd.list as list_cmd
@@ -26,7 +25,6 @@ import kessel.cmd.reset as reset_cmd
 import kessel.cmd.run as run_cmd
 import kessel.cmd.status as status_cmd
 import kessel.cmd.step as step_cmd
-import kessel.cmd.workflow as workflow_cmd
 from kessel import __version__
 from kessel.context import Context
 from kessel.util import ShellEnvironment
@@ -68,13 +66,10 @@ def main() -> int:
     )
     subparsers = parser.add_subparsers(dest="command")
     init_cmd.setup_command(subparsers.add_parser("init"), ctx)
-    deploy_cmd.setup_command(subparsers.add_parser("deploy"), ctx)
     build_env_cmd.setup_command(subparsers.add_parser("build-env"))
-    workflow_cmd.setup_command(subparsers.add_parser("workflow"))  # deprecated
     step_cmd.setup_command(subparsers.add_parser("step"), ctx)
     run_cmd.setup_command(subparsers.add_parser("run"), ctx)
     reset_cmd.setup_command(subparsers.add_parser("reset"), ctx)
-    # New top-level commands (replacing workflow subcommands)
     list_cmd.setup_command(subparsers.add_parser("list"), ctx)
     activate_cmd.setup_command(subparsers.add_parser("activate"), ctx)
     status_cmd.setup_command(subparsers.add_parser("status"), ctx)
