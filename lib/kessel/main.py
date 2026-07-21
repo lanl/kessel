@@ -84,6 +84,7 @@ def main() -> int:
     senv.debug = args.shell_debug
     senv.eval("set --")  # makes sure sourced scripts don't see our args
     interactive = sys.stdout.isatty() and not args.shell_debug and args.command in ("run", "step")
+    stop_event = None
     try:
         if hasattr(args, "func"):
             if interactive:
@@ -99,7 +100,7 @@ def main() -> int:
         print("ERROR:", e)
         return 1
     finally:
-        if interactive:
+        if interactive and stop_event:
             stop_event.set()
             t.join()
     return 0

@@ -39,7 +39,7 @@ def step(args: Namespace, ctx: Context, senv: ShellEnvironment) -> None:
 
 
 def setup_command(subparser: ArgumentParser, ctx: Context) -> None:
-    subparsers = subparser.add_subparsers()
+    subparsers = subparser.add_subparsers(required=True)
 
     if ctx.kessel_dir and ctx.workflow_config:
         workflow = ctx.workflow_config
