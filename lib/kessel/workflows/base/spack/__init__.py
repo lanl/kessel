@@ -56,6 +56,8 @@ class BuildEnvironment(Workflow):
     build_dir = environment(Path.cwd() / "build")
     install_dir = environment(Path.cwd() / "build" / "install")
     project_spec = environment()
+    user_build_cache = environment("")
+    user_build_cache_update_index = environment("false")
     git_mirrors: list[str] = []
     allow_lockfile_changes = False
     install_roots = False
