@@ -269,12 +269,79 @@ Environment variables:
 - ``build_dir``: Build directory
 - ``install_dir``: Installation directory
 - ``project_spec``: Spack spec for the project
+- ``user_build_cache``: Path to a per-user binary build cache (see below)
+- ``user_build_cache_update_index``: Whether to refresh the build cache index (see below)
 
 Command-line arguments:
 
 .. code-block:: console
 
    $ kessel step env -e my-env -S /path/to/source -B /path/to/build myproject@develop
+
+Per-User Build Cache
+^^^^^^^^^^^^^^^^^^^^^
+
+The ``env`` step can automatically push freshly built binary packages to a
+per-user Spack build cache and reuse them on subsequent builds. This can
+dramatically speed up rebuilds of a project's dependencies, both locally and in
+CI, without sharing artifacts through a global mirror.
+
+The feature is controlled by two workflow environment variables. Like other
+environment variables, they can be set as class defaults on the workflow or
+overridden from the shell (``export KESSEL_USER_BUILD_CACHE=...``):
+
+``user_build_cache`` (``KESSEL_USER_BUILD_CACHE``)
+  Path to a directory to use as the per-user binary build cache. Empty by
+  default, which disables the feature. When set to a non-empty path, the
+  ``env`` step will:
+
+  1. Create the directory if it does not already exist.
+  2. Register it with Spack as an unsigned binary mirror named
+     ``user-ci-mirror`` using ``spack mirror add --type binary --autopush
+     --unsigned``. Because the mirror is added with ``--autopush``, every
+     package Spack installs during the build is automatically pushed into the
+     cache, and any matching binaries already present are reused instead of
+     being rebuilt.
+
+``user_build_cache_update_index`` (``KESSEL_USER_BUILD_CACHE_UPDATE_INDEX``)
+  Set to ``"true"`` to run ``spack buildcache update-index`` on the cache
+  directory after registering it (only takes effect when ``user_build_cache``
+  is also set). This refreshes the mirror's package index, which is useful when
+  the cache directory is shared or served to other consumers that rely on an
+  up-to-date index. Updating the index can be slow for large caches, so it is
+  opt-in and defaults to ``"false"``. Failures to update the index are ignored
+  and do not abort the build.
+
+Set as workflow defaults:
+
+.. code-block:: python
+
+   from pathlib import Path
+   from kessel.workflows import environment
+   from kessel.workflows.base.spack import BuildEnvironment
+   from kessel.workflows.base.cmake import CMake
+
+   class Default(BuildEnvironment, CMake):
+       steps = ["env", "configure", "build", "test"]
+
+       project_spec = environment("myapp@main")
+       user_build_cache = environment(str(Path.home() / ".cache/kessel/build-cache"))
+       user_build_cache_update_index = environment("true")
+
+Or enable ad hoc from the shell:
+
+.. code-block:: console
+
+   $ export KESSEL_USER_BUILD_CACHE="$HOME/.cache/kessel/build-cache"
+   $ export KESSEL_USER_BUILD_CACHE_UPDATE_INDEX=true   # optional
+   $ kessel step env myproject@develop
+
+.. note::
+
+   The cache is a standard Spack binary mirror, so it accumulates artifacts
+   over time. Prune or delete the directory periodically to reclaim disk space.
+   The mirror is registered as ``--unsigned``, so the cache is intended for
+   trusted, personal use rather than distribution of signed packages.
 
 Spack Deployment Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
