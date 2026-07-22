@@ -37,6 +37,7 @@ _kessel_path_prepend() {
 }
 
 kessel() {
+    _kessel_ret=0
     eval "$(command kessel "$@" 3>&1 >&4 4>&- || echo _kessel_ret=$?)" 4>&-
     return $_kessel_ret
 } 4>&1
