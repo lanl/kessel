@@ -10,7 +10,7 @@ shift
 
 spack build-env --dump "$dump_file" "$@" || exit 1
 
-# filter common batch system variables
-grep -Ev '^(FLUX_|SLURM_|XPC_)' "$dump_file" > "$dump_file.tmp"
+# filter common batch system variables or X11 forwarding vars
+grep -Ev '^(FLUX_|SLURM_|XPC_|DISPLAY|XAUTHORITY)' "$dump_file" > "$dump_file.tmp"
 echo "PS1='(build) ${KESSEL_PARENT_PROMPT}'" >> "$dump_file.tmp"
 mv "$dump_file.tmp" "$dump_file"
