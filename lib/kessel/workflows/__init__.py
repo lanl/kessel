@@ -273,10 +273,9 @@ def load_workflow(name: str) -> Workflow:
 def git(cmd, cwd=None, check=True) -> None | str:
     """Run git command and return output, suppressing normal output."""
     env = os.environ.copy()
-    env["GIT_ADVICE_DETACHED_HEAD"] = "false"
     try:
         result = subprocess.run(
-            ["git"] + cmd,
+            ["git", "-c", "advice.detachedHead=false"] + cmd,
             cwd=cwd,
             check=check,
             stdout=subprocess.PIPE,
