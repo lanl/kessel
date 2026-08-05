@@ -15,5 +15,9 @@ if [ -f "$KESSEL_BUILD_ENV" ]; then
   source "$KESSEL_BUILD_ENV"
 fi
 cmake "$@" "$KESSEL_BUILD_DIR"
-cmake --build "$KESSEL_BUILD_DIR" --parallel ${KESSEL_CMAKE_TARGETS}
+if [ -n "${CMAKE_BUILD_PARALLEL_LEVEL}" ]; then
+  cmake --build "$KESSEL_BUILD_DIR" ${KESSEL_CMAKE_TARGETS}
+else
+  cmake --build "$KESSEL_BUILD_DIR" --parallel ${KESSEL_CMAKE_TARGETS}
+fi
 )
