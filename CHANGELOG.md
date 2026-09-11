@@ -4,10 +4,14 @@
 
 ### CI/CD
 - Add `workflows/base/spack/deployment/use.sh` with reusable
-  `kessel_detect_system` and `kessel_activate_deployment` helpers, so projects no
-  longer copy the system-detection and clone-or-activate logic into their
-  `.gitlab/kessel.sh`. The spack-project template now sources these from the
-  deployment's kessel.
+  `kessel_detect_system`, `kessel_activate_deployment` and `kessel_alloc`
+  helpers, so projects no longer copy the system-detection, clone-or-activate and
+  node-allocation logic into their `.gitlab/kessel.sh`. The spack-project
+  template now sources these from the deployment's kessel, and the deployment's
+  `activate.sh` sources them too so they are available in any activated
+  environment.
+- Add `workflows/base/spack/deployment/alloc-init.sh`, the wrapper `kessel_alloc`
+  hands to the scheduler to activate the deployment on an allocated node.
 
 ### Workflows
 - Add an optional `alloc` parameter to `default_ci_message` (and

@@ -10,8 +10,8 @@
 # the public, perform publicly and display publicly, and to permit others to do
 # so.
 #
-# Helpers for using an existing Spack deployment from a project's CI: detect the
-# current system and activate the (possibly cloned) deployment.
+# Helpers for using an existing Spack deployment: detect the current system,
+# activate the (possibly cloned) deployment, and allocate an interactive node.
 # Intended to work on sh, zsh, and bash.
 
 # Detect the current cluster (KESSEL_SYSTEM) and its scheduler
@@ -55,4 +55,28 @@ kessel_activate_deployment() {
   fi
 
   unset _KESSEL_WORKFLOW_DEPLOYMENT
+}
+
+# Allocate an interactive compute node and drop into the deployment on it. All
+# arguments are forwarded to the scheduler as already-split allocation
+# parameters. Requires kessel_detect_system to have set KESSEL_SYSTEM_SCHEDULER.
+kessel_alloc() {
+  _kessel_alloc_init="$KESSEL_DEPLOYMENT/kessel/lib/kessel/workflows/base/spack/deployment/alloc-init.sh"
+  case "$KESSEL_SYSTEM_SCHEDULER" in
+    slurm)
+      echo "salloc $*" >&2
+      export SHELL="$_kessel_alloc_init"
+      salloc "$@"
+      ;;
+    flux)
+      echo "flux alloc $* $_kessel_alloc_init" >&2
+      flux alloc "$@" "$_kessel_alloc_init"
+      ;;
+    *)
+      echo "ERROR: unknown scheduler '$KESSEL_SYSTEM_SCHEDULER'!" >&2
+      unset _kessel_alloc_init
+      return 1
+      ;;
+  esac
+  unset _kessel_alloc_init
 }
