@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### CI/CD
+- Add `workflows/base/spack/deployment/use.sh` with reusable
+  `kessel_detect_system` and `kessel_activate_deployment` helpers, so projects no
+  longer copy the system-detection and clone-or-activate logic into their
+  `.gitlab/kessel.sh`. The spack-project template now sources these from the
+  deployment's kessel.
+
 ## 0.3.0
 
 ### Spack Integration
