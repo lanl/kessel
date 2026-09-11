@@ -134,9 +134,9 @@ def default_ci_message(project: str,
                        workflow: str = "default",
                        args: list[str] = sys.argv[1:],
                        pre_alloc_init: str = "",
-                       post_alloc_init: str = "") -> str:
+                       post_alloc_init: str = "",
+                       alloc: str | None = None) -> str:
     system_change = ""
-    alloc = ""
     workflow_change = ""
     kessel_cmd = "kessel " + " ".join(args)
 
@@ -149,10 +149,16 @@ def default_ci_message(project: str,
     if post_alloc_init:
         post_alloc_init += "\n"
 
-    if "LLNL_FLUX_SCHEDULER_PARAMETERS" in os.environ:
-        alloc = f"flux alloc {os.environ['LLNL_FLUX_SCHEDULER_PARAMETERS']}\n"
-    elif "SCHEDULER_PARAMETERS" in os.environ:
-        alloc = f"salloc {os.environ['SCHEDULER_PARAMETERS']}\n"
+    if alloc is None:
+        if "LLNL_FLUX_SCHEDULER_PARAMETERS" in os.environ:
+            alloc = f"flux alloc {os.environ['LLNL_FLUX_SCHEDULER_PARAMETERS']}"
+        elif "SCHEDULER_PARAMETERS" in os.environ:
+            alloc = f"salloc {os.environ['SCHEDULER_PARAMETERS']}"
+        else:
+            alloc = ""
+
+    if alloc:
+        alloc += "\n"
 
     if workflow != "default":
         workflow_change = f"kessel activate {workflow}\n"
@@ -273,10 +279,9 @@ def load_workflow(name: str) -> Workflow:
 def git(cmd, cwd=None, check=True) -> None | str:
     """Run git command and return output, suppressing normal output."""
     env = os.environ.copy()
-    env["GIT_ADVICE_DETACHED_HEAD"] = "false"
     try:
         result = subprocess.run(
-            ["git"] + cmd,
+            ["git", "-c", "advice.detachedHead=false"] + cmd,
             cwd=cwd,
             check=check,
             stdout=subprocess.PIPE,
