@@ -12,6 +12,9 @@
   environment.
 - Add `workflows/base/spack/deployment/alloc-init.sh`, the wrapper `kessel_alloc`
   hands to the scheduler to activate the deployment on an allocated node.
+- Add a `--persist PATH` option (via `kessel_parse_persist`) to the deployment
+  entry-point scripts, so users can create a reusable writable deployment without
+  having to know about the `KESSEL_WORKFLOW_DEPLOYMENT` environment variable.
 
 ### Workflows
 - Add an optional `alloc` parameter to `default_ci_message` (and

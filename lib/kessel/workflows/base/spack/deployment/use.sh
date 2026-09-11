@@ -27,10 +27,48 @@ kessel_detect_system() {
   export KESSEL_SYSTEM KESSEL_SYSTEM_SCHEDULER
 }
 
+# Parse a "--persist PATH" option out of the arguments, exporting
+# KESSEL_WORKFLOW_DEPLOYMENT=PATH so the deployment is created (if needed) at a
+# persistent, writable location instead of the default per-user temp copy. When
+# --persist is not given, any externally-set KESSEL_WORKFLOW_DEPLOYMENT is left
+# untouched. The remaining arguments are placed, shell-quoted, in
+# KESSEL_ARGS_REST for the caller to re-apply, e.g.:
+#
+#   kessel_parse_persist "$@" || return $?
+#   eval "set -- $KESSEL_ARGS_REST"
+kessel_parse_persist() {
+  KESSEL_ARGS_REST=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --persist)
+        if [ "$#" -lt 2 ]; then
+          echo "ERROR: --persist requires a PATH argument!" >&2
+          return 2
+        fi
+        export KESSEL_WORKFLOW_DEPLOYMENT="$2"
+        shift 2
+        ;;
+      --persist=*)
+        export KESSEL_WORKFLOW_DEPLOYMENT="${1#--persist=}"
+        shift
+        ;;
+      *)
+        # Single-quote each remaining arg (escaping embedded quotes) so
+        # constraint strings survive the eval unscathed.
+        _kessel_q=$(printf '%s' "$1" | sed "s/'/'\\\\''/g")
+        KESSEL_ARGS_REST="${KESSEL_ARGS_REST:+$KESSEL_ARGS_REST }'$_kessel_q'"
+        shift
+        ;;
+    esac
+  done
+  unset _kessel_q
+}
+
 # Activate the writable workflow deployment (KESSEL_WORKFLOW_DEPLOYMENT),
 # cloning it from the cluster deployment (KESSEL_DEPLOYMENT) if needed. Defaults
-# to a per-user temp copy; set KESSEL_WORKFLOW_DEPLOYMENT to a path to persist it,
-# or to "upstream" to use the (read-only) cluster deployment directly.
+# to a per-user temp copy; pass "--persist PATH" (see kessel_parse_persist) or
+# set KESSEL_WORKFLOW_DEPLOYMENT to a path to persist it, or to "upstream" to use
+# the (read-only) cluster deployment directly.
 kessel_activate_deployment() {
   _KESSEL_WORKFLOW_DEPLOYMENT="$KESSEL_WORKFLOW_DEPLOYMENT"
   export KESSEL_WORKFLOW_DEPLOYMENT=${KESSEL_WORKFLOW_DEPLOYMENT:-${TMPDIR:-/tmp}/$USER-ci-envs}

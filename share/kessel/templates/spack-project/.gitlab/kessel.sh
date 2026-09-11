@@ -31,5 +31,6 @@ fi
 source "$_KESSEL_DEPLOYMENT_USE"
 unset _KESSEL_DEPLOYMENT_USE
 
+kessel_parse_persist "$@" || return $?
 kessel_detect_system
 kessel_activate_deployment
