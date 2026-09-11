@@ -9,6 +9,10 @@
   `.gitlab/kessel.sh`. The spack-project template now sources these from the
   deployment's kessel.
 
+### Workflows
+- Add an optional `alloc` parameter to `default_ci_message` (and
+  `BuildEnvironment.ci_message`) to override the allocation line.
+
 ## 0.3.0
 
 ### Spack Integration
