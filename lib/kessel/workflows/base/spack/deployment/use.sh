@@ -27,6 +27,19 @@ kessel_detect_system() {
   export KESSEL_SYSTEM KESSEL_SYSTEM_SCHEDULER
 }
 
+# List all available Spack environments in the deployment.
+kessel_list_environments() {
+  if [ -n "$KESSEL_DEPLOYMENT" ] && [ -d "$KESSEL_DEPLOYMENT/environments" ]; then
+    echo ""
+    echo "Available environments on $KESSEL_SYSTEM:"
+    find "$KESSEL_DEPLOYMENT/environments" -name "spack.yaml" -type f 2>/dev/null | while read -r yaml_path; do
+      env_dir=$(dirname "$yaml_path")
+      rel_path="${env_dir#$KESSEL_DEPLOYMENT/environments/}"
+      echo "  - $rel_path"
+    done
+  fi
+}
+
 # Parse a "--persist PATH" option out of the arguments, exporting
 # KESSEL_WORKFLOW_DEPLOYMENT=PATH so the deployment is created (if needed) at a
 # persistent, writable location instead of the default per-user temp copy. When
