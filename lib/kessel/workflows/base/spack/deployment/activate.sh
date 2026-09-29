@@ -46,3 +46,7 @@ export SPACK_USER_CONFIG_PATH="$KESSEL_DEPLOYMENT/.spack"
 export SPACK_SYSTEM_CONFIG_PATH="$KESSEL_CONFIG_DIR"
 
 source "$KESSEL_DEPLOYMENT/spack/share/spack/setup-env.sh"
+
+# Make the deployment-use helpers (kessel_detect_system, kessel_alloc, ...)
+# available in any activated environment.
+source "$KESSEL_ROOT/lib/kessel/workflows/base/spack/deployment/use.sh"

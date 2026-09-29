@@ -70,7 +70,8 @@ class BuildEnvironment(Workflow):
                 os.environ["KESSEL_DEPLOYMENT"]).exists()) and "SPACK_ROOT" not in os.environ:
             raise Exception("No active Spack installation!")
 
-    def ci_message(self, parsed_args, pre_alloc_init: str = "", post_alloc_init: str = "") -> str:
+    def ci_message(self, parsed_args, pre_alloc_init: str = "", post_alloc_init: str = "",
+                   alloc: str | None = None) -> str:
         if parsed_args.project_spec:
             project = get_project_name_from_spec(" ".join(parsed_args.project_spec))
         else:
@@ -81,7 +82,8 @@ class BuildEnvironment(Workflow):
             system=system,
             workflow=self.workflow,
             pre_alloc_init=pre_alloc_init,
-            post_alloc_init=post_alloc_init)
+            post_alloc_init=post_alloc_init,
+            alloc=alloc)
 
     def prepare_env(self, args: argparse.Namespace) -> None:
         self.environ["KESSEL_ENABLE_VIEW"] = "true" if self.view else "false"

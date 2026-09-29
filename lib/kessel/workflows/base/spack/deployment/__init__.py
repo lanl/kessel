@@ -9,15 +9,8 @@
 # in this material to reproduce, prepare derivative works, distribute copies to
 # the public, perform publicly and display publicly, and to permit others to do
 # so.
+"""Helpers for using an existing Spack deployment from a project checkout.
 
-(
-if [ -f "$KESSEL_BUILD_ENV" ]; then
-  source "$KESSEL_BUILD_ENV"
-fi
-cmake "$@" "$KESSEL_BUILD_DIR"
-if [ -n "${CMAKE_BUILD_PARALLEL_LEVEL}" ]; then
-  cmake --build "$KESSEL_BUILD_DIR" ${KESSEL_CMAKE_TARGETS}
-else
-  cmake --build "$KESSEL_BUILD_DIR" --parallel ${KESSEL_CMAKE_TARGETS}
-fi
-)
+Project scripts like `.gitlab/alloc` import this before kessel or Spack are
+activated, so nothing here may depend on an activated environment.
+"""
